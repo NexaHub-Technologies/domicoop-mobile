@@ -57,6 +57,7 @@ module.exports = {
       },
       apiBaseUrl: process.env.EXPO_PUBLIC_API_BASE_URL,
       paystackPublicKey: process.env.EXPO_PUBLIC_PAYSTACK_PUBLIC_KEY,
+      paystackSecretKey: process.env.EXPO_PUBLIC_PAYSTACK_SECRET_KEY,
     },
     owner: "nexahub-technologies",
   },
