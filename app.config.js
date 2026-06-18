@@ -45,6 +45,15 @@ module.exports = {
         },
       ],
       "expo-secure-store",
+      [
+        "expo-build-properties",
+        {
+          android: {
+            enableProguardInReleaseBuilds: true,
+            enableShrinkResourcesInReleaseBuilds: true,
+          },
+        },
+      ],
     ],
     experiments: {
       typedRoutes: true,
