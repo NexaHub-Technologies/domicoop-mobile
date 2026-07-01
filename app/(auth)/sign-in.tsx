@@ -12,10 +12,11 @@ import { KeyboardAwareWrapper } from "@/components/auth/KeyboardAwareWrapper";
 import { InfoModal } from "@/components/modals/InfoModal";
 import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { useTheme } from "@/contexts/ThemeContext";
-import { signUp } from "@/lib/api/sign-up.api";
+import { auth } from "@/lib/api/auth.api";
 import { signInWithGoogle } from "@/lib/google-signin";
 import type { lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
+import { font } from "@/constants/theme";
 
 export default function SignInScreen() {
   const router = useRouter();
@@ -44,7 +45,7 @@ export default function SignInScreen() {
     setIsLoading(true);
 
     try {
-      await signUp.login(email, password);
+      await auth.login(email, password);
       router.replace("/(tabs)");
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Login failed. Please try again.";
@@ -72,7 +73,7 @@ export default function SignInScreen() {
 
     try {
       const idToken = await signInWithGoogle();
-      await signUp.googleLogin(idToken);
+      await auth.googleLogin(idToken);
       router.replace("/(tabs)");
     } catch (err) {
       const errorMessage =
@@ -150,7 +151,7 @@ export default function SignInScreen() {
                 variant="primary"
                 size="lg"
                 fullWidth
-                icon="arrow.right"
+                icon="arrow-forward"
                 loading={isLoading}
                 disabled={isLoading}
               />
@@ -240,17 +241,15 @@ const createStyles = (colors: typeof lightColors) =>
       justifyContent: "space-between",
     },
     rememberMeText: {
-      fontFamily: theme.typography.fontFamily.label,
+      fontFamily: font("body", "semibold"),
       fontSize: theme.typography.size.xs,
-      fontWeight: theme.typography.fontWeight.semibold,
       color: colors.onSurfaceVariant,
       textTransform: "uppercase",
       letterSpacing: theme.typography.letterSpacing.wider,
     },
     forgotPassword: {
-      fontFamily: theme.typography.fontFamily.label,
+      fontFamily: font("body", "bold"),
       fontSize: theme.typography.size.xs,
-      fontWeight: theme.typography.fontWeight.bold,
       color: colors.primary,
       textTransform: "uppercase",
       letterSpacing: theme.typography.letterSpacing.wider,
@@ -270,13 +269,13 @@ const createStyles = (colors: typeof lightColors) =>
       marginBottom: theme.spacing.xl,
     },
     footerText: {
-      fontFamily: theme.typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: theme.typography.size.sm,
       color: colors.onSurfaceVariant,
     },
     footerLink: {
       color: colors.primary,
-      fontWeight: theme.typography.fontWeight.bold,
+      fontFamily: font("body", "bold"),
     },
     dividerContainer: {
       flexDirection: "row",
@@ -289,9 +288,8 @@ const createStyles = (colors: typeof lightColors) =>
       backgroundColor: colors.outlineVariant,
     },
     dividerText: {
-      fontFamily: theme.typography.fontFamily.label,
+      fontFamily: font("body", "semibold"),
       fontSize: theme.typography.size.xs,
-      fontWeight: theme.typography.fontWeight.semibold,
       color: colors.onSurfaceVariant,
       textTransform: "uppercase",
       letterSpacing: theme.typography.letterSpacing.wider,

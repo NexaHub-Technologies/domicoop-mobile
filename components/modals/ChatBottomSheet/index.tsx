@@ -18,6 +18,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
+import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
 
 type ChatBottomSheetColors = typeof lightColors;
@@ -171,7 +172,7 @@ const createStyles = (colors: ChatBottomSheetColors) =>
   StyleSheet.create({
     overlay: {
       flex: 1,
-      backgroundColor: "rgba(0, 0, 0, 0.5)",
+      backgroundColor: colors.scrim,
       justifyContent: "flex-end",
     },
     backdrop: {
@@ -214,13 +215,12 @@ const createStyles = (colors: ChatBottomSheetColors) =>
       justifyContent: "center",
     },
     headerTitle: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: typography.size.base,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onSurface,
     },
     headerSubtitle: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: typography.size.xs,
       color: colors.onSurfaceVariant,
     },
@@ -237,14 +237,13 @@ const createStyles = (colors: ChatBottomSheetColors) =>
       paddingVertical: theme.spacing["3xl"],
     },
     emptyText: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: typography.size.lg,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onSurface,
       marginTop: theme.spacing.base,
     },
     emptySubtext: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: typography.size.sm,
       color: colors.onSurfaceVariant,
       marginTop: theme.spacing.xs,
@@ -265,7 +264,7 @@ const createStyles = (colors: ChatBottomSheetColors) =>
       borderBottomLeftRadius: 4,
     },
     messageText: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: typography.size.sm,
       lineHeight: 20,
     },
@@ -290,7 +289,7 @@ const createStyles = (colors: ChatBottomSheetColors) =>
       paddingHorizontal: theme.spacing.base,
       paddingVertical: theme.spacing.sm,
       maxHeight: 100,
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: typography.size.sm,
       color: colors.onSurface,
     },

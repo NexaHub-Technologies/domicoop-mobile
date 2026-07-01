@@ -8,12 +8,13 @@ import {
 } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter, useLocalSearchParams } from "expo-router";
-import { SymbolView } from "expo-symbols";
+import { MaterialIcons } from "@expo/vector-icons";
 import { BackButton } from "@/components/auth/BackButton";
 import { Button } from "@/components/common/Button";
 import { useTheme } from "@/contexts/ThemeContext";
 import type { lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
+import { font } from "@/constants/theme";
 
 const GUIDELINES = [
   {
@@ -241,10 +242,10 @@ export default function GuidelinesScreen() {
           >
             <View style={[styles.checkbox, agreed && styles.checkboxChecked]}>
               {agreed && (
-                <SymbolView
-                  name="checkmark"
+                <MaterialIcons
+                  name="check"
                   size={16}
-                  tintColor={colors.onPrimary}
+                  color={colors.onPrimary}
                 />
               )}
             </View>
@@ -261,7 +262,7 @@ export default function GuidelinesScreen() {
             size="lg"
             fullWidth
             disabled={!agreed}
-            icon="arrow.right"
+            icon="arrow-forward"
           />
         </View>
       )}
@@ -289,25 +290,22 @@ const createStyles = (colors: typeof lightColors) =>
       marginBottom: theme.spacing.xl,
     },
     screenTitle: {
-      fontFamily: theme.typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: theme.typography.size["2xl"],
-      fontWeight: theme.typography.fontWeight.bold,
       color: colors.onSurface,
       marginBottom: theme.spacing.lg,
     },
     introText: {
-      fontFamily: theme.typography.fontFamily.body,
+      fontFamily: font("body", "medium"),
       fontSize: theme.typography.size.base,
-      fontWeight: theme.typography.fontWeight.medium,
       color: colors.onSurfaceVariant,
       lineHeight:
         theme.typography.size.base * theme.typography.lineHeight.relaxed,
       marginBottom: theme.spacing.base,
     },
     introSubtext: {
-      fontFamily: theme.typography.fontFamily.body,
+      fontFamily: font("body", "medium"),
       fontSize: theme.typography.size.sm,
-      fontWeight: theme.typography.fontWeight.medium,
       color: colors.onSurfaceVariant,
       lineHeight:
         theme.typography.size.sm * theme.typography.lineHeight.relaxed,
@@ -330,16 +328,14 @@ const createStyles = (colors: typeof lightColors) =>
       alignItems: "center",
     },
     numberText: {
-      fontFamily: theme.typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: theme.typography.size.xs,
-      fontWeight: theme.typography.fontWeight.bold,
       color: colors.onPrimary,
     },
     guidelineText: {
       flex: 1,
-      fontFamily: theme.typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: theme.typography.size.sm,
-      fontWeight: theme.typography.fontWeight.regular,
       color: colors.onSurface,
       lineHeight:
         theme.typography.size.sm * theme.typography.lineHeight.relaxed,
@@ -373,9 +369,8 @@ const createStyles = (colors: typeof lightColors) =>
     },
     checkboxLabel: {
       flex: 1,
-      fontFamily: theme.typography.fontFamily.body,
+      fontFamily: font("body", "medium"),
       fontSize: theme.typography.size.sm,
-      fontWeight: theme.typography.fontWeight.medium,
       color: colors.onSurfaceVariant,
     },
   });

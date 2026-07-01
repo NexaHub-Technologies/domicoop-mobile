@@ -10,6 +10,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
+import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
 
 type InfoModalColors = typeof lightColors;
@@ -131,7 +132,7 @@ const createStyles = (colors: InfoModalColors) =>
   StyleSheet.create({
     overlay: {
       flex: 1,
-      backgroundColor: "rgba(0, 0, 0, 0.6)",
+      backgroundColor: colors.scrim,
       justifyContent: "center",
       alignItems: "center",
     },
@@ -141,12 +142,12 @@ const createStyles = (colors: InfoModalColors) =>
       padding: theme.spacing["3xl"],
       marginHorizontal: theme.spacing["2xl"],
       alignItems: "center",
-      shadowColor: colors.primary,
+      shadowColor: colors.ambientShadow,
       shadowOffset: {
         width: 0,
         height: 8,
       },
-      shadowOpacity: 0.15,
+      shadowOpacity: 1,
       shadowRadius: 16,
       elevation: 8,
     },
@@ -154,15 +155,14 @@ const createStyles = (colors: InfoModalColors) =>
       marginBottom: theme.spacing.lg,
     },
     title: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: typography.size.xl,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onSurface,
       textAlign: "center",
       marginBottom: theme.spacing.sm,
     },
     message: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: typography.size.sm,
       color: colors.onSurfaceVariant,
       textAlign: "center",
@@ -182,9 +182,8 @@ const createStyles = (colors: InfoModalColors) =>
       justifyContent: "center",
     },
     primaryButtonText: {
-      fontFamily: typography.fontFamily.label,
+      fontFamily: font("body", "bold"),
       fontSize: typography.size.base,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onPrimary,
     },
     closeButton: {
@@ -193,7 +192,7 @@ const createStyles = (colors: InfoModalColors) =>
       justifyContent: "center",
     },
     closeButtonText: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: typography.size.sm,
       color: colors.onSurfaceVariant,
     },

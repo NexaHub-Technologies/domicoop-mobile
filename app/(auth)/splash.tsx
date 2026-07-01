@@ -7,6 +7,7 @@ import { Button } from "@/components/common/Button";
 import { useTheme } from "@/contexts/ThemeContext";
 import type { lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
+import { font } from "@/constants/theme";
 
 export default function SplashScreen() {
   const router = useRouter();
@@ -72,7 +73,7 @@ export default function SplashScreen() {
             variant="primary"
             size="lg"
             fullWidth
-            icon="arrow.right"
+            icon="arrow-forward"
           />
         </View>
       </LinearGradient>
@@ -127,17 +128,15 @@ const createStyles = (colors: typeof lightColors) =>
       height: 140,
     },
     brandName: {
-      fontFamily: theme.typography.fontFamily.headline,
+      fontFamily: font("display", "extrabold"),
       fontSize: theme.typography.size["4xl"],
-      fontWeight: theme.typography.fontWeight.extrabold,
       color: colors.onSurface,
       marginBottom: theme.spacing.md,
       letterSpacing: theme.typography.letterSpacing.tight,
     },
     tagline: {
-      fontFamily: theme.typography.fontFamily.body,
+      fontFamily: font("body", "medium"),
       fontSize: theme.typography.size.md,
-      fontWeight: theme.typography.fontWeight.medium,
       color: colors.secondary,
       textAlign: "center",
       maxWidth: 320,

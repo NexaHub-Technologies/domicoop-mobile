@@ -7,6 +7,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { useTheme , lightColors } from '@/contexts/ThemeContext';
 import { theme } from '@/styles/theme';
+import { font } from "@/constants/theme";
 import { typography } from '@/constants/typography';
 import { FAQAccordion } from '@/components/support/FAQAccordion';
 import { ChatBottomSheet } from '@/components/modals/ChatBottomSheet';
@@ -186,12 +187,12 @@ const createStyles = (colors: typeof lightColors) => StyleSheet.create({
   },
   header: {
     backgroundColor: colors.surface,
-    shadowColor: colors.primary,
+    shadowColor: colors.ambientShadow,
     shadowOffset: {
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.05,
+    shadowOpacity: 1,
     shadowRadius: 4,
     elevation: 2,
   },
@@ -209,9 +210,8 @@ const createStyles = (colors: typeof lightColors) => StyleSheet.create({
     minWidth: 44,
   },
   headerTitle: {
-    fontFamily: typography.fontFamily.headline,
+    fontFamily: font("display", "bold"),
     fontSize: typography.size.lg,
-    fontWeight: typography.fontWeight.bold,
   },
   scrollView: {
     flex: 1,
@@ -231,14 +231,13 @@ const createStyles = (colors: typeof lightColors) => StyleSheet.create({
     zIndex: 1,
   },
   heroTitle: {
-    fontFamily: typography.fontFamily.headline,
+    fontFamily: font("display", "bold"),
     fontSize: typography.size['2xl'],
-    fontWeight: typography.fontWeight.bold,
     color: colors.onPrimary,
     marginBottom: theme.spacing.xs,
   },
   heroSubtitle: {
-    fontFamily: typography.fontFamily.body,
+    fontFamily: font("body", "regular"),
     fontSize: typography.size.base,
     color: `${colors.onPrimary}90`,
     marginBottom: theme.spacing.lg,
@@ -250,7 +249,7 @@ const createStyles = (colors: typeof lightColors) => StyleSheet.create({
     width: 128,
     height: 128,
     borderRadius: 64,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: `${colors.onPrimary}1A`,
   },
   heroDecoration2: {
     position: 'absolute',
@@ -259,7 +258,7 @@ const createStyles = (colors: typeof lightColors) => StyleSheet.create({
     width: 96,
     height: 96,
     borderRadius: 48,
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    backgroundColor: `${colors.onPrimary}1A`,
   },
   quickActionsContainer: {
     flexDirection: 'row',
@@ -274,12 +273,12 @@ const createStyles = (colors: typeof lightColors) => StyleSheet.create({
     alignItems: 'center',
     borderWidth: 1,
     borderColor: `${colors.primary}10`,
-    shadowColor: colors.primary,
+    shadowColor: colors.ambientShadow,
     shadowOffset: {
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.05,
+    shadowOpacity: 1,
     shadowRadius: 4,
     elevation: 2,
   },
@@ -296,12 +295,12 @@ const createStyles = (colors: typeof lightColors) => StyleSheet.create({
   },
   quickActionIconPrimary: {
     backgroundColor: colors.primary,
-    shadowColor: colors.primary,
+    shadowColor: colors.ambientShadow,
     shadowOffset: {
       width: 0,
       height: 4,
     },
-    shadowOpacity: 0.2,
+    shadowOpacity: 1,
     shadowRadius: 8,
     elevation: 4,
   },
@@ -311,14 +310,13 @@ const createStyles = (colors: typeof lightColors) => StyleSheet.create({
     borderColor: `${colors.primary}10`,
   },
   quickActionLabel: {
-    fontFamily: typography.fontFamily.headline,
+    fontFamily: font("display", "semibold"),
     fontSize: typography.size.sm,
-    fontWeight: typography.fontWeight.semibold,
     color: colors.onSurface,
     marginBottom: 2,
   },
   quickActionSubtitle: {
-    fontFamily: typography.fontFamily.body,
+    fontFamily: font("body", "regular"),
     fontSize: typography.size.xs,
     color: colors.onSurfaceVariant,
   },
@@ -329,15 +327,13 @@ const createStyles = (colors: typeof lightColors) => StyleSheet.create({
     marginBottom: theme.spacing.base,
   },
   faqTitle: {
-    fontFamily: typography.fontFamily.headline,
+    fontFamily: font("display", "bold"),
     fontSize: typography.size.lg,
-    fontWeight: typography.fontWeight.bold,
     color: colors.onSurface,
   },
   viewAllText: {
-    fontFamily: typography.fontFamily.label,
+    fontFamily: font("body", "semibold"),
     fontSize: typography.size.sm,
-    fontWeight: typography.fontWeight.semibold,
     color: colors.primary,
   },
   contactContainer: {
@@ -364,30 +360,28 @@ const createStyles = (colors: typeof lightColors) => StyleSheet.create({
     justifyContent: 'center',
     borderWidth: 4,
     borderColor: colors.surface,
-    shadowColor: colors.primary,
+    shadowColor: colors.ambientShadow,
     shadowOffset: {
       width: 0,
       height: 4,
     },
-    shadowOpacity: 0.2,
+    shadowOpacity: 1,
     shadowRadius: 8,
     elevation: 4,
   },
   avatarText: {
-    fontFamily: typography.fontFamily.headline,
+    fontFamily: font("display", "bold"),
     fontSize: typography.size.xl,
-    fontWeight: typography.fontWeight.bold,
     color: colors.onPrimary,
   },
   contactTitle: {
-    fontFamily: typography.fontFamily.headline,
+    fontFamily: font("display", "bold"),
     fontSize: typography.size.lg,
-    fontWeight: typography.fontWeight.bold,
     color: colors.onSurface,
     marginBottom: theme.spacing.xs,
   },
   contactSubtitle: {
-    fontFamily: typography.fontFamily.body,
+    fontFamily: font("body", "regular"),
     fontSize: typography.size.sm,
     color: colors.onSurfaceVariant,
     textAlign: 'center',
@@ -400,19 +394,18 @@ const createStyles = (colors: typeof lightColors) => StyleSheet.create({
     paddingHorizontal: theme.spacing['2xl'],
     width: '100%',
     alignItems: 'center',
-    shadowColor: colors.primary,
+    shadowColor: colors.ambientShadow,
     shadowOffset: {
       width: 0,
       height: 4,
     },
-    shadowOpacity: 0.2,
+    shadowOpacity: 1,
     shadowRadius: 8,
     elevation: 4,
   },
   contactButtonText: {
-    fontFamily: typography.fontFamily.headline,
+    fontFamily: font("display", "bold"),
     fontSize: typography.size.base,
-    fontWeight: typography.fontWeight.bold,
     color: colors.onPrimary,
   },
   bottomPadding: {

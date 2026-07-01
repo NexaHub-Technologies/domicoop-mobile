@@ -4,6 +4,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import Animated, { FadeInUp } from "react-native-reanimated";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
+import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
 import { getTotalDebt, getNextPayment, formatCurrencyNoSign } from "@/data/mockData";
 
@@ -23,12 +24,12 @@ const createStyles = (colors: typeof lightColors) =>
       borderRadius: theme.borderRadius.xl,
       padding: theme.spacing.lg,
       minHeight: 100,
-      shadowColor: colors.primary,
+      shadowColor: colors.ambientShadow,
       shadowOffset: {
         width: 0,
         height: 4,
       },
-      shadowOpacity: 0.2,
+      shadowOpacity: 1,
       shadowRadius: 8,
       elevation: 4,
       overflow: "hidden",
@@ -37,18 +38,16 @@ const createStyles = (colors: typeof lightColors) =>
       zIndex: 1,
     },
     debtLabel: {
-      fontFamily: typography.fontFamily.label,
+      fontFamily: font("body", "bold"),
       fontSize: typography.size.xs - 2,
-      fontWeight: typography.fontWeight.bold,
       color: colors.primaryFixed,
       textTransform: "uppercase",
       letterSpacing: 1,
       marginBottom: theme.spacing.xs,
     },
     debtAmount: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "extrabold"),
       fontSize: typography.size.xl,
-      fontWeight: typography.fontWeight.extrabold,
       color: colors.onPrimary,
     },
     watermarkContainer: {
@@ -65,29 +64,27 @@ const createStyles = (colors: typeof lightColors) =>
       minHeight: 100,
       borderWidth: 1,
       borderColor: colors.outlineVariant,
-      shadowColor: colors.primary,
+      shadowColor: colors.ambientShadow,
       shadowOffset: {
         width: 0,
         height: 2,
       },
-      shadowOpacity: 0.05,
+      shadowOpacity: 1,
       shadowRadius: 4,
       elevation: 2,
       justifyContent: "space-between",
     },
     dueLabel: {
-      fontFamily: typography.fontFamily.label,
+      fontFamily: font("body", "bold"),
       fontSize: typography.size.xs - 2,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onSurfaceVariant,
       textTransform: "uppercase",
       letterSpacing: 1,
       marginBottom: theme.spacing.xs,
     },
     dueDate: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: typography.size.lg,
-      fontWeight: typography.fontWeight.bold,
       color: colors.primary,
     },
     warningContainer: {
@@ -97,9 +94,8 @@ const createStyles = (colors: typeof lightColors) =>
       marginTop: theme.spacing.xs,
     },
     warningText: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "medium"),
       fontSize: typography.size.xs,
-      fontWeight: typography.fontWeight.medium,
       color: colors.error,
     },
   });
@@ -122,7 +118,7 @@ export const LoanSummaryStats: React.FC = () => {
           <MaterialIcons
             name="account-balance"
             size={80}
-            color="rgba(255, 255, 255, 0.1)"
+            color={`${colors.onPrimary}1A`}
           />
         </View>
       </View>

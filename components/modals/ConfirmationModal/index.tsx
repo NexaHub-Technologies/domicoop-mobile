@@ -4,6 +4,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import Animated, { FadeIn, FadeInUp } from "react-native-reanimated";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
+import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
 
 type ConfirmationModalColors = typeof lightColors;
@@ -85,7 +86,7 @@ const createStyles = (colors: ConfirmationModalColors) =>
   StyleSheet.create({
     overlay: {
       flex: 1,
-      backgroundColor: "rgba(0, 0, 0, 0.5)",
+      backgroundColor: colors.scrim,
       justifyContent: "center",
       alignItems: "center",
     },
@@ -121,15 +122,14 @@ const createStyles = (colors: ConfirmationModalColors) =>
       marginBottom: theme.spacing.lg,
     },
     title: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: typography.size.xl,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onSurface,
       textAlign: "center",
       marginBottom: theme.spacing.sm,
     },
     message: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: typography.size.base,
       color: colors.onSurfaceVariant,
       textAlign: "center",
@@ -150,9 +150,8 @@ const createStyles = (colors: ConfirmationModalColors) =>
       alignItems: "center",
     },
     cancelButtonText: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "semibold"),
       fontSize: typography.size.base,
-      fontWeight: typography.fontWeight.semibold,
       color: colors.onSurface,
     },
     confirmButton: {
@@ -164,9 +163,8 @@ const createStyles = (colors: ConfirmationModalColors) =>
       alignItems: "center",
     },
     confirmButtonText: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "semibold"),
       fontSize: typography.size.base,
-      fontWeight: typography.fontWeight.semibold,
       color: colors.onPrimary,
     },
     destructiveButton: {

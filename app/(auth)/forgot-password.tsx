@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity } from "react-native";
 import { useRouter } from "expo-router";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
-import { SymbolView } from "expo-symbols";
+import { MaterialIcons } from "@expo/vector-icons";
 import { Input } from "@/components/common/Input";
 import { Button } from "@/components/common/Button";
 import { HeroSection } from "@/components/auth/HeroSection";
@@ -13,6 +13,7 @@ import { KeyboardAwareWrapper } from "@/components/auth/KeyboardAwareWrapper";
 import { useTheme } from "@/contexts/ThemeContext";
 import type { lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
+import { font } from "@/constants/theme";
 
 export default function ForgotPasswordScreen() {
   const router = useRouter();
@@ -59,7 +60,7 @@ export default function ForgotPasswordScreen() {
           {/* Icon Container */}
           <View style={styles.iconContainer}>
             <View style={styles.iconWrapper}>
-              <SymbolView name="lock.shield.fill" size={40} tintColor={colors.primary} />
+              <MaterialIcons name="lock" size={40} color={colors.primary} />
             </View>
           </View>
 
@@ -80,7 +81,7 @@ export default function ForgotPasswordScreen() {
                 variant="primary"
                 size="lg"
                 fullWidth
-                icon="arrow.right"
+                icon="arrow-forward"
               />
 
               <TouchableOpacity onPress={handleSignIn} style={styles.signInLink}>
@@ -154,13 +155,13 @@ const createStyles = (colors: typeof lightColors) =>
       marginTop: theme.spacing.sm,
     },
     signInText: {
-      fontFamily: theme.typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: theme.typography.size.sm,
       color: colors.onSurfaceVariant,
     },
     signInLinkText: {
       color: colors.primary,
-      fontWeight: theme.typography.fontWeight.bold,
+      fontFamily: font("body", "bold"),
     },
     footer: {
       marginTop: theme.spacing.xl,
@@ -173,9 +174,8 @@ const createStyles = (colors: typeof lightColors) =>
       marginBottom: theme.spacing.xl,
     },
     footerLink: {
-      fontFamily: theme.typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: theme.typography.size.base,
-      fontWeight: theme.typography.fontWeight.bold,
       color: colors.primary,
     },
   });

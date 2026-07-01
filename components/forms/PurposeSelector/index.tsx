@@ -8,6 +8,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
+import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
 import { loanPurposes, LoanPurpose, LoanPurposeConfig } from "@/data/mockData";
 
@@ -112,9 +113,8 @@ const createStyles = (colors: PurposeColors) =>
       marginBottom: theme.spacing.lg,
     },
     label: {
-      fontFamily: typography.fontFamily.label,
+      fontFamily: font("body", "bold"),
       fontSize: typography.size.sm,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onSurface,
       textTransform: "uppercase",
       letterSpacing: 0.5,
@@ -135,9 +135,8 @@ const createStyles = (colors: PurposeColors) =>
       padding: theme.spacing.xs,
     },
     itemLabel: {
-      fontFamily: typography.fontFamily.label,
+      fontFamily: font("body", "bold"),
       fontSize: typography.size.xs - 2,
-      fontWeight: typography.fontWeight.bold,
       marginTop: 4,
       textAlign: "center",
     },

@@ -15,6 +15,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { useTheme, lightColors } from '@/contexts/ThemeContext';
 import { theme } from '@/styles/theme';
+import { font } from "@/constants/theme";
 import { typography } from '@/constants/typography';
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
@@ -232,12 +233,12 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) => StyleS
   },
   header: {
     backgroundColor: colors.surface,
-    shadowColor: colors.primary,
+    shadowColor: colors.ambientShadow,
     shadowOffset: {
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.05,
+    shadowOpacity: 1,
     shadowRadius: 4,
     elevation: 2,
   },
@@ -255,9 +256,8 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) => StyleS
     minWidth: 44,
   },
   headerTitle: {
-    fontFamily: typography.fontFamily.headline,
+    fontFamily: font("display", "bold"),
     fontSize: typography.size.lg,
-    fontWeight: typography.fontWeight.bold,
   },
   scrollView: {
     flex: 1,
@@ -270,7 +270,7 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) => StyleS
     marginBottom: theme.spacing.lg,
   },
   instructionsText: {
-    fontFamily: typography.fontFamily.body,
+    fontFamily: font("body", "regular"),
     fontSize: typography.size.sm,
     color: colors.onSurfaceVariant,
     lineHeight: 20,
@@ -282,9 +282,8 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) => StyleS
     marginBottom: theme.spacing.lg,
   },
   label: {
-    fontFamily: typography.fontFamily.label,
+    fontFamily: font("body", "bold"),
     fontSize: typography.size.xs,
-    fontWeight: typography.fontWeight.bold,
     color: colors.onSurfaceVariant,
     textTransform: 'uppercase',
     letterSpacing: 1,
@@ -300,7 +299,7 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) => StyleS
   input: {
     flex: 1,
     height: 56,
-    fontFamily: typography.fontFamily.body,
+    fontFamily: font("body", "regular"),
     fontSize: typography.size.base,
     color: colors.onSurface,
   },
@@ -308,7 +307,7 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) => StyleS
     padding: theme.spacing.base,
   },
   errorText: {
-    fontFamily: typography.fontFamily.body,
+    fontFamily: font("body", "regular"),
     fontSize: typography.size.xs,
     color: colors.error,
     marginTop: theme.spacing.xs,
@@ -335,12 +334,12 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) => StyleS
     alignItems: 'center',
     justifyContent: 'center',
     gap: theme.spacing.sm,
-    shadowColor: colors.primary,
+    shadowColor: colors.ambientShadow,
     shadowOffset: {
       width: 0,
       height: 4,
     },
-    shadowOpacity: 0.2,
+    shadowOpacity: 1,
     shadowRadius: 8,
     elevation: 4,
   },
@@ -348,9 +347,8 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) => StyleS
     opacity: 0.7,
   },
   saveButtonText: {
-    fontFamily: typography.fontFamily.headline,
+    fontFamily: font("display", "bold"),
     fontSize: typography.size.base,
-    fontWeight: typography.fontWeight.bold,
     color: colors.onPrimary,
   },
 });

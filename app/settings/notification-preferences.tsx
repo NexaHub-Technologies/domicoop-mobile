@@ -14,6 +14,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import Animated, { FadeIn, FadeInUp } from "react-native-reanimated";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
+import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
 import { ToggleItem } from "@/components/settings/ToggleItem";
 import { usePersistentState } from "@/hooks/usePersistentState";
@@ -264,12 +265,12 @@ const createStyles = (colors: typeof lightColors) =>
     },
     header: {
       backgroundColor: colors.surface,
-      shadowColor: colors.primary,
+      shadowColor: colors.ambientShadow,
       shadowOffset: {
         width: 0,
         height: 2,
       },
-      shadowOpacity: 0.05,
+      shadowOpacity: 1,
       shadowRadius: 4,
       elevation: 2,
     },
@@ -287,9 +288,8 @@ const createStyles = (colors: typeof lightColors) =>
       minWidth: 44,
     },
     headerTitle: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: typography.size.lg,
-      fontWeight: typography.fontWeight.bold,
     },
     scrollView: {
       flex: 1,
@@ -301,14 +301,13 @@ const createStyles = (colors: typeof lightColors) =>
       marginBottom: theme.spacing.lg,
     },
     title: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "extrabold"),
       fontSize: typography.size["2xl"],
-      fontWeight: typography.fontWeight.extrabold,
       color: colors.onSurface,
       marginBottom: theme.spacing.xs,
     },
     subtitle: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: typography.size.sm,
       color: colors.onSurfaceVariant,
     },
@@ -317,12 +316,12 @@ const createStyles = (colors: typeof lightColors) =>
       borderRadius: theme.borderRadius.xl,
       padding: theme.spacing.lg,
       marginBottom: theme.spacing.lg,
-      shadowColor: colors.primary,
+      shadowColor: colors.ambientShadow,
       shadowOffset: {
         width: 0,
         height: 2,
       },
-      shadowOpacity: 0.05,
+      shadowOpacity: 1,
       shadowRadius: 4,
       elevation: 2,
     },
@@ -341,21 +340,19 @@ const createStyles = (colors: typeof lightColors) =>
       justifyContent: "center",
     },
     categoryTitle: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: typography.size.lg,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onSurface,
     },
     categorySubtitle: {
-      fontFamily: typography.fontFamily.label,
+      fontFamily: font("body", "bold"),
       fontSize: typography.size.xs - 2,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onSurfaceVariant,
       textTransform: "uppercase",
       letterSpacing: 0.5,
     },
     categoryDescription: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: typography.size.sm,
       color: colors.onSurfaceVariant,
       lineHeight: 20,
@@ -378,19 +375,18 @@ const createStyles = (colors: typeof lightColors) =>
       borderRadius: theme.borderRadius.xl,
       paddingVertical: theme.spacing.lg,
       alignItems: "center",
-      shadowColor: colors.primary,
+      shadowColor: colors.ambientShadow,
       shadowOffset: {
         width: 0,
         height: 4,
       },
-      shadowOpacity: 0.2,
+      shadowOpacity: 1,
       shadowRadius: 8,
       elevation: 4,
     },
     saveButtonText: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: typography.size.base,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onPrimary,
     },
     restoreButton: {
@@ -398,9 +394,8 @@ const createStyles = (colors: typeof lightColors) =>
       alignItems: "center",
     },
     restoreButtonText: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "medium"),
       fontSize: typography.size.sm,
-      fontWeight: typography.fontWeight.medium,
       color: colors.onSurfaceVariant,
     },
     bottomPadding: {

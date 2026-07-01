@@ -3,6 +3,7 @@ import { View, Text, StyleSheet } from "react-native";
 import Slider from "@react-native-community/slider";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
+import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
 import { loanConfig } from "@/data/mockData";
 
@@ -60,9 +61,8 @@ const createStyles = (colors: TermSliderColors) =>
       marginBottom: theme.spacing.sm,
     },
     label: {
-      fontFamily: typography.fontFamily.label,
+      fontFamily: font("body", "bold"),
       fontSize: typography.size.sm,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onSurface,
       textTransform: "uppercase",
       letterSpacing: 0.5,
@@ -74,9 +74,8 @@ const createStyles = (colors: TermSliderColors) =>
       borderRadius: theme.borderRadius.full,
     },
     valueText: {
-      fontFamily: typography.fontFamily.label,
+      fontFamily: font("body", "bold"),
       fontSize: typography.size.sm,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onPrimary,
     },
     sliderContainer: {
@@ -84,12 +83,12 @@ const createStyles = (colors: TermSliderColors) =>
       borderRadius: theme.borderRadius.xl,
       paddingHorizontal: theme.spacing.base,
       paddingVertical: theme.spacing.sm,
-      shadowColor: colors.primary,
+      shadowColor: colors.ambientShadow,
       shadowOffset: {
         width: 0,
         height: 2,
       },
-      shadowOpacity: 0.05,
+      shadowOpacity: 1,
       shadowRadius: 4,
       elevation: 2,
     },
@@ -103,9 +102,8 @@ const createStyles = (colors: TermSliderColors) =>
       marginTop: theme.spacing.xs,
     },
     labelText: {
-      fontFamily: typography.fontFamily.label,
+      fontFamily: font("body", "bold"),
       fontSize: typography.size.xs - 2,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onSurfaceVariant,
       letterSpacing: 0.5,
     },

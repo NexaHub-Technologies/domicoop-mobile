@@ -4,6 +4,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import Animated, { FadeInUp } from "react-native-reanimated";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
+import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
 
 type FAQAccordionColors = typeof lightColors;
@@ -117,9 +118,8 @@ const createStyles = (colors: FAQAccordionColors) =>
       gap: theme.spacing.sm,
     },
     question: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "medium"),
       fontSize: typography.size.sm,
-      fontWeight: typography.fontWeight.medium,
       color: colors.onSurface,
       flex: 1,
     },
@@ -136,7 +136,7 @@ const createStyles = (colors: FAQAccordionColors) =>
       borderTopColor: colors.outlineVariant,
     },
     answer: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: typography.size.sm,
       color: colors.onSurfaceVariant,
       lineHeight: 20,

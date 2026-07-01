@@ -12,6 +12,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
+import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
 
 interface TransactionDetailCardProps {
@@ -51,18 +52,16 @@ const createStyles = (colors: typeof lightColors) =>
       flex: 1,
     },
     label: {
-      fontFamily: typography.fontFamily.label,
+      fontFamily: font("body", "bold"),
       fontSize: typography.size.xs - 2,
-      fontWeight: typography.fontWeight.bold,
       color: colors.secondary,
       textTransform: "uppercase",
       letterSpacing: 0.5,
       marginBottom: 2,
     },
     value: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "semibold"),
       fontSize: typography.size.sm,
-      fontWeight: typography.fontWeight.semibold,
       color: colors.onSurface,
     },
     copyButton: {

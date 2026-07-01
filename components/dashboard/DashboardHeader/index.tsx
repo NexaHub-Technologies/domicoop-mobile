@@ -1,13 +1,14 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
+import React from "react";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
 import Animated, { FadeIn } from "react-native-reanimated";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
 import { typography } from "@/constants/typography";
-import { signUp } from "@/lib/api/sign-up.api";
+import { useProfile } from "@/hooks/useProfile";
 import { getInitials } from "@/data/mockData";
+import { Skeleton } from "@/components/common/Skeleton";
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
@@ -46,34 +47,29 @@ const createStyles = (colors: typeof lightColors) =>
       overflow: "hidden",
     },
     avatarText: {
-      fontFamily: typography.fontFamily.headline,
+      ...typography.styles.headline,
       fontSize: typography.size.md,
-      fontWeight: typography.fontWeight.bold,
-      color: colors.primary,
+      color: colors.primaryBright,
     },
     textContainer: {
       marginLeft: theme.spacing.xs,
     },
     welcomeText: {
-      fontFamily: typography.fontFamily.body,
+      ...typography.styles.sectionLabel,
       fontSize: typography.size.xs,
-      fontWeight: typography.fontWeight.medium,
       color: colors.onSurfaceVariant,
-      textTransform: "uppercase",
-      letterSpacing: 0.5,
       lineHeight: 16,
     },
     nameText: {
-      fontFamily: typography.fontFamily.headline,
+      ...typography.styles.headline,
       fontSize: typography.size.base,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onSurface,
       lineHeight: 20,
     },
     notificationButton: {
       padding: theme.spacing.sm,
       borderRadius: theme.borderRadius.full,
-      backgroundColor: colors.surface,
+      backgroundColor: colors.surfaceContainer,
     },
     loadingContainer: {
       flexDirection: "row",
@@ -85,24 +81,9 @@ export const DashboardHeader: React.FC = () => {
   const router = useRouter();
   const { colors } = useTheme();
   const styles = createStyles(colors);
-  const [userName, setUserName] = useState<string>("");
-  const [isLoading, setIsLoading] = useState(true);
-
-  useEffect(() => {
-    loadUserProfile();
-  }, []);
-
-  const loadUserProfile = async () => {
-    try {
-      const profile = await signUp.getProfile();
-      setUserName(profile.full_name || "User");
-    } catch (error) {
-      console.error("Failed to load user profile:", error);
-      setUserName("User");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  const { data: profile, isPending } = useProfile();
+  const isLoading = isPending;
+  const userName = profile?.full_name || "User";
 
   const handleNotificationsPress = () => {
     router.push("/notifications");
@@ -125,7 +106,7 @@ export const DashboardHeader: React.FC = () => {
           <View style={styles.textContainer}>
             <Text style={styles.welcomeText}>Welcome back,</Text>
             {isLoading ? (
-              <ActivityIndicator size="small" color={colors.primary} />
+              <Skeleton variant="text" width={120} height={14} />
             ) : (
               <Text style={styles.nameText}>{userName}</Text>
             )}

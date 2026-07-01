@@ -5,8 +5,9 @@ import { StatusBar } from "expo-status-bar";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import Animated, { FadeIn, FadeInUp } from "react-native-reanimated";
-import { useTheme, ThemePreference } from "@/contexts/ThemeContext";
+import { useTheme, ThemePreference, lightColors, darkColors } from "@/contexts/ThemeContext";
 import { theme as themeConfig } from "@/styles/theme";
+import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
@@ -312,19 +313,17 @@ const styles = StyleSheet.create({
     borderRadius: themeConfig.borderRadius.full,
   },
   headerTitle: {
-    fontFamily: typography.fontFamily.headline,
+    fontFamily: font("display", "bold"),
     fontSize: typography.size.lg,
-    fontWeight: typography.fontWeight.bold,
   },
   saveButton: {
     paddingHorizontal: themeConfig.spacing.md,
     paddingVertical: themeConfig.spacing.sm,
-    borderRadius: themeConfig.spacing.lg,
+    borderRadius: themeConfig.borderRadius.lg,
   },
   saveButtonText: {
-    fontFamily: typography.fontFamily.headline,
+    fontFamily: font("display", "bold"),
     fontSize: typography.size.base,
-    fontWeight: typography.fontWeight.bold,
   },
   scrollView: {
     flex: 1,
@@ -336,20 +335,19 @@ const styles = StyleSheet.create({
     marginBottom: themeConfig.spacing.lg,
   },
   title: {
-    fontFamily: typography.fontFamily.headline,
-    fontSize: themeConfig.spacing["2xl"],
-    fontWeight: typography.fontWeight.extrabold,
+    fontFamily: font("display", "extrabold"),
+    fontSize: typography.size["2xl"],
     marginBottom: themeConfig.spacing.xs,
   },
   subtitle: {
-    fontFamily: typography.fontFamily.body,
-    fontSize: themeConfig.spacing.sm,
+    fontFamily: font("body", "regular"),
+    fontSize: typography.size.sm,
   },
   themeOptionsContainer: {
     gap: themeConfig.spacing.base,
   },
   themeCard: {
-    borderRadius: themeConfig.spacing.xl,
+    borderRadius: themeConfig.borderRadius.xl,
     padding: themeConfig.spacing.lg,
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.05,
@@ -364,13 +362,12 @@ const styles = StyleSheet.create({
     marginBottom: themeConfig.spacing.lg,
   },
   themeTitle: {
-    fontFamily: typography.fontFamily.headline,
+    fontFamily: font("display", "bold"),
     fontSize: typography.size.lg,
-    fontWeight: typography.fontWeight.bold,
     marginBottom: 4,
   },
   themeDescription: {
-    fontFamily: typography.fontFamily.body,
+    fontFamily: font("body", "regular"),
     fontSize: typography.size.sm,
   },
   radioButton: {
@@ -391,35 +388,35 @@ const styles = StyleSheet.create({
   },
   previewContainer: {
     height: 128,
-    borderRadius: themeConfig.spacing.lg,
+    borderRadius: themeConfig.borderRadius.lg,
     overflow: "hidden",
   },
   lightPreviewBg: {
     flex: 1,
-    backgroundColor: "#f5f6f8",
+    backgroundColor: lightColors.background,
     padding: 12,
     gap: 8,
   },
   darkPreviewBg: {
     flex: 1,
-    backgroundColor: "#0b1326",
+    backgroundColor: darkColors.background,
     padding: 12,
     gap: 8,
   },
   systemPreviewContainer: {
     flex: 1,
     flexDirection: "row",
-    borderRadius: themeConfig.spacing.lg,
+    borderRadius: themeConfig.borderRadius.lg,
     overflow: "hidden",
   },
   systemPreviewLight: {
     flex: 1,
-    backgroundColor: "#f5f6f8",
+    backgroundColor: lightColors.background,
     padding: 12,
   },
   systemPreviewDark: {
     flex: 1,
-    backgroundColor: "#0b1326",
+    backgroundColor: darkColors.background,
     padding: 12,
   },
   previewHeader: {
@@ -431,7 +428,7 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     borderRadius: 16,
-    backgroundColor: "#ffffff",
+    backgroundColor: lightColors.surface,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
@@ -439,16 +436,16 @@ const styles = StyleSheet.create({
     elevation: 2,
   },
   darkPreviewAvatar: {
-    backgroundColor: "#1e293b",
+    backgroundColor: darkColors.surfaceContainerHigh,
   },
   previewLine: {
     width: 96,
     height: 8,
     borderRadius: 4,
-    backgroundColor: "#e2e8f0",
+    backgroundColor: lightColors.outlineVariant,
   },
   darkPreviewLine: {
-    backgroundColor: "#334155",
+    backgroundColor: darkColors.surfaceContainerHighest,
   },
   previewCards: {
     flexDirection: "row",
@@ -459,7 +456,7 @@ const styles = StyleSheet.create({
     width: "33%",
     height: "100%",
     borderRadius: 8,
-    backgroundColor: "#ffffff",
+    backgroundColor: lightColors.surface,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.1,
@@ -470,19 +467,19 @@ const styles = StyleSheet.create({
     width: "67%",
     height: "100%",
     borderRadius: 8,
-    backgroundColor: "#eff6ff",
+    backgroundColor: lightColors.primaryFixed,
   },
   darkPreviewCard: {
-    backgroundColor: "#1e293b",
+    backgroundColor: darkColors.surfaceContainerHigh,
   },
   darkPreviewCardBlue: {
-    backgroundColor: "rgba(30, 85, 190, 0.3)",
+    backgroundColor: darkColors.cobaltGlow,
   },
   infoCard: {
     flexDirection: "row",
     alignItems: "center",
     gap: themeConfig.spacing.base,
-    borderRadius: themeConfig.spacing.xl,
+    borderRadius: themeConfig.borderRadius.xl,
     padding: themeConfig.spacing.lg,
     marginTop: themeConfig.spacing["2xl"],
     borderWidth: 1,
@@ -498,13 +495,12 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   infoTitle: {
-    fontFamily: typography.fontFamily.headline,
+    fontFamily: font("display", "bold"),
     fontSize: typography.size.base,
-    fontWeight: typography.fontWeight.bold,
     marginBottom: 4,
   },
   infoText: {
-    fontFamily: typography.fontFamily.body,
+    fontFamily: font("body", "regular"),
     fontSize: typography.size.sm,
     lineHeight: 20,
   },
@@ -530,7 +526,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     gap: themeConfig.spacing.sm,
     paddingVertical: themeConfig.spacing.lg,
-    borderRadius: themeConfig.spacing.xl,
+    borderRadius: themeConfig.borderRadius.xl,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.2,
@@ -538,8 +534,7 @@ const styles = StyleSheet.create({
     elevation: 4,
   },
   saveButtonLargeText: {
-    fontFamily: typography.fontFamily.headline,
+    fontFamily: font("display", "bold"),
     fontSize: typography.size.base,
-    fontWeight: typography.fontWeight.bold,
   },
 });

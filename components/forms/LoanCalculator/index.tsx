@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, TextInput, StyleSheet } from "react-native";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
+import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
 import { formatCurrencyNoSign } from "@/data/mockData";
 
@@ -88,9 +89,8 @@ const createStyles = (colors: LoanCalculatorColors) =>
       marginBottom: theme.spacing.base,
     },
     rateLabel: {
-      fontFamily: typography.fontFamily.label,
+      fontFamily: font("body", "bold"),
       fontSize: typography.size.sm,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onSurface,
       textTransform: "uppercase",
       letterSpacing: 0.5,
@@ -106,18 +106,16 @@ const createStyles = (colors: LoanCalculatorColors) =>
       paddingVertical: theme.spacing.xs,
     },
     rateInput: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: typography.size.base,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onSurface,
       width: 50,
       textAlign: "right",
       padding: 0,
     },
     rateSuffix: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: typography.size.base,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onSurfaceVariant,
       marginLeft: 2,
     },
@@ -133,14 +131,13 @@ const createStyles = (colors: LoanCalculatorColors) =>
       marginBottom: theme.spacing.base,
     },
     summaryLabel: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: typography.size.sm,
       color: colors.inverseOnSurface,
     },
     summaryValue: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: typography.size["2xl"],
-      fontWeight: typography.fontWeight.bold,
       color: colors.onPrimary,
     },
     divider: {
@@ -159,18 +156,16 @@ const createStyles = (colors: LoanCalculatorColors) =>
       alignItems: "flex-end",
     },
     detailLabel: {
-      fontFamily: typography.fontFamily.label,
+      fontFamily: font("body", "bold"),
       fontSize: typography.size.xs - 2,
-      fontWeight: typography.fontWeight.bold,
       color: colors.inverseOnSurface,
       textTransform: "uppercase",
       letterSpacing: 0.5,
       marginBottom: 4,
     },
     detailValue: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: typography.size.lg,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onPrimary,
     },
     interestRow: {
@@ -182,14 +177,13 @@ const createStyles = (colors: LoanCalculatorColors) =>
       borderTopColor: `${colors.inverseOnSurface}20`,
     },
     interestLabel: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: typography.size.sm,
       color: colors.inverseOnSurface,
     },
     interestValue: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: typography.size.base,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onPrimary,
     },
   });

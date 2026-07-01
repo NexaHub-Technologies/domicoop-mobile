@@ -4,6 +4,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import Animated, { FadeInUp } from "react-native-reanimated";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
+import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
 import { getUnreadNotificationsCount } from "@/data/mockData";
 
@@ -40,7 +41,7 @@ export const SummaryCards: React.FC<SummaryCardsProps> = ({
           <MaterialIcons
             name="notifications"
             size={100}
-            color="rgba(255, 255, 255, 0.1)"
+            color={`${colors.onPrimary}1A`}
           />
         </View>
       </Animated.View>
@@ -76,12 +77,12 @@ const createStyles = (colors: SummaryCardsColors) =>
       padding: theme.spacing.lg,
       overflow: "hidden",
       position: "relative",
-      shadowColor: colors.primary,
+      shadowColor: colors.ambientShadow,
       shadowOffset: {
         width: 0,
         height: 4,
       },
-      shadowOpacity: 0.2,
+      shadowOpacity: 1,
       shadowRadius: 8,
       elevation: 4,
     },
@@ -89,23 +90,21 @@ const createStyles = (colors: SummaryCardsColors) =>
       zIndex: 1,
     },
     unreadLabel: {
-      fontFamily: typography.fontFamily.label,
+      fontFamily: font("body", "bold"),
       fontSize: typography.size.xs,
-      fontWeight: typography.fontWeight.bold,
       color: `${colors.onPrimary}80`,
       textTransform: "uppercase",
       letterSpacing: 2,
       marginBottom: 4,
     },
     unreadCount: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "extrabold"),
       fontSize: typography.size["2xl"],
-      fontWeight: typography.fontWeight.extrabold,
       color: colors.onPrimary,
       marginBottom: 4,
     },
     unreadSubtitle: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: typography.size.sm,
       color: `${colors.onPrimary}70`,
     },
@@ -123,19 +122,18 @@ const createStyles = (colors: SummaryCardsColors) =>
       borderWidth: 1,
       borderColor: colors.outlineVariant,
       justifyContent: "space-between",
-      shadowColor: colors.primary,
+      shadowColor: colors.ambientShadow,
       shadowOffset: {
         width: 0,
         height: 2,
       },
-      shadowOpacity: 0.05,
+      shadowOpacity: 1,
       shadowRadius: 4,
       elevation: 2,
     },
     goalLabel: {
-      fontFamily: typography.fontFamily.label,
+      fontFamily: font("body", "bold"),
       fontSize: typography.size.xs,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onSurfaceVariant,
       textTransform: "uppercase",
       letterSpacing: 2,
@@ -148,15 +146,13 @@ const createStyles = (colors: SummaryCardsColors) =>
       marginBottom: theme.spacing.sm,
     },
     goalValue: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: typography.size.xl,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onSurface,
     },
     goalChange: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "bold"),
       fontSize: typography.size.sm,
-      fontWeight: typography.fontWeight.bold,
       color: colors.primary,
       marginBottom: 2,
     },

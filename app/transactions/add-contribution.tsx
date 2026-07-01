@@ -15,6 +15,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import Animated, { FadeIn, FadeInUp } from "react-native-reanimated";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
+import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
 import { AmountInput } from "@/components/forms/AmountInput";
 import { DropdownSelect } from "@/components/forms/DropdownSelect";
@@ -212,7 +213,7 @@ export default function AddContributionScreen() {
                 name="account-balance-wallet"
                 size={120}
                 color={
-                  isDarkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(255, 255, 255, 0.1)"
+                  `${colors.onPrimary}1A`
                 }
               />
             </View>
@@ -339,9 +340,9 @@ const getStyles = (colors: typeof lightColors) =>
     },
     header: {
       backgroundColor: colors.surface,
-      shadowColor: colors.primary,
+      shadowColor: colors.ambientShadow,
       shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.05,
+      shadowOpacity: 1,
       shadowRadius: 4,
       elevation: 2,
     },
@@ -359,9 +360,8 @@ const getStyles = (colors: typeof lightColors) =>
       minWidth: 44,
     },
     headerTitle: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: typography.size.lg,
-      fontWeight: typography.fontWeight.bold,
     },
     keyboardView: {
       flex: 1,
@@ -379,9 +379,9 @@ const getStyles = (colors: typeof lightColors) =>
       marginBottom: theme.spacing.lg,
       overflow: "hidden",
       position: "relative",
-      shadowColor: colors.primary,
+      shadowColor: colors.ambientShadow,
       shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.2,
+      shadowOpacity: 1,
       shadowRadius: 8,
       elevation: 4,
     },
@@ -389,23 +389,21 @@ const getStyles = (colors: typeof lightColors) =>
       zIndex: 1,
     },
     heroSubtitle: {
-      fontFamily: typography.fontFamily.label,
+      fontFamily: font("body", "bold"),
       fontSize: typography.size.xs,
-      fontWeight: typography.fontWeight.bold,
       color: `${colors.onPrimary}80`,
       textTransform: "uppercase",
       letterSpacing: 2,
       marginBottom: theme.spacing.xs,
     },
     heroTitle: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "extrabold"),
       fontSize: typography.size["2xl"],
-      fontWeight: typography.fontWeight.extrabold,
       color: colors.onPrimary,
       marginBottom: 4,
     },
     heroDescription: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: typography.size.sm,
       color: `${colors.onPrimary}90`,
     },
@@ -419,16 +417,16 @@ const getStyles = (colors: typeof lightColors) =>
       backgroundColor: colors.surface,
       borderRadius: theme.borderRadius["2xl"],
       padding: theme.spacing["2xl"],
-      shadowColor: colors.primary,
+      shadowColor: colors.ambientShadow,
       shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.05,
+      shadowOpacity: 1,
       shadowRadius: 8,
       elevation: 3,
       borderWidth: 1,
       borderColor: `${colors.outline}50`,
     },
     errorText: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: typography.size.xs,
       color: colors.error,
       marginTop: -theme.spacing.base,
@@ -443,9 +441,9 @@ const getStyles = (colors: typeof lightColors) =>
       justifyContent: "center",
       gap: theme.spacing.sm,
       marginTop: theme.spacing.base,
-      shadowColor: colors.primary,
+      shadowColor: colors.ambientShadow,
       shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.2,
+      shadowOpacity: 1,
       shadowRadius: 8,
       elevation: 4,
     },
@@ -453,9 +451,8 @@ const getStyles = (colors: typeof lightColors) =>
       opacity: 0.7,
     },
     submitButtonText: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: typography.size.base,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onPrimary,
     },
     complianceContainer: {
@@ -481,14 +478,13 @@ const getStyles = (colors: typeof lightColors) =>
       flex: 1,
     },
     complianceTitle: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: typography.size.xs,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onSurface,
       marginBottom: 4,
     },
     complianceText: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: typography.size.xs - 1,
       color: colors.secondary,
       lineHeight: 18,

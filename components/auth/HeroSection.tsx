@@ -8,10 +8,11 @@ import {
   ImageSourcePropType,
   Image,
 } from "react-native";
-import { SymbolView, SFSymbol } from "expo-symbols";
+import { MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
+import { font } from "@/constants/theme";
 
 type HeroSectionColors = typeof lightColors;
 
@@ -19,7 +20,7 @@ interface HeroSectionProps {
   title: string;
   subtitle?: string;
   showLogo?: boolean;
-  icon?: SFSymbol;
+  icon?: keyof typeof MaterialIcons.glyphMap;
   iconBackground?: boolean;
   height?: number;
   style?: ViewStyle;
@@ -86,7 +87,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 iconBackground && styles.iconContainerWithBackground,
               ]}
             >
-              <SymbolView name={icon} size={40} tintColor={colors.primary} />
+              <MaterialIcons name={icon} size={40} color={colors.primary} />
             </View>
           )}
 
@@ -145,16 +146,15 @@ const createStyles = (colors: HeroSectionColors) =>
       ...theme.shadows.xl,
     },
     title: {
-      fontFamily: theme.typography.fontFamily.headline,
+      fontFamily: font("display", "extrabold"),
       fontSize: theme.typography.size["2xl"],
-      fontWeight: theme.typography.fontWeight.extrabold,
       color: colors.onSurface,
       textAlign: "center",
       marginBottom: theme.spacing.md,
       letterSpacing: theme.typography.letterSpacing.tight,
     },
     subtitle: {
-      fontFamily: theme.typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: theme.typography.size.base,
       color: colors.onSurfaceVariant,
       textAlign: "center",

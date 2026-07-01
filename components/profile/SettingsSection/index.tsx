@@ -10,6 +10,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
+import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
 import {
   mockProfileSettings,
@@ -29,9 +30,8 @@ const createStyles = (colors: typeof lightColors) =>
       marginBottom: theme.spacing["2xl"],
     },
     sectionTitle: {
-      fontFamily: typography.fontFamily.label,
+      fontFamily: font("body", "semibold"),
       fontSize: typography.size.xs,
-      fontWeight: typography.fontWeight.semibold,
       color: colors.onSurfaceVariant,
       textTransform: "uppercase",
       letterSpacing: 1,
@@ -42,12 +42,12 @@ const createStyles = (colors: typeof lightColors) =>
       backgroundColor: colors.surface,
       borderRadius: theme.borderRadius["2xl"],
       marginHorizontal: theme.spacing.lg,
-      shadowColor: colors.primary,
+      shadowColor: colors.ambientShadow,
       shadowOffset: {
         width: 0,
         height: 2,
       },
-      shadowOpacity: 0.05,
+      shadowOpacity: 1,
       shadowRadius: 4,
       elevation: 2,
       overflow: "hidden",
@@ -77,14 +77,13 @@ const createStyles = (colors: typeof lightColors) =>
       flex: 1,
     },
     itemTitle: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "medium"),
       fontSize: typography.size.base,
-      fontWeight: typography.fontWeight.medium,
       color: colors.onSurface,
       marginBottom: 2,
     },
     itemSubtitle: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: typography.size.xs,
       color: colors.onSurfaceVariant,
     },

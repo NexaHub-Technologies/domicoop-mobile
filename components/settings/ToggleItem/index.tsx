@@ -8,6 +8,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
+import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
 
 type ToggleItemColors = typeof lightColors;
@@ -116,14 +117,13 @@ const createStyles = (colors: ToggleItemColors) =>
       flex: 1,
     },
     label: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "semibold"),
       fontSize: typography.size.base,
-      fontWeight: typography.fontWeight.semibold,
       color: colors.onSurface,
       marginBottom: 2,
     },
     subtitle: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: typography.size.xs,
       color: colors.onSurfaceVariant,
     },
@@ -159,9 +159,8 @@ const createStyles = (colors: ToggleItemColors) =>
       marginLeft: theme.spacing.sm,
     },
     badgeText: {
-      fontFamily: typography.fontFamily.label,
+      fontFamily: font("body", "bold"),
       fontSize: typography.size.xs - 2,
-      fontWeight: typography.fontWeight.bold,
       color: colors.primary,
     },
   });

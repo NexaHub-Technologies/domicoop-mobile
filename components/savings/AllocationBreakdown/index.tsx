@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
+import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
 import { formatCurrencyNoSign } from "@/data/mockData";
 import type { ContributionAllocation } from "@/lib/utils/contributionAllocation";
@@ -17,16 +18,18 @@ interface AllocationBreakdownProps {
   };
 }
 
-const ALLOCATION_ITEMS: {
+const getAllocationItems = (
+  colors: typeof lightColors,
+): {
   key: keyof ContributionAllocation;
   label: string;
   color: string;
   description: string;
-}[] = [
-  { key: "shares", label: "Shares", color: "#0b50da", description: "Fixed monthly" },
-  { key: "social", label: "Social", color: "#ea580c", description: "Fixed monthly" },
-  { key: "savings", label: "Savings", color: "#22c55e", description: "Flexible (capped)" },
-  { key: "deposit", label: "Deposit", color: "#f59e0b", description: "Overflow only" },
+}[] => [
+  { key: "shares", label: "Shares", color: colors.primaryBright, description: "Fixed monthly" },
+  { key: "social", label: "Social", color: colors.tertiary, description: "Fixed monthly" },
+  { key: "savings", label: "Savings", color: colors.success, description: "Flexible (capped)" },
+  { key: "deposit", label: "Deposit", color: colors.warning, description: "Overflow only" },
 ];
 
 const createStyles = (colors: typeof lightColors) =>
@@ -45,9 +48,8 @@ const createStyles = (colors: typeof lightColors) =>
       gap: theme.spacing.sm,
     },
     headerText: {
-      fontFamily: typography.fontFamily.label,
+      fontFamily: font("body", "bold"),
       fontSize: typography.size.xs,
-      fontWeight: typography.fontWeight.bold,
       color: colors.secondary,
       textTransform: "uppercase",
       letterSpacing: 0.5,
@@ -66,13 +68,12 @@ const createStyles = (colors: typeof lightColors) =>
       flex: 1,
     },
     label: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "semibold"),
       fontSize: typography.size.sm,
-      fontWeight: typography.fontWeight.semibold,
       color: colors.onSurface,
     },
     description: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: typography.size.xs - 1,
       color: colors.secondary,
     },
@@ -80,13 +81,12 @@ const createStyles = (colors: typeof lightColors) =>
       alignItems: "flex-end",
     },
     value: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "semibold"),
       fontSize: typography.size.sm,
-      fontWeight: typography.fontWeight.semibold,
       color: colors.onSurface,
     },
     percent: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: typography.size.xs - 1,
       color: colors.secondary,
     },
@@ -107,19 +107,17 @@ const createStyles = (colors: typeof lightColors) =>
       paddingTop: theme.spacing.sm,
     },
     totalLabel: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "bold"),
       fontSize: typography.size.sm,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onSurface,
     },
     totalValue: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "extrabold"),
       fontSize: typography.size.lg,
-      fontWeight: typography.fontWeight.extrabold,
       color: colors.primary,
     },
     zeroState: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: typography.size.xs,
       color: colors.secondary,
       fontStyle: "italic",
@@ -140,7 +138,7 @@ export const AllocationBreakdown: React.FC<AllocationBreakdownProps> = ({
       </View>
 
       <View style={styles.barContainer}>
-        {ALLOCATION_ITEMS.map((item) => {
+        {getAllocationItems(colors).map((item) => {
           const value = allocation[item.key];
           if (value <= 0) return null;
           return (
@@ -158,7 +156,7 @@ export const AllocationBreakdown: React.FC<AllocationBreakdownProps> = ({
         })}
       </View>
 
-      {ALLOCATION_ITEMS.map((item) => {
+      {getAllocationItems(colors).map((item) => {
         const value = allocation[item.key];
         const pct = percentages[item.key];
         return (

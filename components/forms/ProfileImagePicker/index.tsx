@@ -4,6 +4,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
+import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
 import { getInitials } from "@/data/mockData";
 
@@ -103,12 +104,12 @@ const createStyles = (colors: ProfileImageColors) =>
       borderRadius: 64,
       borderWidth: 4,
       borderColor: colors.surface,
-      shadowColor: colors.primary,
+      shadowColor: colors.ambientShadow,
       shadowOffset: {
         width: 0,
         height: 4,
       },
-      shadowOpacity: 0.2,
+      shadowOpacity: 1,
       shadowRadius: 8,
       elevation: 4,
       overflow: "hidden",
@@ -126,14 +127,13 @@ const createStyles = (colors: ProfileImageColors) =>
       justifyContent: "center",
     },
     initialsText: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: typography.size["3xl"],
-      fontWeight: typography.fontWeight.bold,
       color: colors.onPrimary,
     },
     loadingOverlay: {
       ...StyleSheet.absoluteFillObject,
-      backgroundColor: "rgba(0, 0, 0, 0.5)",
+      backgroundColor: colors.scrim,
       alignItems: "center",
       justifyContent: "center",
     },
@@ -149,12 +149,12 @@ const createStyles = (colors: ProfileImageColors) =>
       justifyContent: "center",
       borderWidth: 3,
       borderColor: colors.surface,
-      shadowColor: colors.primary,
+      shadowColor: colors.ambientShadow,
       shadowOffset: {
         width: 0,
         height: 2,
       },
-      shadowOpacity: 0.2,
+      shadowOpacity: 1,
       shadowRadius: 4,
       elevation: 2,
     },

@@ -31,9 +31,8 @@ const tabItemBaseStyle = {
 };
 
 const tabLabelBaseStyle = {
-  fontFamily: typography.fontFamily.label,
+  ...typography.styles.label,
   fontSize: 10,
-  fontWeight: typography.fontWeight.semibold,
   marginTop: theme.spacing.xs,
   textTransform: "uppercase" as const,
   letterSpacing: 0.5,
@@ -62,12 +61,12 @@ const TabItem: React.FC<TabItemProps & { colors: TabBarColors }> = ({
       <MaterialIcons
         name={iconName}
         size={24}
-        color={isFocused ? colors.primary : colors.onSurfaceVariant}
+        color={isFocused ? colors.primaryBright : colors.onSurfaceVariant}
       />
       <Animated.Text
         style={[
           tabLabelBaseStyle,
-          { color: isFocused ? colors.primary : colors.onSurfaceVariant },
+          { color: isFocused ? colors.primaryBright : colors.onSurfaceVariant },
         ]}
       >
         {label}
@@ -159,12 +158,12 @@ const createStyles = (colors: TabBarColors, bottomInset: number) =>
       backgroundColor: colors.surface,
       borderTopLeftRadius: theme.borderRadius["2xl"],
       borderTopRightRadius: theme.borderRadius["2xl"],
-      shadowColor: colors.primary,
+      shadowColor: colors.ambientShadow,
       shadowOffset: {
         width: 0,
         height: -4,
       },
-      shadowOpacity: 0.1,
+      shadowOpacity: 1,
       shadowRadius: 12,
       elevation: 8,
       paddingBottom: Math.max(

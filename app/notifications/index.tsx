@@ -7,6 +7,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import Animated, { FadeIn, FadeInUp } from "react-native-reanimated";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
+import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
 import { NotificationCard } from "@/components/notifications/NotificationCard";
 import { SummaryCards } from "@/components/notifications/SummaryCards";
@@ -163,12 +164,12 @@ const createStyles = (colors: typeof lightColors) =>
     },
     header: {
       backgroundColor: colors.surface,
-      shadowColor: colors.primary,
+      shadowColor: colors.ambientShadow,
       shadowOffset: {
         width: 0,
         height: 2,
       },
-      shadowOpacity: 0.05,
+      shadowOpacity: 1,
       shadowRadius: 4,
       elevation: 2,
     },
@@ -186,9 +187,8 @@ const createStyles = (colors: typeof lightColors) =>
       minWidth: 44,
     },
     headerTitle: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: typography.size.lg,
-      fontWeight: typography.fontWeight.bold,
     },
     moreButton: {
       padding: theme.spacing.sm,
@@ -209,17 +209,15 @@ const createStyles = (colors: typeof lightColors) =>
       paddingHorizontal: theme.spacing.xs,
     },
     sectionTitle: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: typography.size.lg,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onSurface,
       marginBottom: theme.spacing.base,
       paddingHorizontal: theme.spacing.xs,
     },
     markAllText: {
-      fontFamily: typography.fontFamily.label,
+      fontFamily: font("body", "bold"),
       fontSize: typography.size.xs,
-      fontWeight: typography.fontWeight.bold,
       color: colors.primary,
       textTransform: "uppercase",
       letterSpacing: 0.5,
@@ -243,14 +241,13 @@ const createStyles = (colors: typeof lightColors) =>
       marginBottom: theme.spacing.lg,
     },
     emptyTitle: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: typography.size.lg,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onSurface,
       marginBottom: theme.spacing.xs,
     },
     emptySubtitle: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: typography.size.base,
       color: colors.onSurfaceVariant,
     },
@@ -270,9 +267,8 @@ const createStyles = (colors: typeof lightColors) =>
       marginBottom: theme.spacing.base,
     },
     endOfUpdatesText: {
-      fontFamily: typography.fontFamily.label,
+      fontFamily: font("body", "bold"),
       fontSize: typography.size.xs,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onSurfaceVariant,
       textTransform: "uppercase",
       letterSpacing: 2,

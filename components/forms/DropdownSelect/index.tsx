@@ -11,6 +11,7 @@ import {
 import { MaterialIcons } from "@expo/vector-icons";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
+import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
 
 type DropdownColors = typeof lightColors;
@@ -125,9 +126,8 @@ const createStyles = (colors: DropdownColors) =>
       marginBottom: theme.spacing.lg,
     },
     label: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: typography.size.sm,
-      fontWeight: typography.fontWeight.bold,
       color: colors.secondary,
       textTransform: "uppercase",
       letterSpacing: 1,
@@ -144,9 +144,8 @@ const createStyles = (colors: DropdownColors) =>
       height: 56,
     },
     selectText: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "medium"),
       fontSize: typography.size.base,
-      fontWeight: typography.fontWeight.medium,
       color: colors.onSurface,
     },
     placeholderText: {
@@ -154,7 +153,7 @@ const createStyles = (colors: DropdownColors) =>
     },
     modalOverlay: {
       flex: 1,
-      backgroundColor: "rgba(0, 0, 0, 0.5)",
+      backgroundColor: colors.scrim,
       justifyContent: "flex-end",
     },
     modalContent: {
@@ -173,9 +172,8 @@ const createStyles = (colors: DropdownColors) =>
       borderBottomColor: colors.outlineVariant,
     },
     modalTitle: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: typography.size.lg,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onSurface,
     },
     optionsList: {
@@ -200,12 +198,12 @@ const createStyles = (colors: DropdownColors) =>
     },
     optionText: {
       flex: 1,
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: typography.size.base,
       color: colors.onSurface,
     },
     optionTextSelected: {
-      fontWeight: typography.fontWeight.semibold,
+      fontFamily: font("body", "semibold"),
       color: colors.primary,
     },
   });

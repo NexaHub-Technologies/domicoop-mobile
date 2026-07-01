@@ -1,7 +1,9 @@
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { PaystackProvider } from "react-native-paystack-webview";
+import { QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider, useTheme } from "@/contexts/ThemeContext";
+import { queryClient } from "@/lib/queryClient";
 
 // IMPORTANT: Use your Paystack PUBLIC key (pk_test_... or pk_live_...)
 // NEVER use secret keys (sk_...) in client-side code
@@ -51,14 +53,16 @@ function RootLayoutContent() {
 
 export default function RootLayout() {
   return (
-    <ThemeProvider>
-      <PaystackProvider
-        publicKey={PAYSTACK_PUBLIC_KEY}
-        currency="NGN"
-        defaultChannels={["card", "bank", "ussd", "qr"]}
-      >
-        <RootLayoutContent />
-      </PaystackProvider>
-    </ThemeProvider>
+    <QueryClientProvider client={queryClient}>
+      <ThemeProvider>
+        <PaystackProvider
+          publicKey={PAYSTACK_PUBLIC_KEY}
+          currency="NGN"
+          defaultChannels={["card", "bank", "ussd", "qr"]}
+        >
+          <RootLayoutContent />
+        </PaystackProvider>
+      </ThemeProvider>
+    </QueryClientProvider>
   );
 }
