@@ -38,22 +38,13 @@ const createQuickActionItemStyles = (colors: typeof lightColors) =>
       backgroundColor: colors.surface,
       alignItems: "center",
       justifyContent: "center",
-      shadowColor: colors.primary,
-      shadowOffset: {
-        width: 0,
-        height: 2,
-      },
-      shadowOpacity: 0.08,
-      shadowRadius: 4,
-      elevation: 3,
+      borderWidth: 1,
+      borderColor: colors.outlineVariant,
     },
     actionLabel: {
-      fontFamily: typography.fontFamily.label,
+      ...typography.styles.sectionLabel,
       fontSize: typography.size.xs - 2,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onSurfaceVariant,
-      textTransform: "uppercase",
-      letterSpacing: 0.5,
       marginTop: theme.spacing.sm,
       textAlign: "center",
     },
@@ -96,7 +87,7 @@ const QuickActionItem: React.FC<QuickActionItemProps> = ({
         activeOpacity={0.8}
       >
         <View style={styles.iconContainer}>
-          <MaterialIcons name={icon as any} size={28} color={colors.primary} />
+          <MaterialIcons name={icon as any} size={28} color={colors.primaryBright} />
         </View>
         <Text style={styles.actionLabel}>{label}</Text>
       </AnimatedTouchable>
@@ -111,12 +102,8 @@ const createStyles = (colors: typeof lightColors) =>
       paddingHorizontal: theme.spacing.base,
     },
     sectionTitle: {
-      fontFamily: typography.fontFamily.label,
-      fontSize: typography.size.sm,
-      fontWeight: typography.fontWeight.bold,
+      ...typography.styles.sectionLabel,
       color: colors.onSurfaceVariant,
-      textTransform: "uppercase",
-      letterSpacing: 1,
       marginBottom: theme.spacing.lg,
       marginLeft: theme.spacing.xs,
     },

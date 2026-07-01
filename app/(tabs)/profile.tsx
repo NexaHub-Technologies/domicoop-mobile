@@ -1,46 +1,32 @@
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useCallback } from "react";
 import { ScrollView, StyleSheet, RefreshControl } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { SettingsSection } from "@/components/profile/SettingsSection";
 import { ConfirmationModal } from "@/components/modals/ConfirmationModal";
 import { useTheme } from "@/contexts/ThemeContext";
-import { signUp } from "@/lib/api/sign-up.api";
-import type { Profile } from "@/lib/types/sign-up";
+import { auth } from "@/lib/api/auth.api";
+import { useProfile } from "@/hooks/useProfile";
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const [refreshing, setRefreshing] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [profile, setProfile] = useState<Profile | null>(null);
+  const queryClient = useQueryClient();
+  const { data, isPending, isRefetching, refetch } = useProfile();
+  const profile = data ?? null;
+  const isLoading = isPending;
+  const refreshing = isRefetching;
   const { colors, isDarkMode } = useTheme();
 
   // Modal states
   const [showLogoutModal, setShowLogoutModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
 
-  const loadProfile = useCallback(async () => {
-    try {
-      const data = await signUp.getProfile();
-      setProfile(data);
-    } catch (error) {
-      console.error("Failed to load profile:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    loadProfile();
-  }, [loadProfile]);
-
   const onRefresh = useCallback(async () => {
-    setRefreshing(true);
-    await loadProfile();
-    setRefreshing(false);
-  }, [loadProfile]);
+    await refetch();
+  }, [refetch]);
 
   const handleLogout = () => {
     setShowLogoutModal(true);
@@ -53,10 +39,12 @@ export default function ProfileScreen() {
   const confirmLogout = async () => {
     setShowLogoutModal(false);
     try {
-      await signUp.logout();
+      await auth.logout();
     } catch (error) {
       console.error("Logout error:", error);
     }
+    // Drop all cached data so the next account doesn't see this one's.
+    queryClient.clear();
     router.replace("/sign-in");
   };
 

@@ -13,6 +13,7 @@ import { KeyboardAwareWrapper } from "@/components/auth/KeyboardAwareWrapper";
 import { useTheme } from "@/contexts/ThemeContext";
 import type { lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
+import { font } from "@/constants/theme";
 
 export default function ResetPasswordScreen() {
   const router = useRouter();
@@ -90,7 +91,7 @@ export default function ResetPasswordScreen() {
                 variant="primary"
                 size="lg"
                 fullWidth
-                icon="arrow.right"
+                icon="arrow-forward"
                 disabled={!passwordsMatch || newPassword.length < 8}
               />
 
@@ -148,7 +149,7 @@ const createStyles = (colors: typeof lightColors) =>
       marginLeft: theme.spacing.base,
     },
     requirementsText: {
-      fontFamily: theme.typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: theme.typography.size.xs,
       color: colors.onSurfaceVariant,
       marginTop: theme.spacing.sm,
@@ -159,12 +160,12 @@ const createStyles = (colors: typeof lightColors) =>
       marginTop: theme.spacing.sm,
     },
     signInText: {
-      fontFamily: theme.typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: theme.typography.size.sm,
       color: colors.onSurfaceVariant,
     },
     signInLinkText: {
       color: colors.primary,
-      fontWeight: theme.typography.fontWeight.bold,
+      fontFamily: font("body", "bold"),
     },
   });

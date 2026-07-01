@@ -17,8 +17,11 @@ import { MaterialIcons } from '@expo/vector-icons';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { useTheme, lightColors } from '@/contexts/ThemeContext';
 import { theme } from '@/styles/theme';
+import { font } from "@/constants/theme";
 import { typography } from '@/constants/typography';
-import { signUp } from '@/lib/api/sign-up.api';
+import { members } from "@/lib/api/members.api";
+import { useQueryClient } from "@tanstack/react-query";
+import { PROFILE_QUERY_KEY } from "@/hooks/useProfile";
 import { InfoModal } from '@/components/modals/InfoModal';
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
@@ -51,6 +54,7 @@ const NIGERIAN_BANKS = [
 
 export default function EditProfileScreen() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { colors, isDarkMode } = useTheme();
   const insets = useSafeAreaInsets();
   const styles = createStyles(colors, insets.bottom);
@@ -76,7 +80,7 @@ export default function EditProfileScreen() {
 
   const loadProfile = async () => {
     try {
-      const profile = await signUp.getProfile();
+      const profile = await members.getProfile();
       setFormData({
         full_name: profile.full_name || '',
         phone: profile.phone || '',
@@ -97,7 +101,8 @@ export default function EditProfileScreen() {
     setIsSaving(true);
 
     try {
-      await signUp.updateProfile(formData);
+      const updated = await members.updateProfile(formData);
+      queryClient.setQueryData(PROFILE_QUERY_KEY, updated);
       setShowSuccessModal(true);
     } catch (error) {
       console.error('Failed to save profile:', error);
@@ -366,9 +371,9 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) =>
     },
     header: {
       backgroundColor: colors.surface,
-      shadowColor: colors.primary,
+      shadowColor: colors.ambientShadow,
       shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.05,
+      shadowOpacity: 1,
       shadowRadius: 4,
       elevation: 2,
     },
@@ -386,9 +391,8 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) =>
       minWidth: 44,
     },
     headerTitle: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: typography.size.lg,
-      fontWeight: typography.fontWeight.bold,
     },
     keyboardView: {
       flex: 1,
@@ -401,9 +405,8 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) =>
       paddingHorizontal: theme.spacing.lg,
     },
     sectionTitle: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "semibold"),
       fontSize: typography.size.base,
-      fontWeight: typography.fontWeight.semibold,
       color: colors.onSurface,
       marginBottom: theme.spacing.lg,
     },
@@ -414,9 +417,8 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) =>
       marginBottom: theme.spacing.lg,
     },
     label: {
-      fontFamily: typography.fontFamily.label,
+      fontFamily: font("body", "bold"),
       fontSize: typography.size.xs,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onSurfaceVariant,
       textTransform: 'uppercase',
       letterSpacing: 1,
@@ -432,7 +434,7 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) =>
     },
     input: {
       flex: 1,
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: typography.size.base,
       color: colors.onSurface,
       paddingVertical: theme.spacing.base,
@@ -444,7 +446,7 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) =>
       opacity: 0.5,
     },
     helperText: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: typography.size.xs,
       color: colors.onSurfaceVariant,
       marginTop: theme.spacing.xs,
@@ -468,7 +470,7 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) =>
       borderBottomColor: colors.outlineVariant,
     },
     bankOptionText: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: typography.size.base,
       color: colors.onSurface,
     },
@@ -494,9 +496,9 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) =>
       alignItems: 'center',
       justifyContent: 'center',
       gap: theme.spacing.sm,
-      shadowColor: colors.primary,
+      shadowColor: colors.ambientShadow,
       shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 0.2,
+      shadowOpacity: 1,
       shadowRadius: 8,
       elevation: 4,
     },
@@ -504,9 +506,8 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) =>
       opacity: 0.7,
     },
     saveButtonText: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: typography.size.base,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onPrimary,
     },
   });

@@ -4,7 +4,7 @@ import {
   StyleSheet,
   ViewStyle,
 } from 'react-native';
-import { SymbolView, SFSymbol } from 'expo-symbols';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useTheme , lightColors } from '@/contexts/ThemeContext';
 import { theme } from '@/styles/theme';
 
@@ -12,13 +12,13 @@ type BackButtonColors = typeof lightColors;
 
 interface BackButtonProps {
   onPress: () => void;
-  icon?: SFSymbol;
+  icon?: keyof typeof MaterialIcons.glyphMap;
   style?: ViewStyle;
 }
 
 export const BackButton: React.FC<BackButtonProps> = ({
   onPress,
-  icon = 'arrow.left',
+  icon = 'arrow-back',
   style,
 }) => {
   const { colors } = useTheme();
@@ -30,10 +30,10 @@ export const BackButton: React.FC<BackButtonProps> = ({
       activeOpacity={0.7}
       style={[styles.container, style]}
     >
-      <SymbolView
+      <MaterialIcons
         name={icon}
         size={24}
-        tintColor={colors.primary}
+        color={colors.primary}
       />
     </TouchableOpacity>
   );

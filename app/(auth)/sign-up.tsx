@@ -21,8 +21,9 @@ import { InfoModal } from "@/components/modals/InfoModal";
 import { useTheme } from "@/contexts/ThemeContext";
 import type { lightColors } from "@/contexts/ThemeContext";
 import type { SignUpData, SignUpErrors, SignUpStep } from "@/types";
-import { signUp } from "@/lib/api/sign-up.api";
+import { auth } from "@/lib/api/auth.api";
 import { theme } from "@/styles/theme";
+import { font } from "@/constants/theme";
 
 // Nigerian Banks with their codes
 const NIGERIAN_BANKS = [
@@ -179,7 +180,7 @@ export default function SignUpScreen() {
     setErrors({});
 
     try {
-      await signUp.register(formData);
+      await auth.register(formData);
       setShowVerificationModal(true);
     } catch (error) {
       setErrors({
@@ -476,7 +477,7 @@ export default function SignUpScreen() {
                     onPress={handleNext}
                     variant="primary"
                     size="lg"
-                    icon={currentStep === 1 ? "arrow.right" : undefined}
+                    icon={currentStep === 1 ? "arrow-forward" : undefined}
                     fullWidth={currentStep === 1}
                     style={currentStep > 1 ? styles.buttonFlex : undefined}
                   />
@@ -579,9 +580,8 @@ const createStyles = (colors: typeof lightColors) =>
       borderColor: colors.success,
     },
     stepNumber: {
-      fontFamily: theme.typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: theme.typography.size.sm,
-      fontWeight: theme.typography.fontWeight.bold,
       color: colors.onSurfaceVariant,
     },
     stepNumberActive: {
@@ -601,14 +601,13 @@ const createStyles = (colors: typeof lightColors) =>
       marginBottom: theme.spacing.xl,
     },
     title: {
-      fontFamily: theme.typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: theme.typography.size["2xl"],
-      fontWeight: theme.typography.fontWeight.bold,
       color: colors.onSurface,
       marginBottom: theme.spacing.sm,
     },
     subtitle: {
-      fontFamily: theme.typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: theme.typography.size.base,
       color: colors.onSurfaceVariant,
       textAlign: "center",
@@ -633,7 +632,7 @@ const createStyles = (colors: typeof lightColors) =>
     },
     bankInfoText: {
       flex: 1,
-      fontFamily: theme.typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: theme.typography.size.sm,
       color: colors.onPrimaryFixed,
       lineHeight: theme.typography.size.sm * 1.5,
@@ -643,7 +642,7 @@ const createStyles = (colors: typeof lightColors) =>
       paddingVertical: theme.spacing.xl,
     },
     photoHelper: {
-      fontFamily: theme.typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: theme.typography.size.sm,
       color: colors.onSurfaceVariant,
       textAlign: "center",
@@ -660,7 +659,7 @@ const createStyles = (colors: typeof lightColors) =>
       marginTop: theme.spacing.lg,
     },
     errorText: {
-      fontFamily: theme.typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: theme.typography.size.sm,
       color: colors.error,
       flex: 1,
@@ -690,12 +689,12 @@ const createStyles = (colors: typeof lightColors) =>
       marginTop: theme.spacing.lg,
     },
     footerText: {
-      fontFamily: theme.typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: theme.typography.size.sm,
       color: colors.onSurfaceVariant,
     },
     footerLink: {
       color: colors.primary,
-      fontWeight: theme.typography.fontWeight.bold,
+      fontFamily: font("body", "bold"),
     },
   });

@@ -1,16 +1,14 @@
 import {
   LoginRequest,
   LoginResponse,
-  Profile,
   RegisterRequest,
   RegisterResponse,
   RefreshResponse,
-  UpdateProfileRequest,
 } from "../types/sign-up";
 import { request, authedRequest } from "../http";
 import { session } from "../session";
 
-export const signUp = {
+export const auth = {
   login: async (email: string, password: string): Promise<LoginResponse> => {
     const response = await request<LoginResponse>("/auth/login", {
       method: "POST",
@@ -30,14 +28,16 @@ export const signUp = {
   },
 
   logout: async (): Promise<{ success: boolean }> => {
-    const token = await session.getToken();
-    const response = await request<{ success: boolean }>("/auth/logout", {
-      method: "POST",
-      token: token ?? undefined,
-    });
-
-    await session.clearTokens();
-    return response;
+    // Best-effort server call: local sign-out must succeed even when offline.
+    try {
+      return await authedRequest<{ success: boolean }>("/auth/logout", {
+        method: "POST",
+      });
+    } catch {
+      return { success: true };
+    } finally {
+      await session.clearTokens();
+    }
   },
 
   refreshToken: async (refreshToken: string): Promise<RefreshResponse> => {
@@ -50,21 +50,8 @@ export const signUp = {
     return response;
   },
 
-  getProfile: async (): Promise<Profile> => {
-    return await authedRequest<Profile>("/members/me", {
-      method: "GET",
-    });
-  },
-
-  updateProfile: async (data: UpdateProfileRequest): Promise<Profile> => {
-    return await authedRequest<Profile>("/members/me", {
-      method: "PATCH",
-      body: data,
-    });
-  },
-
   googleLogin: async (idToken: string): Promise<LoginResponse> => {
-    const response = await request<LoginResponse>("/auth/google", {
+    const response = await request<LoginResponse>("/auth/oauth/google", {
       method: "POST",
       body: { id_token: idToken },
     });
@@ -77,4 +64,4 @@ export const signUp = {
   },
 };
 
-export default signUp;
+export default auth;

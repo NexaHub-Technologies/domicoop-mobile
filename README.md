@@ -36,23 +36,27 @@ DOMICOP is a modern mobile banking application designed for cooperative societie
 
 ## 🎨 Design System
 
-DOMICOP follows the **"Blue Cobalt Archive"** design system with a focus on:
+DOMICOP follows the **"Blue Cobalt Archive"** design system — see [DESIGN.md](./DESIGN.md) for the full spec (tokens, typography, elevation rules, primitives).
 
 - **Primary Color**: Blue Cobalt (#0b50da)
-- **Clean Typography**: Plus Jakarta Sans + Inter
-- **Modern UI**: Glassmorphism effects, smooth animations, and accessible contrast
-- **Theme Support**: Light, Dark, and System Default modes
+- **Typography**: Plus Jakarta Sans (display, money) + Inter (body), natively embedded
+- **Elevation discipline**: flat/hairline surfaces by default; cobalt glow reserved for hero money cards and primary CTAs
+- **Theme Support**: Light ("Blue Cobalt Archive"), Dark ("Nocturnal Cobalt"), and System Default
 
 ### Color Palette
+
+Token source of truth: `constants/theme/colors.ts`.
 
 | Token | Light Mode | Dark Mode |
 |-------|-----------|-----------|
 | Primary | #0b50da | #1e55be |
+| Primary (interactive/text) | #0b50da | #5b8bff |
 | Background | #f5f6f8 | #0b1326 |
-| Surface | #ffffff | #1e293b |
+| Surface | #ffffff | #0b1326 |
 | On Surface | #0f172a | #dae2fd |
 | Success | #22c55e | #4ade80 |
-| Error | #ef4444 | #f87171 |
+| Warning | #f59e0b | #fbbf24 |
+| Error | #ef4444 | #ba1a1a |
 
 ---
 

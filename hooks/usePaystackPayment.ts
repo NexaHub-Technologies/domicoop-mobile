@@ -1,5 +1,5 @@
 import { usePaystack } from 'react-native-paystack-webview';
-import { signUp } from '@/lib/api/sign-up.api';
+import { members } from "@/lib/api/members.api";
 import { session } from '@/lib/session';
 import { usePaystackVerifyTransaction } from './usePaystackVerifyTransaction';
 import { PaystackVerificationResponse } from '@/types';
@@ -38,7 +38,7 @@ export const usePaystackPayment = () => {
   const initiateContributionPayment = async (params: PaymentParams & { contributionId?: string }) => {
     let userProfile;
     try {
-      userProfile = await signUp.getProfile();
+      userProfile = await members.getProfile();
     } catch (error) {
       console.error('Failed to fetch user profile:', error);
       params.onError?.(new Error('Failed to fetch user information'));
@@ -96,7 +96,7 @@ export const usePaystackPayment = () => {
   const initiateLoanPayment = async (params: PaymentParams & { loanId?: string }) => {
     let userProfile;
     try {
-      userProfile = await signUp.getProfile();
+      userProfile = await members.getProfile();
     } catch (error) {
       console.error('Failed to fetch user profile:', error);
       params.onError?.(new Error('Failed to fetch user information'));

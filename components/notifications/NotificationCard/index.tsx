@@ -9,6 +9,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
+import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
 import {
   Notification,
@@ -116,12 +117,12 @@ const createStyles = (colors: NotificationCardColors) =>
       backgroundColor: colors.surface,
       borderRadius: theme.borderRadius.xl,
       padding: theme.spacing.base,
-      shadowColor: colors.primary,
+      shadowColor: colors.ambientShadow,
       shadowOffset: {
         width: 0,
         height: 2,
       },
-      shadowOpacity: 0.05,
+      shadowOpacity: 1,
       shadowRadius: 4,
       elevation: 2,
     },
@@ -155,25 +156,23 @@ const createStyles = (colors: NotificationCardColors) =>
       alignItems: "flex-start",
     },
     title: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: typography.size.base,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onSurface,
       flex: 1,
       marginRight: theme.spacing.sm,
     },
     readText: {
-      fontWeight: typography.fontWeight.semibold,
+      fontFamily: font("body", "semibold"),
     },
     timestamp: {
-      fontFamily: typography.fontFamily.label,
+      fontFamily: font("body", "bold"),
       fontSize: typography.size.xs - 2,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onSurfaceVariant,
       textTransform: "uppercase",
     },
     message: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: typography.size.sm,
       color: colors.onSurfaceVariant,
       lineHeight: 20,
@@ -187,9 +186,8 @@ const createStyles = (colors: NotificationCardColors) =>
       marginTop: theme.spacing.xs,
     },
     actionButtonText: {
-      fontFamily: typography.fontFamily.label,
+      fontFamily: font("body", "bold"),
       fontSize: typography.size.xs,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onPrimary,
     },
   });

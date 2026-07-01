@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
+import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
 
 interface PasswordStrengthProps {
@@ -122,9 +123,8 @@ const createStyles = (colors: typeof lightColors) =>
       borderRadius: 3,
     },
     label: {
-      fontFamily: typography.fontFamily.label,
+      fontFamily: font("body", "semibold"),
       fontSize: typography.size.xs - 1, // 11px
-      fontWeight: typography.fontWeight.semibold,
       textTransform: "uppercase",
       letterSpacing: typography.letterSpacing.wider,
       marginTop: theme.spacing.xs,

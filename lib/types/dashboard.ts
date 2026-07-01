@@ -35,7 +35,38 @@ export interface DashboardSummary {
   }>;
 }
 
-export function transformDashboardSummary(raw: any): DashboardSummary {
+// Wire shape of GET /dashboard/summary — amounts are in kobo.
+export interface ApiDashboardSummary {
+  member: DashboardMember;
+  total_savings?: number;
+  paid_this_month: boolean;
+  current_month: string;
+  active_loan: {
+    id: string;
+    amount: number;
+    balance: number;
+    status: string;
+    next_payment_date: string;
+    next_payment_amount: number;
+  } | null;
+  recent_transactions?: Array<{
+    id: string;
+    type: string;
+    category: "savings" | "loan";
+    title?: string;
+    amount: number;
+    date: string;
+    status: string;
+  }>;
+  announcements?: Array<{
+    id: string;
+    title: string;
+    body: string;
+    created_at: string;
+  }>;
+}
+
+export function transformDashboardSummary(raw: ApiDashboardSummary): DashboardSummary {
   return {
     member: raw.member,
     total_savings: Math.round((raw.total_savings || 0) / 100),
@@ -49,7 +80,7 @@ export function transformDashboardSummary(raw: any): DashboardSummary {
       next_payment_date: raw.active_loan.next_payment_date,
       next_payment_amount: Math.round(raw.active_loan.next_payment_amount / 100),
     } : null,
-    recent_transactions: (raw.recent_transactions || []).map((t: any) => ({
+    recent_transactions: (raw.recent_transactions || []).map((t) => ({
       ...t,
       amount: Math.round(t.amount / 100),
     })),

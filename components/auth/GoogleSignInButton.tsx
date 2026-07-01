@@ -2,12 +2,14 @@ import React from "react";
 import {
   TouchableOpacity,
   Text,
+  Image,
   StyleSheet,
   ViewStyle,
   ActivityIndicator,
 } from "react-native";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
+import { font } from "@/constants/theme";
 
 interface GoogleSignInButtonProps {
   onPress: () => void;
@@ -36,7 +38,11 @@ export const GoogleSignInButton: React.FC<GoogleSignInButtonProps> = ({
         <ActivityIndicator size="small" color={colors.onSurface} />
       ) : (
         <>
-          <Text style={styles.googleIcon}>G</Text>
+          <Image
+            source={require("@/assets/images/icons/g-logo.png")}
+            style={styles.googleIcon}
+            resizeMode="contain"
+          />
           <Text style={styles.text}>Sign in with Google</Text>
         </>
       )}
@@ -62,14 +68,12 @@ const createStyles = (colors: typeof lightColors) =>
       opacity: 0.5,
     },
     googleIcon: {
-      fontFamily: theme.typography.fontFamily.headline,
-      fontSize: 18,
-      fontWeight: theme.typography.fontWeight.bold,
+      width: 20,
+      height: 20,
     },
     text: {
-      fontFamily: theme.typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: theme.typography.size.base,
-      fontWeight: theme.typography.fontWeight.bold,
       color: colors.onSurface,
     },
   });

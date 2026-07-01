@@ -14,6 +14,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import Animated, { FadeIn, FadeInUp } from "react-native-reanimated";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
+import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
 import { formatCurrency, formatMonth } from "@/data/mockData";
 import { contributionsApi } from "@/lib/api/contributions.api";
@@ -78,7 +79,7 @@ export default function ContributionDetailsScreen() {
       case "verified":
         return colors.success;
       case "pending":
-        return "#F59E0B";
+        return colors.warning;
       case "rejected":
         return colors.error;
       default:
@@ -301,12 +302,12 @@ const createStyles = (colors: typeof lightColors) =>
     },
     header: {
       backgroundColor: colors.surface,
-      shadowColor: colors.primary,
+      shadowColor: colors.ambientShadow,
       shadowOffset: {
         width: 0,
         height: 2,
       },
-      shadowOpacity: 0.05,
+      shadowOpacity: 1,
       shadowRadius: 4,
       elevation: 2,
     },
@@ -324,9 +325,8 @@ const createStyles = (colors: typeof lightColors) =>
       minWidth: 44,
     },
     headerTitle: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: typography.size.lg,
-      fontWeight: typography.fontWeight.bold,
     },
     scrollView: {
       flex: 1,
@@ -342,12 +342,12 @@ const createStyles = (colors: typeof lightColors) =>
       marginBottom: theme.spacing.lg,
       overflow: "hidden",
       position: "relative",
-      shadowColor: colors.primary,
+      shadowColor: colors.ambientShadow,
       shadowOffset: {
         width: 0,
         height: 4,
       },
-      shadowOpacity: 0.2,
+      shadowOpacity: 1,
       shadowRadius: 8,
       elevation: 4,
     },
@@ -366,16 +366,14 @@ const createStyles = (colors: typeof lightColors) =>
       marginBottom: theme.spacing.base,
     },
     overviewTitle: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "medium"),
       fontSize: typography.size.sm,
-      fontWeight: typography.fontWeight.medium,
       color: `${colors.onPrimary}90`,
       marginBottom: theme.spacing.xs,
     },
     overviewAmount: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: theme.spacing["3xl"],
-      fontWeight: typography.fontWeight.bold,
       color: colors.onPrimary,
       marginBottom: theme.spacing.base,
     },
@@ -390,9 +388,8 @@ const createStyles = (colors: typeof lightColors) =>
       marginBottom: theme.spacing.lg,
     },
     statusText: {
-      fontFamily: typography.fontFamily.label,
+      fontFamily: font("body", "bold"),
       fontSize: typography.size.xs,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onPrimary,
     },
     statsGrid: {
@@ -408,14 +405,13 @@ const createStyles = (colors: typeof lightColors) =>
       alignItems: "center",
     },
     statValue: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: typography.size.xl,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onPrimary,
       marginBottom: 2,
     },
     statLabel: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: typography.size.xs,
       color: `${colors.onPrimary}80`,
     },
@@ -433,19 +429,18 @@ const createStyles = (colors: typeof lightColors) =>
       paddingVertical: theme.spacing.lg,
       gap: theme.spacing.sm,
       marginBottom: theme.spacing.lg,
-      shadowColor: colors.primary,
+      shadowColor: colors.ambientShadow,
       shadowOffset: {
         width: 0,
         height: 4,
       },
-      shadowOpacity: 0.2,
+      shadowOpacity: 1,
       shadowRadius: 8,
       elevation: 4,
     },
     addButtonText: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: typography.size.base,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onPrimary,
     },
     historySection: {
@@ -458,27 +453,25 @@ const createStyles = (colors: typeof lightColors) =>
       marginBottom: theme.spacing.base,
     },
     historyTitle: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: typography.size.lg,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onSurface,
     },
     viewAllText: {
-      fontFamily: typography.fontFamily.label,
+      fontFamily: font("body", "semibold"),
       fontSize: typography.size.sm,
-      fontWeight: typography.fontWeight.semibold,
       color: colors.primary,
     },
     transactionsList: {
       backgroundColor: colors.surface,
       borderRadius: theme.borderRadius["2xl"],
       overflow: "hidden",
-      shadowColor: colors.primary,
+      shadowColor: colors.ambientShadow,
       shadowOffset: {
         width: 0,
         height: 2,
       },
-      shadowOpacity: 0.05,
+      shadowOpacity: 1,
       shadowRadius: 4,
       elevation: 2,
     },
@@ -507,14 +500,13 @@ const createStyles = (colors: typeof lightColors) =>
       flex: 1,
     },
     transactionTitle: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "semibold"),
       fontSize: typography.size.base,
-      fontWeight: typography.fontWeight.semibold,
       color: colors.onSurface,
       marginBottom: 2,
     },
     transactionDate: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: typography.size.xs,
       color: colors.onSurfaceVariant,
     },
@@ -522,15 +514,13 @@ const createStyles = (colors: typeof lightColors) =>
       alignItems: "flex-end",
     },
     transactionAmount: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: typography.size.base,
-      fontWeight: typography.fontWeight.bold,
       marginBottom: 2,
     },
     transactionStatus: {
-      fontFamily: typography.fontFamily.label,
+      fontFamily: font("body", "medium"),
       fontSize: typography.size.xs - 2,
-      fontWeight: typography.fontWeight.medium,
       color: colors.onSurfaceVariant,
     },
     bottomPadding: {
@@ -542,7 +532,7 @@ const createStyles = (colors: typeof lightColors) =>
       paddingVertical: theme.spacing["3xl"],
     },
     loadingText: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: typography.size.base,
       color: colors.onSurfaceVariant,
     },
@@ -553,7 +543,7 @@ const createStyles = (colors: typeof lightColors) =>
       gap: theme.spacing.base,
     },
     errorText: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: typography.size.base,
       color: colors.error,
       textAlign: "center",
@@ -567,9 +557,8 @@ const createStyles = (colors: typeof lightColors) =>
       marginTop: theme.spacing.base,
     },
     retryButtonText: {
-      fontFamily: typography.fontFamily.label,
+      fontFamily: font("body", "bold"),
       fontSize: typography.size.base,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onPrimary,
     },
     emptyContainer: {
@@ -579,14 +568,13 @@ const createStyles = (colors: typeof lightColors) =>
       gap: theme.spacing.base,
     },
     emptyTitle: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: typography.size.xl,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onSurface,
       marginTop: theme.spacing.base,
     },
     emptyText: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: typography.size.base,
       color: colors.onSurfaceVariant,
       textAlign: "center",

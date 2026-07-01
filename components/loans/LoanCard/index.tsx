@@ -10,6 +10,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
+import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
 import { Loan, getLoanPurposeConfig, formatCurrencyNoSign } from "@/data/mockData";
 
@@ -27,12 +28,12 @@ const createStyles = (colors: typeof lightColors) =>
       borderRadius: theme.borderRadius.xl,
       padding: theme.spacing.lg,
       marginBottom: theme.spacing.base,
-      shadowColor: colors.primary,
+      shadowColor: colors.ambientShadow,
       shadowOffset: {
         width: 0,
         height: 2,
       },
-      shadowOpacity: 0.05,
+      shadowOpacity: 1,
       shadowRadius: 4,
       elevation: 2,
     },
@@ -55,14 +56,13 @@ const createStyles = (colors: typeof lightColors) =>
       justifyContent: "center",
     },
     loanTitle: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "bold"),
       fontSize: typography.size.base,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onSurface,
       marginBottom: 2,
     },
     loanId: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: typography.size.xs - 2,
       color: colors.onSurfaceVariant,
     },
@@ -72,9 +72,8 @@ const createStyles = (colors: typeof lightColors) =>
       borderRadius: theme.borderRadius.sm,
     },
     statusText: {
-      fontFamily: typography.fontFamily.label,
+      fontFamily: font("body", "bold"),
       fontSize: typography.size.xs - 2,
-      fontWeight: typography.fontWeight.bold,
       textTransform: "uppercase",
       letterSpacing: 0.5,
     },
@@ -89,18 +88,16 @@ const createStyles = (colors: typeof lightColors) =>
       alignItems: "flex-end",
     },
     amountLabel: {
-      fontFamily: typography.fontFamily.label,
+      fontFamily: font("body", "bold"),
       fontSize: typography.size.xs - 2,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onSurfaceVariant,
       textTransform: "uppercase",
       letterSpacing: 0.5,
       marginBottom: 4,
     },
     amountValue: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: typography.size.lg,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onSurface,
     },
     amountValuePrimary: {
@@ -115,15 +112,13 @@ const createStyles = (colors: typeof lightColors) =>
       marginBottom: theme.spacing.xs,
     },
     progressLabel: {
-      fontFamily: typography.fontFamily.label,
+      fontFamily: font("body", "medium"),
       fontSize: typography.size.xs,
-      fontWeight: typography.fontWeight.medium,
       color: colors.onSurfaceVariant,
     },
     progressPercent: {
-      fontFamily: typography.fontFamily.label,
+      fontFamily: font("body", "bold"),
       fontSize: typography.size.xs,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onSurface,
     },
     progressBarBackground: {
@@ -152,13 +147,13 @@ const createStyles = (colors: typeof lightColors) =>
       flex: 1,
     },
     nextPaymentLabel: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: typography.size.xs,
       color: colors.onSurfaceVariant,
     },
     nextPaymentValue: {
       color: colors.onSurface,
-      fontWeight: typography.fontWeight.semibold,
+      fontFamily: font("body", "semibold"),
     },
     manageButton: {
       paddingHorizontal: theme.spacing.md,
@@ -168,9 +163,8 @@ const createStyles = (colors: typeof lightColors) =>
       borderColor: `${colors.primary}30`,
     },
     manageButtonText: {
-      fontFamily: typography.fontFamily.label,
+      fontFamily: font("body", "bold"),
       fontSize: typography.size.xs,
-      fontWeight: typography.fontWeight.bold,
       color: colors.primary,
     },
   });

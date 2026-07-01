@@ -2,19 +2,22 @@ import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { useRouter } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
-import Animated, {
-  FadeIn,
-  FadeInUp,
-  useAnimatedStyle,
-  withSpring,
-  useSharedValue,
-} from "react-native-reanimated";
+import Animated, { FadeIn, FadeInUp } from "react-native-reanimated";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
 import { typography } from "@/constants/typography";
-import { formatCurrency, getTransactionIcon, getTransactionIconColor, getTransactionBgColor, formatDate, getDefaultTitle, type TransactionType } from "@/data/mockData";
-
-const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
+import { createElevation } from "@/constants/theme";
+import { ListItem } from "@/components/common/ListItem";
+import { Money } from "@/components/common/Money";
+import { Skeleton } from "@/components/common/Skeleton";
+import { EmptyState } from "@/components/common/EmptyState";
+import { Button } from "@/components/common/Button";
+import {
+  getTransactionIcon,
+  formatDate,
+  getDefaultTitle,
+  type TransactionType,
+} from "@/data/mockData";
 
 export interface RecentTransaction {
   id: string;
@@ -26,145 +29,67 @@ export interface RecentTransaction {
   status: string;
 }
 
-interface TransactionItemProps {
-  transaction: RecentTransaction;
-  index: number;
-  colors: typeof lightColors;
+interface TransactionListProps {
+  transactions: RecentTransaction[];
+  isLoading?: boolean;
+  isOffline?: boolean;
+  error?: string | null;
+  onRetry?: () => void;
 }
 
-const createTransactionItemStyles = (colors: typeof lightColors) =>
+const getTransactionTint = (
+  type: string,
+  colors: typeof lightColors,
+): string => {
+  switch (type) {
+    case "contribution":
+    case "interest":
+      return colors.success;
+    case "loan_repayment":
+    case "fee":
+      return colors.primaryBright;
+    case "withdrawal":
+      return colors.onSurfaceVariant;
+    default:
+      return colors.onSurfaceVariant;
+  }
+};
+
+const createStyles = (colors: typeof lightColors) =>
   StyleSheet.create({
-    transactionItem: {
-      paddingHorizontal: theme.spacing.lg,
-      paddingVertical: theme.spacing.lg,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.outlineVariant,
+    container: {
+      marginTop: theme.spacing["2xl"],
+      paddingHorizontal: theme.spacing.base,
+      marginBottom: theme.spacing["4xl"],
     },
-    transactionContent: {
+    header: {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
+      marginBottom: theme.spacing.lg,
+      paddingHorizontal: theme.spacing.xs,
     },
-    leftSection: {
+    sectionTitle: {
+      ...typography.styles.sectionLabel,
+      color: colors.onSurfaceVariant,
+    },
+    viewArchiveButton: {
       flexDirection: "row",
       alignItems: "center",
-      flex: 1,
+      gap: 4,
     },
-    iconContainer: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
-      alignItems: "center",
-      justifyContent: "center",
-      marginRight: theme.spacing.base,
+    viewArchiveText: {
+      ...typography.styles.label,
+      fontSize: typography.size.xs,
+      color: colors.primaryBright,
+      textTransform: "uppercase",
+      letterSpacing: 0.5,
     },
-    textContainer: {
-      flex: 1,
+    listCard: {
+      backgroundColor: colors.surface,
+      borderRadius: theme.borderRadius["2xl"],
+      overflow: "hidden",
     },
-    transactionTitle: {
-      fontFamily: typography.fontFamily.body,
-      fontSize: typography.size.base,
-      fontWeight: typography.fontWeight.semibold,
-      color: colors.onSurface,
-      marginBottom: 2,
-    },
-    transactionDate: {
-      fontFamily: typography.fontFamily.body,
-      fontSize: typography.size.xs - 1,
-      color: colors.onSurfaceVariant,
-    },
-    rightSection: {
-      alignItems: "flex-end",
-    },
-    transactionAmount: {
-      fontFamily: typography.fontFamily.headline,
-      fontSize: typography.size.base,
-      fontWeight: typography.fontWeight.bold,
-      marginBottom: 2,
-    },
-    transactionStatus: {
-      fontFamily: typography.fontFamily.label,
-      fontSize: typography.size.xs - 2,
-      fontWeight: typography.fontWeight.medium,
-      color: colors.onSurfaceVariant,
-    },
-  });
-
-const TransactionItem: React.FC<TransactionItemProps> = ({
-  transaction,
-  index,
-  colors,
-}) => {
-  const router = useRouter();
-  const scale = useSharedValue(1);
-  const styles = createTransactionItemStyles(colors);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
-
-  const handlePress = () => {
-    if (transaction.category === "savings") {
-      router.push(`/contributions/${transaction.id}`);
-    }
-  };
-
-  const handlePressIn = () => {
-    scale.value = withSpring(0.98, { damping: 15, stiffness: 300 });
-  };
-
-  const handlePressOut = () => {
-    scale.value = withSpring(1, { damping: 15, stiffness: 300 });
-  };
-
-  const iconName = getTransactionIcon(transaction.type as TransactionType);
-  const iconColor = getTransactionIconColor(transaction.type as TransactionType);
-  const bgColor = getTransactionBgColor(transaction.type as TransactionType);
-  const amountColor = transaction.amount > 0 ? "#22c55e" : colors.onSurface;
-  const title = transaction.title || getDefaultTitle(transaction.type, transaction.date);
-
-  return (
-    <Animated.View entering={FadeInUp.delay(400 + index * 50).duration(300)}>
-      <AnimatedTouchable
-        onPress={handlePress}
-        onPressIn={handlePressIn}
-        onPressOut={handlePressOut}
-        style={[styles.transactionItem, animatedStyle]}
-        activeOpacity={0.7}
-      >
-        <View style={styles.transactionContent}>
-          <View style={styles.leftSection}>
-            <View style={[styles.iconContainer, { backgroundColor: bgColor }]}>
-              <MaterialIcons name={iconName as any} size={20} color={iconColor} />
-            </View>
-            <View style={styles.textContainer}>
-              <Text style={styles.transactionTitle}>{title}</Text>
-              <Text style={styles.transactionDate}>
-                {formatDate(transaction.date)}
-              </Text>
-            </View>
-          </View>
-          <View style={styles.rightSection}>
-            <Text style={[styles.transactionAmount, { color: amountColor }]}>
-              {formatCurrency(transaction.amount)}
-            </Text>
-            <Text style={styles.transactionStatus}>
-              {transaction.status.toUpperCase()}
-            </Text>
-          </View>
-        </View>
-      </AnimatedTouchable>
-    </Animated.View>
-  );
-};
-
-interface CategoryHeaderProps {
-  category: "savings" | "loan";
-  colors: typeof lightColors;
-}
-
-const createCategoryHeaderStyles = (colors: typeof lightColors) =>
-  StyleSheet.create({
     categoryHeader: {
       flexDirection: "row",
       alignItems: "center",
@@ -186,30 +111,104 @@ const createCategoryHeaderStyles = (colors: typeof lightColors) =>
       borderRadius: 3,
     },
     categoryText: {
-      fontFamily: typography.fontFamily.label,
+      ...typography.styles.sectionLabel,
       fontSize: typography.size.xs - 2,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onSurfaceVariant,
+    },
+    seeAllText: {
+      ...typography.styles.label,
+      fontSize: typography.size.xs - 2,
+      color: colors.primaryBright,
       textTransform: "uppercase",
-      letterSpacing: 0.5,
     },
     seeAllButton: {
       flexDirection: "row",
       alignItems: "center",
       gap: 2,
     },
-    seeAllText: {
-      fontFamily: typography.fontFamily.label,
+    rowContainer: {
+      paddingHorizontal: theme.spacing.lg,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.outlineVariant,
+    },
+    rowTrailing: {
+      alignItems: "flex-end",
+    },
+    rowStatus: {
+      ...typography.styles.caption,
       fontSize: typography.size.xs - 2,
-      fontWeight: typography.fontWeight.bold,
-      color: colors.primary,
+      color: colors.onSurfaceVariant,
+      textTransform: "uppercase",
+      letterSpacing: 0.5,
+      marginTop: 2,
+    },
+    offlineBanner: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: theme.spacing.sm,
+      backgroundColor: colors.surfaceContainer,
+      marginBottom: theme.spacing.base,
+      paddingVertical: theme.spacing.sm,
+      paddingHorizontal: theme.spacing.base,
+      borderRadius: theme.borderRadius.lg,
+    },
+    offlineText: {
+      ...typography.styles.bodySmall,
+      fontSize: typography.size.xs,
+      color: colors.onSurfaceVariant,
+    },
+    skeletonRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: theme.spacing.base,
+      paddingHorizontal: theme.spacing.lg,
+      paddingVertical: theme.spacing.lg,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.outlineVariant,
+    },
+    skeletonText: {
+      flex: 1,
+      gap: theme.spacing.xs,
+    },
+    errorContainer: {
+      alignItems: "center",
+      justifyContent: "center",
+      paddingVertical: theme.spacing["3xl"],
+      paddingHorizontal: theme.spacing.lg,
+      gap: theme.spacing.base,
+    },
+    errorText: {
+      ...typography.styles.bodyText,
+      color: colors.error,
+      textAlign: "center",
     },
   });
 
-const CategoryHeader: React.FC<CategoryHeaderProps> = ({ category, colors }) => {
+const SkeletonRow = ({ colors }: { colors: typeof lightColors }) => {
+  const styles = createStyles(colors);
+  return (
+    <View style={styles.skeletonRow}>
+      <Skeleton variant="circle" />
+      <View style={styles.skeletonText}>
+        <Skeleton variant="text" width="70%" />
+        <Skeleton variant="text" width="40%" height={10} />
+      </View>
+      <Skeleton variant="text" width={72} height={14} />
+    </View>
+  );
+};
+
+const CategoryHeader = ({
+  category,
+  colors,
+}: {
+  category: "savings" | "loan";
+  colors: typeof lightColors;
+}) => {
   const router = useRouter();
+  const styles = createStyles(colors);
   const isSavings = category === "savings";
-  const styles = createCategoryHeaderStyles(colors);
 
   const handleSeeAll = () => {
     if (isSavings) {
@@ -225,7 +224,7 @@ const CategoryHeader: React.FC<CategoryHeaderProps> = ({ category, colors }) => 
         <View
           style={[
             styles.categoryDot,
-            { backgroundColor: isSavings ? "#22c55e" : colors.primary },
+            { backgroundColor: isSavings ? colors.success : colors.tertiary },
           ]}
         />
         <Text style={styles.categoryText}>
@@ -233,205 +232,59 @@ const CategoryHeader: React.FC<CategoryHeaderProps> = ({ category, colors }) => 
         </Text>
       </View>
       <TouchableOpacity onPress={handleSeeAll} style={styles.seeAllButton}>
-        <Text style={styles.seeAllText}>SEE ALL</Text>
-        <MaterialIcons name="chevron-right" size={16} color={colors.primary} />
+        <Text style={styles.seeAllText}>See all</Text>
+        <MaterialIcons name="chevron-right" size={16} color={colors.primaryBright} />
       </TouchableOpacity>
     </View>
   );
 };
 
-interface TransactionListProps {
-  transactions: RecentTransaction[];
-  isLoading?: boolean;
-  isOffline?: boolean;
-  error?: string | null;
-  onRetry?: () => void;
-}
-
-const createStyles = (colors: typeof lightColors) =>
-  StyleSheet.create({
-    container: {
-      marginTop: theme.spacing["2xl"],
-      paddingHorizontal: theme.spacing.base,
-      marginBottom: theme.spacing["4xl"],
-    },
-    header: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      marginBottom: theme.spacing.lg,
-      paddingHorizontal: theme.spacing.xs,
-    },
-    sectionTitle: {
-      fontFamily: typography.fontFamily.label,
-      fontSize: typography.size.sm,
-      fontWeight: typography.fontWeight.bold,
-      color: colors.onSurfaceVariant,
-      textTransform: "uppercase",
-      letterSpacing: 1,
-    },
-    viewArchiveButton: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 4,
-    },
-    viewArchiveText: {
-      fontFamily: typography.fontFamily.label,
-      fontSize: typography.size.xs,
-      fontWeight: typography.fontWeight.bold,
-      color: colors.primary,
-    },
-    listContainer: {
-      backgroundColor: colors.surface,
-      borderRadius: theme.borderRadius["2xl"],
-      overflow: "hidden",
-      shadowColor: colors.primary,
-      shadowOffset: {
-        width: 0,
-        height: 2,
-      },
-      shadowOpacity: 0.05,
-      shadowRadius: 4,
-      elevation: 2,
-    },
-    offlineBanner: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: theme.spacing.sm,
-      backgroundColor: `${colors.primary}10`,
-      marginHorizontal: theme.spacing.base,
-      marginBottom: theme.spacing.base,
-      paddingVertical: theme.spacing.sm,
-      paddingHorizontal: theme.spacing.base,
-      borderRadius: theme.borderRadius.lg,
-    },
-    offlineText: {
-      fontFamily: typography.fontFamily.body,
-      fontSize: typography.size.xs,
-      color: colors.onSurfaceVariant,
-    },
-    loadingContainer: {
-      alignItems: "center",
-      justifyContent: "center",
-      paddingVertical: theme.spacing["3xl"],
-    },
-    loadingText: {
-      fontFamily: typography.fontFamily.body,
-      fontSize: typography.size.sm,
-      color: colors.onSurfaceVariant,
-      marginTop: theme.spacing.base,
-    },
-    errorContainer: {
-      alignItems: "center",
-      justifyContent: "center",
-      paddingVertical: theme.spacing["3xl"],
-      gap: theme.spacing.base,
-    },
-    errorText: {
-      fontFamily: typography.fontFamily.body,
-      fontSize: typography.size.base,
-      color: colors.error,
-      textAlign: "center",
-      marginTop: theme.spacing.base,
-    },
-    retryButton: {
-      backgroundColor: colors.primary,
-      paddingVertical: theme.spacing.base,
-      paddingHorizontal: theme.spacing.xl,
-      borderRadius: theme.borderRadius.lg,
-      marginTop: theme.spacing.base,
-    },
-    retryButtonText: {
-      fontFamily: typography.fontFamily.label,
-      fontSize: typography.size.base,
-      fontWeight: typography.fontWeight.bold,
-      color: colors.onPrimary,
-    },
-    emptyContainer: {
-      alignItems: "center",
-      justifyContent: "center",
-      paddingVertical: theme.spacing["3xl"],
-      paddingHorizontal: theme.spacing.lg,
-    },
-    emptyIconContainer: {
-      width: 80,
-      height: 80,
-      borderRadius: 40,
-      backgroundColor: `${colors.primary}08`,
-      alignItems: "center",
-      justifyContent: "center",
-      marginBottom: theme.spacing.lg,
-    },
-    emptyTitle: {
-      fontFamily: typography.fontFamily.headline,
-      fontSize: typography.size.lg,
-      fontWeight: typography.fontWeight.bold,
-      color: colors.onSurface,
-      marginBottom: theme.spacing.sm,
-    },
-    emptyText: {
-      fontFamily: typography.fontFamily.body,
-      fontSize: typography.size.base,
-      color: colors.onSurfaceVariant,
-      textAlign: "center",
-      lineHeight: 22,
-    },
-    skeletonRow: {
-      flexDirection: "row",
-      alignItems: "center",
-      paddingHorizontal: theme.spacing.lg,
-      paddingVertical: theme.spacing.lg,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.outlineVariant,
-    },
-    skeletonCircle: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
-      backgroundColor: colors.surfaceContainer,
-      marginRight: theme.spacing.base,
-    },
-    skeletonTextContainer: {
-      flex: 1,
-    },
-    skeletonLine: {
-      height: 12,
-      borderRadius: 6,
-      backgroundColor: colors.surfaceContainer,
-      marginBottom: 4,
-    },
-    skeletonLineShort: {
-      height: 10,
-      borderRadius: 5,
-      backgroundColor: colors.surfaceContainer,
-      width: "60%",
-    },
-    skeletonRight: {
-      alignItems: "flex-end",
-    },
-    skeletonAmount: {
-      height: 14,
-      borderRadius: 7,
-      backgroundColor: colors.surfaceContainer,
-      width: 80,
-      marginBottom: 4,
-    },
-  });
-
-const SkeletonRow = ({ colors }: { colors: typeof lightColors }) => {
+const TransactionRow = ({
+  transaction,
+  index,
+  colors,
+}: {
+  transaction: RecentTransaction;
+  index: number;
+  colors: typeof lightColors;
+}) => {
+  const router = useRouter();
   const styles = createStyles(colors);
+  const tint = getTransactionTint(transaction.type, colors);
+  const title =
+    transaction.title || getDefaultTitle(transaction.type, transaction.date);
+
+  const handlePress = () => {
+    if (transaction.category === "savings") {
+      router.push(`/contributions/${transaction.id}`);
+    }
+  };
+
   return (
-    <View style={styles.skeletonRow}>
-      <View style={styles.skeletonCircle} />
-      <View style={styles.skeletonTextContainer}>
-        <View style={[styles.skeletonLine, { width: "70%" }]} />
-        <View style={styles.skeletonLineShort} />
-      </View>
-      <View style={styles.skeletonRight}>
-        <View style={styles.skeletonAmount} />
-      </View>
-    </View>
+    <Animated.View
+      entering={FadeInUp.delay(400 + index * 50).duration(300)}
+      style={styles.rowContainer}
+    >
+      <ListItem
+        title={title}
+        subtitle={formatDate(transaction.date)}
+        leadingIcon={getTransactionIcon(transaction.type as TransactionType) as keyof typeof MaterialIcons.glyphMap}
+        leadingColor={tint}
+        chevron={false}
+        onPress={transaction.category === "savings" ? handlePress : undefined}
+        trailing={
+          <View style={styles.rowTrailing}>
+            <Money
+              amount={transaction.amount}
+              size="sm"
+              tone={transaction.amount > 0 ? "success" : "default"}
+              signed
+            />
+            <Text style={styles.rowStatus}>{transaction.status}</Text>
+          </View>
+        }
+      />
+    </Animated.View>
   );
 };
 
@@ -445,19 +298,14 @@ export const TransactionList: React.FC<TransactionListProps> = ({
   const router = useRouter();
   const { colors } = useTheme();
   const styles = createStyles(colors);
+  const elevations = createElevation(colors);
 
-  const savingsTransactions = transactions.filter(
-    (t) => t.category === "savings",
-  );
+  const savingsTransactions = transactions.filter((t) => t.category === "savings");
   const loanTransactions = transactions.filter((t) => t.category === "loan");
   const hasTransactions = transactions.length > 0;
 
   const handleViewArchive = () => {
     router.push("/(tabs)/contributions");
-  };
-
-  const handleRetry = () => {
-    if (onRetry) onRetry();
   };
 
   return (
@@ -475,98 +323,72 @@ export const TransactionList: React.FC<TransactionListProps> = ({
         </Animated.Text>
         {hasTransactions && (
           <TouchableOpacity onPress={handleViewArchive} style={styles.viewArchiveButton}>
-            <Text style={styles.viewArchiveText}>VIEW ARCHIVE</Text>
-            <MaterialIcons name="arrow-forward-ios" size={12} color={colors.primary} />
+            <Text style={styles.viewArchiveText}>View archive</Text>
+            <MaterialIcons name="arrow-forward-ios" size={12} color={colors.primaryBright} />
           </TouchableOpacity>
         )}
       </View>
 
-      {isLoading && !hasTransactions && (
-        <View style={styles.listContainer}>
-          <CategoryHeader category="savings" colors={colors} />
-          <SkeletonRow colors={colors} />
-          <SkeletonRow colors={colors} />
-          <CategoryHeader category="loan" colors={colors} />
-          <SkeletonRow colors={colors} />
-        </View>
-      )}
+      <View style={[styles.listCard, elevations.flat]}>
+        {isLoading && !hasTransactions && (
+          <>
+            <CategoryHeader category="savings" colors={colors} />
+            <SkeletonRow colors={colors} />
+            <SkeletonRow colors={colors} />
+            <SkeletonRow colors={colors} />
+          </>
+        )}
 
-      {error && !isLoading && !hasTransactions && (
-        <View style={styles.listContainer}>
-          <CategoryHeader category="savings" colors={colors} />
+        {error && !isLoading && !hasTransactions && (
           <View style={styles.errorContainer}>
-            <MaterialIcons name="error-outline" size={48} color={colors.error} />
+            <MaterialIcons name="error-outline" size={40} color={colors.error} />
             <Text style={styles.errorText}>{error}</Text>
             {onRetry && (
-              <TouchableOpacity style={styles.retryButton} onPress={handleRetry}>
-                <Text style={styles.retryButtonText}>Retry</Text>
-              </TouchableOpacity>
+              <Button title="Retry" onPress={onRetry} variant="tonal" size="sm" />
             )}
           </View>
-        </View>
-      )}
+        )}
 
-      {!isLoading && !error && !hasTransactions && (
-        <View style={styles.listContainer}>
-          <CategoryHeader category="savings" colors={colors} />
-          <View style={styles.emptyContainer}>
-            <View style={styles.emptyIconContainer}>
-              <MaterialIcons name="receipt-long" size={36} color={colors.outlineVariant} />
-            </View>
-            <Text style={styles.emptyTitle}>No Transactions Yet</Text>
-            <Text style={styles.emptyText}>
-              Your recent transactions will appear here once you start making contributions or loan payments.
-            </Text>
-          </View>
-        </View>
-      )}
+        {!isLoading && !error && !hasTransactions && (
+          <EmptyState
+            icon="receipt-long"
+            title="No transactions yet"
+            message="Your contributions and loan payments will appear here."
+          />
+        )}
 
-      {hasTransactions && (
-        <View style={styles.listContainer}>
-          {savingsTransactions.length > 0 && (
-            <>
-              <CategoryHeader category="savings" colors={colors} />
-              {savingsTransactions.map((transaction, index) => (
-                <TransactionItem
-                  key={transaction.id}
-                  transaction={transaction}
-                  index={index}
-                  colors={colors}
-                />
-              ))}
-            </>
-          )}
+        {hasTransactions && (
+          <>
+            {savingsTransactions.length > 0 && (
+              <>
+                <CategoryHeader category="savings" colors={colors} />
+                {savingsTransactions.map((transaction, index) => (
+                  <TransactionRow
+                    key={transaction.id}
+                    transaction={transaction}
+                    index={index}
+                    colors={colors}
+                  />
+                ))}
+              </>
+            )}
 
-          {loanTransactions.length > 0 && (
-            <>
-              <CategoryHeader category="loan" colors={colors} />
-              {loanTransactions.map((transaction, index) => (
-                <TransactionItem
-                  key={transaction.id}
-                  transaction={transaction}
-                  index={index + savingsTransactions.length}
-                  colors={colors}
-                />
-              ))}
-            </>
-          )}
-
-          {savingsTransactions.length === 0 && loanTransactions.length === 0 && (
-            <>
-              <CategoryHeader category="savings" colors={colors} />
-              <View style={styles.emptyContainer}>
-                <View style={styles.emptyIconContainer}>
-                  <MaterialIcons name="receipt-long" size={36} color={colors.outlineVariant} />
-                </View>
-                <Text style={styles.emptyTitle}>No Transactions Yet</Text>
-                <Text style={styles.emptyText}>
-                  Your recent transactions will appear here.
-                </Text>
-              </View>
-            </>
-          )}
-        </View>
-      )}
+            {loanTransactions.length > 0 && (
+              <>
+                <CategoryHeader category="loan" colors={colors} />
+                {loanTransactions.map((transaction, index) => (
+                  <TransactionRow
+                    key={transaction.id}
+                    transaction={transaction}
+                    index={index + savingsTransactions.length}
+                    colors={colors}
+                  />
+                ))}
+              </>
+            )}
+          </>
+        )}
+      </View>
     </View>
   );
 };

@@ -1,10 +1,13 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 import Animated, { FadeInUp } from "react-native-reanimated";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
+import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
-import { formatCurrencyNoSign } from "@/data/mockData";
+import { Money } from "@/components/common/Money";
+import { Skeleton } from "@/components/common/Skeleton";
 
 const AnimatedView = Animated.createAnimatedComponent(View);
 
@@ -22,19 +25,21 @@ const createStyles = (colors: typeof lightColors) =>
       marginBottom: theme.spacing.lg,
     },
     balanceCard: {
-      backgroundColor: colors.primary,
-      borderRadius: theme.borderRadius.xl,
-      padding: theme.spacing["2xl"],
-      overflow: "hidden",
-      position: "relative",
+      borderRadius: theme.borderRadius["2xl"],
       shadowColor: colors.primary,
       shadowOffset: {
         width: 0,
         height: 8,
       },
-      shadowOpacity: 0.2,
-      shadowRadius: 12,
-      elevation: 8,
+      shadowOpacity: 0.35,
+      shadowRadius: 20,
+      elevation: 10,
+    },
+    balanceCardInner: {
+      borderRadius: theme.borderRadius["2xl"],
+      padding: theme.spacing["2xl"],
+      overflow: "hidden",
+      position: "relative",
     },
     patternOverlay: {
       position: "absolute",
@@ -42,16 +47,15 @@ const createStyles = (colors: typeof lightColors) =>
       right: 0,
       width: 200,
       height: 200,
-      backgroundColor: "rgba(255, 255, 255, 0.05)",
+      backgroundColor: `${colors.onPrimary}0D`,
       borderRadius: 100,
     },
     balanceContent: {
       zIndex: 1,
     },
     balanceLabel: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "medium"),
       fontSize: typography.size.sm,
-      fontWeight: typography.fontWeight.medium,
       color: `${colors.onPrimary}90`,
       marginBottom: theme.spacing.sm,
     },
@@ -61,29 +65,22 @@ const createStyles = (colors: typeof lightColors) =>
       gap: theme.spacing.base,
       marginBottom: theme.spacing.lg,
     },
-    balanceAmount: {
-      fontFamily: typography.fontFamily.headline,
-      fontSize: typography.size["3xl"],
-      fontWeight: typography.fontWeight.extrabold,
-      color: colors.onPrimary,
-    },
     growthBadge: {
-      backgroundColor: "rgba(255, 255, 255, 0.2)",
+      backgroundColor: `${colors.onPrimary}33`,
       paddingHorizontal: theme.spacing.sm,
       paddingVertical: 2,
       borderRadius: theme.borderRadius.sm,
     },
     growthText: {
-      fontFamily: typography.fontFamily.label,
+      fontFamily: font("body", "bold"),
       fontSize: typography.size.xs,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onPrimary,
     },
     progressContainer: {
       marginTop: theme.spacing.lg,
       paddingTop: theme.spacing.lg,
       borderTopWidth: 1,
-      borderTopColor: "rgba(255, 255, 255, 0.1)",
+      borderTopColor: `${colors.onPrimary}1A`,
     },
     progressInfo: {
       flexDirection: "row",
@@ -91,34 +88,25 @@ const createStyles = (colors: typeof lightColors) =>
       marginBottom: theme.spacing.base,
     },
     progressLabel: {
-      fontFamily: typography.fontFamily.label,
+      fontFamily: font("body", "bold"),
       fontSize: typography.size.xs - 2,
-      fontWeight: typography.fontWeight.bold,
       color: `${colors.onPrimary}70`,
       textTransform: "uppercase",
       letterSpacing: 0.5,
       marginBottom: 4,
     },
     progressValue: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "semibold"),
       fontSize: typography.size.base,
-      fontWeight: typography.fontWeight.semibold,
       color: colors.onPrimary,
     },
     monthSection: {
       alignItems: "flex-end",
     },
     monthValue: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "semibold"),
       fontSize: typography.size.base,
-      fontWeight: typography.fontWeight.semibold,
       color: colors.onPrimary,
-    },
-    skeletonAmount: {
-      fontFamily: typography.fontFamily.headline,
-      fontSize: typography.size["3xl"],
-      fontWeight: typography.fontWeight.extrabold,
-      color: `${colors.onPrimary}60`,
     },
   });
 
@@ -145,6 +133,12 @@ export const PortfolioCard: React.FC<PortfolioCardProps> = ({
         entering={FadeInUp.delay(100).duration(400)}
         style={styles.balanceCard}
       >
+        <LinearGradient
+          colors={colors.brandGradient}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={styles.balanceCardInner}
+        >
         <View style={styles.patternOverlay} />
 
         <View style={styles.balanceContent}>
@@ -152,11 +146,9 @@ export const PortfolioCard: React.FC<PortfolioCardProps> = ({
 
           <View style={styles.balanceRow}>
             {isLoading && totalSavings === null ? (
-              <Text style={styles.skeletonAmount}>---</Text>
+              <Skeleton variant="text" width={160} height={32} />
             ) : (
-              <Text style={styles.balanceAmount}>
-                ₦{formatCurrencyNoSign(displayTotal)}
-              </Text>
+              <Money amount={displayTotal} size="xl" tone="onPrimary" />
             )}
             <View style={styles.growthBadge}>
               <Text style={styles.growthText}>
@@ -180,6 +172,7 @@ export const PortfolioCard: React.FC<PortfolioCardProps> = ({
             </View>
           </View>
         </View>
+        </LinearGradient>
       </AnimatedView>
     </AnimatedView>
   );

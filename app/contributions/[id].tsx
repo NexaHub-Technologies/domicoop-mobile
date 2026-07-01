@@ -17,9 +17,11 @@ import Animated, { FadeIn, FadeInUp } from "react-native-reanimated";
 import { useTheme } from "@/contexts/ThemeContext";
 import type { lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
+import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
 import { TransactionDetailCard } from "@/components/savings/TransactionDetailCard";
-import { formatCurrency } from "@/data/mockData";
+import { Badge, BadgeStatus } from "@/components/common/Badge";
+import { Money } from "@/components/common/Money";
 import { contributionsApi } from "@/lib/api/contributions.api";
 import { Contribution } from "@/lib/types/contributions";
 import { getAllocationSummary } from "@/lib/utils/contributionAllocation";
@@ -30,42 +32,16 @@ const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
 const CACHE_KEY_PREFIX = "cached_contribution_";
 
-const getStatusIcon = (status: string): string => {
+const getStatusBadge = (status: string): BadgeStatus => {
   switch (status) {
     case "verified":
-      return "check-circle";
+      return "success";
     case "pending":
-      return "schedule";
+      return "warning";
     case "rejected":
-      return "cancel";
+      return "error";
     default:
-      return "info";
-  }
-};
-
-const getStatusBadgeBg = (status: string): string => {
-  switch (status) {
-    case "verified":
-      return "#dcfce7";
-    case "pending":
-      return "#fef3c7";
-    case "rejected":
-      return "#fee2e2";
-    default:
-      return "#f1f5f9";
-  }
-};
-
-const getStatusBadgeColor = (status: string): string => {
-  switch (status) {
-    case "verified":
-      return "#166534";
-    case "pending":
-      return "#92400e";
-    case "rejected":
-      return "#991b1b";
-    default:
-      return "#475569";
+      return "neutral";
   }
 };
 
@@ -210,9 +186,7 @@ export default function TransactionDetailScreen() {
   }
 
   const amount = contribution.amount;
-  const statusIcon = getStatusIcon(contribution.status);
-  const statusBadgeBg = getStatusBadgeBg(contribution.status);
-  const statusBadgeColor = getStatusBadgeColor(contribution.status);
+  const statusBadge = getStatusBadge(contribution.status);
   const formattedDate = new Date(contribution.created_at).toLocaleDateString("en-NG", {
     day: "numeric",
     month: "long",
@@ -316,13 +290,8 @@ export default function TransactionDetailScreen() {
             <MaterialIcons name="savings" size={28} color={colors.primary} />
           </View>
           <Text style={styles.amountLabel}>Contribution Amount</Text>
-          <Text style={styles.amountValue}>{formatCurrency(amount)}</Text>
-          <View style={[styles.statusBadge, { backgroundColor: statusBadgeBg }]}>
-            <MaterialIcons name={statusIcon as any} size={14} color={statusBadgeColor} />
-            <Text style={[styles.statusText, { color: statusBadgeColor }]}>
-              {contribution.status.toUpperCase()}
-            </Text>
-          </View>
+          <Money amount={amount} size="xl" style={styles.amountValue} />
+          <Badge status={statusBadge} label={contribution.status.toUpperCase()} />
         </Animated.View>
 
         {/* Allocation Breakdown */}
@@ -423,12 +392,12 @@ const createStyles = (colors: typeof lightColors) =>
     },
     header: {
       backgroundColor: colors.surface,
-      shadowColor: colors.primary,
+      shadowColor: colors.ambientShadow,
       shadowOffset: {
         width: 0,
         height: 2,
       },
-      shadowOpacity: 0.05,
+      shadowOpacity: 1,
       shadowRadius: 4,
       elevation: 2,
     },
@@ -446,9 +415,8 @@ const createStyles = (colors: typeof lightColors) =>
       minWidth: 44,
     },
     headerTitle: {
-      fontFamily: typography.fontFamily.headline,
+      ...typography.styles.headline,
       fontSize: typography.size.lg,
-      fontWeight: typography.fontWeight.bold,
     },
     scrollView: {
       flex: 1,
@@ -463,7 +431,7 @@ const createStyles = (colors: typeof lightColors) =>
       paddingVertical: theme.spacing["3xl"],
     },
     loadingText: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: typography.size.base,
       color: colors.onSurfaceVariant,
       marginTop: theme.spacing.base,
@@ -476,16 +444,15 @@ const createStyles = (colors: typeof lightColors) =>
       gap: theme.spacing.base,
     },
     errorText: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: typography.size.base,
       color: colors.error,
       textAlign: "center",
       marginTop: theme.spacing.base,
     },
     notFoundText: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: typography.size.lg,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onSurface,
       marginTop: theme.spacing.base,
     },
@@ -497,9 +464,8 @@ const createStyles = (colors: typeof lightColors) =>
       marginTop: theme.spacing.base,
     },
     retryButtonText: {
-      fontFamily: typography.fontFamily.label,
+      fontFamily: font("body", "bold"),
       fontSize: typography.size.base,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onPrimary,
     },
     amountSection: {
@@ -508,9 +474,9 @@ const createStyles = (colors: typeof lightColors) =>
       padding: theme.spacing["2xl"],
       alignItems: "center",
       marginBottom: theme.spacing.lg,
-      shadowColor: colors.primary,
+      shadowColor: colors.ambientShadow,
       shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 0.05,
+      shadowOpacity: 1,
       shadowRadius: 8,
       elevation: 2,
       borderWidth: 1,
@@ -533,33 +499,14 @@ const createStyles = (colors: typeof lightColors) =>
       marginBottom: theme.spacing.base,
     },
     amountLabel: {
-      fontFamily: typography.fontFamily.label,
+      ...typography.styles.sectionLabel,
       fontSize: typography.size.xs,
-      fontWeight: typography.fontWeight.bold,
-      color: colors.secondary,
-      textTransform: "uppercase",
+      color: colors.onSurfaceVariant,
       letterSpacing: 2,
       marginBottom: theme.spacing.xs,
     },
     amountValue: {
-      fontFamily: typography.fontFamily.headline,
-      fontSize: 32,
-      fontWeight: typography.fontWeight.extrabold,
-      color: colors.onSurface,
       marginBottom: theme.spacing.base,
-    },
-    statusBadge: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: 4,
-      paddingHorizontal: theme.spacing.md,
-      paddingVertical: theme.spacing.xs,
-      borderRadius: theme.borderRadius.full,
-    },
-    statusText: {
-      fontFamily: typography.fontFamily.label,
-      fontSize: typography.size.xs - 2,
-      fontWeight: typography.fontWeight.bold,
     },
     sectionCard: {
       backgroundColor: colors.surfaceContainerLow,
@@ -570,12 +517,9 @@ const createStyles = (colors: typeof lightColors) =>
       gap: theme.spacing.base,
     },
     sectionTitle: {
-      fontFamily: typography.fontFamily.label,
+      ...typography.styles.sectionLabel,
       fontSize: typography.size.xs,
-      fontWeight: typography.fontWeight.bold,
-      color: colors.secondary,
-      textTransform: "uppercase",
-      letterSpacing: 0.5,
+      color: colors.onSurfaceVariant,
     },
     detailsContainer: {
       gap: theme.spacing.base,
@@ -598,9 +542,8 @@ const createStyles = (colors: typeof lightColors) =>
       borderColor: colors.outline,
     },
     actionButtonText: {
-      fontFamily: typography.fontFamily.label,
+      fontFamily: font("body", "bold"),
       fontSize: typography.size.xs,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onSurface,
       textTransform: "uppercase",
       letterSpacing: 1,

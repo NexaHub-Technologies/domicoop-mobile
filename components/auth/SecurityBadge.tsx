@@ -1,8 +1,9 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
-import { SymbolView } from "expo-symbols";
+import { MaterialIcons } from "@expo/vector-icons";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
+import { font } from "@/constants/theme";
 
 type SecurityBadgeColors = typeof lightColors;
 
@@ -16,10 +17,10 @@ export const SecurityBadge: React.FC<SecurityBadgeProps> = ({ style }) => {
 
   return (
     <View style={[styles.container, style]}>
-      <SymbolView
-        name="checkmark.shield"
+      <MaterialIcons
+        name="verified-user"
         size={14}
-        tintColor={colors.primary}
+        color={colors.primary}
         style={styles.icon}
       />
       <Text style={styles.text}>Secured Vault</Text>
@@ -44,9 +45,8 @@ const createStyles = (colors: SecurityBadgeColors) =>
       marginRight: theme.spacing.sm,
     },
     text: {
-      fontFamily: theme.typography.fontFamily.label,
+      fontFamily: font("body", "bold"),
       fontSize: theme.typography.size.xs,
-      fontWeight: theme.typography.fontWeight.bold,
       color: colors.onSurface,
       textTransform: "uppercase",
       letterSpacing: theme.typography.letterSpacing.tight,

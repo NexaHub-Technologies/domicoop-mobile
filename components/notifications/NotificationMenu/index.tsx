@@ -3,6 +3,7 @@ import { View, Text, TouchableOpacity, Modal, StyleSheet } from "react-native";
 import { MaterialIcons } from "@expo/vector-icons";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
+import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
 
 type NotificationMenuColors = typeof lightColors;
@@ -55,7 +56,7 @@ const createStyles = (colors: NotificationMenuColors) =>
   StyleSheet.create({
     overlay: {
       flex: 1,
-      backgroundColor: "rgba(0, 0, 0, 0.5)",
+      backgroundColor: colors.scrim,
       justifyContent: "flex-start",
       alignItems: "flex-end",
       paddingTop: 80,
@@ -66,12 +67,12 @@ const createStyles = (colors: NotificationMenuColors) =>
       borderRadius: theme.borderRadius.xl,
       paddingVertical: theme.spacing.sm,
       minWidth: 200,
-      shadowColor: colors.primary,
+      shadowColor: colors.ambientShadow,
       shadowOffset: {
         width: 0,
         height: 4,
       },
-      shadowOpacity: 0.15,
+      shadowOpacity: 1,
       shadowRadius: 12,
       elevation: 8,
     },
@@ -83,15 +84,14 @@ const createStyles = (colors: NotificationMenuColors) =>
       paddingVertical: theme.spacing.base,
     },
     menuItemText: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: typography.size.base,
       color: colors.onSurface,
     },
     menuItemTextDanger: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "medium"),
       fontSize: typography.size.base,
       color: colors.error,
-      fontWeight: typography.fontWeight.medium,
     },
     divider: {
       height: 1,

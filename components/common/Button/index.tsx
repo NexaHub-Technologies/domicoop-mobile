@@ -9,7 +9,7 @@ import {
 } from "react-native";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
-import { SymbolView, SFSymbol } from "expo-symbols";
+import { MaterialIcons } from "@expo/vector-icons";
 
 const createStyles = (colors: typeof lightColors) =>
   StyleSheet.create({
@@ -27,8 +27,7 @@ const createStyles = (colors: typeof lightColors) =>
       justifyContent: "center",
     },
     text: {
-      fontFamily: theme.typography.fontFamily.headline,
-      fontWeight: theme.typography.fontWeight.bold,
+      ...theme.typography.styles.headline,
       textAlign: "center",
     },
     iconLeft: {
@@ -55,7 +54,7 @@ interface ButtonProps {
   size?: ButtonSize;
   disabled?: boolean;
   loading?: boolean;
-  icon?: SFSymbol;
+  icon?: keyof typeof MaterialIcons.glyphMap;
   iconPosition?: "left" | "right";
   fullWidth?: boolean;
   style?: ViewStyle;
@@ -215,10 +214,10 @@ export const Button: React.FC<ButtonProps> = ({
     >
       <Animated.View style={[styles.content, { transform: [{ scale: scaleValue }] }]}>
         {icon && iconPosition === "left" && !loading && (
-          <SymbolView
+          <MaterialIcons
             name={icon}
             size={20}
-            tintColor={variantStyles.text.color}
+            color={variantStyles.text.color}
             style={styles.iconLeft}
           />
         )}
@@ -234,10 +233,10 @@ export const Button: React.FC<ButtonProps> = ({
           {loading ? "Loading..." : title}
         </Text>
         {icon && iconPosition === "right" && !loading && (
-          <SymbolView
+          <MaterialIcons
             name={icon}
             size={20}
-            tintColor={variantStyles.text.color}
+            color={variantStyles.text.color}
             style={styles.iconRight}
           />
         )}

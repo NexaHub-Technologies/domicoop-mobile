@@ -7,6 +7,7 @@ import { MaterialIcons } from '@expo/vector-icons';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
 import { useTheme, lightColors } from '@/contexts/ThemeContext';
 import { theme } from '@/styles/theme';
+import { font } from "@/constants/theme";
 import { typography } from '@/constants/typography';
 import { AmountInput } from '@/components/forms/AmountInput';
 import { PurposeSelector } from '@/components/forms/PurposeSelector';
@@ -201,12 +202,12 @@ const getStyles = (colors: typeof lightColors) => StyleSheet.create({
   },
   header: {
     backgroundColor: colors.surface,
-    shadowColor: colors.primary,
+    shadowColor: colors.ambientShadow,
     shadowOffset: {
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.05,
+    shadowOpacity: 1,
     shadowRadius: 4,
     elevation: 2,
   },
@@ -224,9 +225,8 @@ const getStyles = (colors: typeof lightColors) => StyleSheet.create({
     minWidth: 44,
   },
   headerTitle: {
-    fontFamily: typography.fontFamily.headline,
+    fontFamily: font("display", "bold"),
     fontSize: typography.size.lg,
-    fontWeight: typography.fontWeight.bold,
   },
   scrollView: {
     flex: 1,
@@ -248,23 +248,21 @@ const getStyles = (colors: typeof lightColors) => StyleSheet.create({
     marginBottom: theme.spacing.sm,
   },
   heroSubtitle: {
-    fontFamily: typography.fontFamily.label,
+    fontFamily: font("body", "semibold"),
     fontSize: typography.size.xs,
-    fontWeight: typography.fontWeight.semibold,
     color: colors.primary,
     textTransform: 'uppercase',
     letterSpacing: 1,
     marginBottom: theme.spacing.xs,
   },
   heroTitle: {
-    fontFamily: typography.fontFamily.headline,
+    fontFamily: font("display", "extrabold"),
     fontSize: typography.size['2xl'],
-    fontWeight: typography.fontWeight.extrabold,
     color: colors.onSurface,
     marginBottom: theme.spacing.xs,
   },
   heroDescription: {
-    fontFamily: typography.fontFamily.body,
+    fontFamily: font("body", "regular"),
     fontSize: typography.size.base,
     color: colors.onSurfaceVariant,
     lineHeight: 22,
@@ -273,7 +271,7 @@ const getStyles = (colors: typeof lightColors) => StyleSheet.create({
     paddingHorizontal: theme.spacing.lg,
   },
   errorText: {
-    fontFamily: typography.fontFamily.body,
+    fontFamily: font("body", "regular"),
     fontSize: typography.size.xs,
     color: colors.error,
     marginTop: theme.spacing.xs,
@@ -289,12 +287,12 @@ const getStyles = (colors: typeof lightColors) => StyleSheet.create({
     justifyContent: 'center',
     gap: theme.spacing.sm,
     marginTop: theme.spacing.lg,
-    shadowColor: colors.primary,
+    shadowColor: colors.ambientShadow,
     shadowOffset: {
       width: 0,
       height: 4,
     },
-    shadowOpacity: 0.2,
+    shadowOpacity: 1,
     shadowRadius: 8,
     elevation: 4,
   },
@@ -302,13 +300,12 @@ const getStyles = (colors: typeof lightColors) => StyleSheet.create({
     opacity: 0.7,
   },
   submitButtonText: {
-    fontFamily: typography.fontFamily.headline,
+    fontFamily: font("display", "bold"),
     fontSize: typography.size.base,
-    fontWeight: typography.fontWeight.bold,
     color: colors.onPrimary,
   },
   termsText: {
-    fontFamily: typography.fontFamily.body,
+    fontFamily: font("body", "regular"),
     fontSize: typography.size.xs - 2,
     color: colors.onSurfaceVariant,
     textAlign: 'center',

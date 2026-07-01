@@ -7,10 +7,11 @@ import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { SecurityBadge } from "@/components/auth/SecurityBadge";
 import { HeroSection } from "@/components/auth/HeroSection";
 import { useTheme } from "@/contexts/ThemeContext";
-import { signUp } from "@/lib/api/sign-up.api";
+import { auth } from "@/lib/api/auth.api";
 import { signInWithGoogle } from "@/lib/google-signin";
 import type { lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
+import { font } from "@/constants/theme";
 
 export default function WelcomeScreen() {
   const router = useRouter();
@@ -34,7 +35,7 @@ export default function WelcomeScreen() {
 
     try {
       const idToken = await signInWithGoogle();
-      await signUp.googleLogin(idToken);
+      await auth.googleLogin(idToken);
       router.replace("/(tabs)");
     } catch (err) {
       const errorMessage =
@@ -67,43 +68,39 @@ export default function WelcomeScreen() {
 
         {/* Main Content */}
         <View style={[styles.content, { paddingBottom: insets.bottom }]}>
-          {/* Primary Actions */}
-          <View style={styles.actions}>
-            <Button
-              title="Create Account"
-              onPress={handleCreateAccount}
-              variant="primary"
-              size="lg"
-              fullWidth
-              icon="arrow.right"
-            />
-            <Button
-              title="Sign In"
-              onPress={handleSignIn}
-              variant="outlined"
-              size="lg"
-              fullWidth
-            />
-          </View>
-
-          {/* Divider */}
-          <View style={styles.dividerContainer}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>or continue with</Text>
-            <View style={styles.dividerLine} />
-          </View>
-
-          {/* Google Sign-In */}
+          {/* Google Sign-In — the fastest way in */}
           <GoogleSignInButton
             onPress={handleGoogleSignIn}
             loading={isGoogleLoading}
             disabled={isGoogleLoading}
           />
 
-          {/* Error Message */}
-          {error && (
-            <Text style={styles.errorText}>{error}</Text>
-          )}
+          {error && <Text style={styles.errorText}>{error}</Text>}
+
+          {/* Divider */}
+          <View style={styles.dividerContainer}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>or</Text>
+            <View style={styles.dividerLine} />
+          </View>
+
+          {/* Create Account — the one primary CTA */}
+          <Button
+            title="Create Account"
+            onPress={handleCreateAccount}
+            variant="primary"
+            size="lg"
+            fullWidth
+            icon="arrow-forward"
+          />
+
+          {/* Sign In as a quiet link row */}
+          <View style={styles.signInRow}>
+            <Text style={styles.signInText}>Already a member? </Text>
+            <Text style={styles.signInLink} onPress={handleSignIn}>
+              Sign in
+            </Text>
+          </View>
 
           {/* Terms & Privacy */}
           <View style={styles.terms}>
@@ -112,7 +109,7 @@ export default function WelcomeScreen() {
               <Text style={styles.termsLink} onPress={() => {}}>
                 Terms of Service
               </Text>
-              {" & "}
+              {" and "}
               <Text style={styles.termsLink} onPress={() => {}}>
                 Privacy Policy
               </Text>
@@ -149,31 +146,42 @@ const createStyles = (colors: typeof lightColors) =>
       alignSelf: "center",
       width: "100%",
     },
-    actions: {
-      gap: theme.spacing.lg,
-      marginBottom: theme.spacing.xl,
+    signInRow: {
+      flexDirection: "row",
+      justifyContent: "center",
+      alignItems: "center",
+      marginTop: theme.spacing.xl,
+      paddingVertical: theme.spacing.sm,
+    },
+    signInText: {
+      fontFamily: font("body", "regular"),
+      fontSize: theme.typography.size.base,
+      color: colors.onSurfaceVariant,
+    },
+    signInLink: {
+      fontFamily: font("body", "bold"),
+      fontSize: theme.typography.size.base,
+      color: colors.primaryBright,
     },
     terms: {
       paddingHorizontal: theme.spacing.base,
+      marginTop: theme.spacing["2xl"],
     },
     termsText: {
-      fontFamily: theme.typography.fontFamily.label,
+      fontFamily: font("body", "regular"),
       fontSize: theme.typography.size.xs,
-      fontWeight: theme.typography.fontWeight.semibold,
       color: colors.onSurfaceVariant,
       textAlign: "center",
-      textTransform: "uppercase",
-      letterSpacing: theme.typography.letterSpacing.wider,
       lineHeight: theme.typography.size.xs * 1.6,
     },
     termsLink: {
-      color: colors.primary,
+      color: colors.primaryBright,
       textDecorationLine: "underline",
     },
     dividerContainer: {
       flexDirection: "row",
       alignItems: "center",
-      marginBottom: theme.spacing.xl,
+      marginVertical: theme.spacing.xl,
     },
     dividerLine: {
       flex: 1,
@@ -181,19 +189,19 @@ const createStyles = (colors: typeof lightColors) =>
       backgroundColor: colors.outlineVariant,
     },
     dividerText: {
-      fontFamily: theme.typography.fontFamily.label,
+      fontFamily: font("body", "semibold"),
       fontSize: theme.typography.size.xs,
-      fontWeight: theme.typography.fontWeight.semibold,
       color: colors.onSurfaceVariant,
       textTransform: "uppercase",
       letterSpacing: theme.typography.letterSpacing.wider,
       marginHorizontal: theme.spacing.base,
     },
     errorText: {
-      fontFamily: theme.typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: theme.typography.size.sm,
       color: colors.error,
       textAlign: "center",
       marginTop: theme.spacing.base,
+      marginBottom: -theme.spacing.md,
     },
   });

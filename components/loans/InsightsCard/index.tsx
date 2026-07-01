@@ -4,6 +4,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import Animated, { FadeInUp } from "react-native-reanimated";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
+import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
 import { loanInsights } from "@/data/mockData";
 
@@ -30,12 +31,12 @@ const createStyles = (colors: typeof lightColors) =>
       backgroundColor: colors.surface,
       alignItems: "center",
       justifyContent: "center",
-      shadowColor: colors.primary,
+      shadowColor: colors.ambientShadow,
       shadowOffset: {
         width: 0,
         height: 2,
       },
-      shadowOpacity: 0.1,
+      shadowOpacity: 1,
       shadowRadius: 4,
       elevation: 2,
     },
@@ -43,14 +44,13 @@ const createStyles = (colors: typeof lightColors) =>
       flex: 1,
     },
     title: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: typography.size.sm,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onSurface,
       marginBottom: 4,
     },
     description: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: typography.size.xs,
       color: colors.onSurfaceVariant,
       lineHeight: 18,

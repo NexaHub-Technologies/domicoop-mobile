@@ -10,6 +10,7 @@ import Animated, {
 } from "react-native-reanimated";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
+import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
 import type { Profile } from "@/lib/types/sign-up";
 import { getInitials, formatDate } from "@/data/mockData";
@@ -43,9 +44,8 @@ const createStyles = (colors: typeof lightColors) =>
       borderRadius: theme.borderRadius.full,
     },
     navTitle: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: typography.size.lg,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onSurface,
       flex: 1,
       textAlign: "center",
@@ -68,21 +68,20 @@ const createStyles = (colors: typeof lightColors) =>
       backgroundColor: colors.primary,
       borderWidth: 4,
       borderColor: colors.surface,
-      shadowColor: colors.primary,
+      shadowColor: colors.ambientShadow,
       shadowOffset: {
         width: 0,
         height: 4,
       },
-      shadowOpacity: 0.2,
+      shadowOpacity: 1,
       shadowRadius: 8,
       elevation: 4,
       alignItems: "center",
       justifyContent: "center",
     },
     avatarText: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: typography.size["3xl"],
-      fontWeight: typography.fontWeight.bold,
       color: colors.onPrimary,
     },
     editIconContainer: {
@@ -97,12 +96,12 @@ const createStyles = (colors: typeof lightColors) =>
       borderColor: colors.surface,
       alignItems: "center",
       justifyContent: "center",
-      shadowColor: colors.primary,
+      shadowColor: colors.ambientShadow,
       shadowOffset: {
         width: 0,
         height: 2,
       },
-      shadowOpacity: 0.2,
+      shadowOpacity: 1,
       shadowRadius: 4,
       elevation: 2,
     },
@@ -110,9 +109,8 @@ const createStyles = (colors: typeof lightColors) =>
       alignItems: "center",
     },
     name: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: typography.size["2xl"],
-      fontWeight: typography.fontWeight.bold,
       color: colors.onSurface,
       marginBottom: theme.spacing.base,
     },
@@ -127,13 +125,12 @@ const createStyles = (colors: typeof lightColors) =>
       borderRadius: theme.borderRadius.full,
     },
     memberBadgeText: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "medium"),
       fontSize: typography.size.sm,
-      fontWeight: typography.fontWeight.medium,
       color: colors.primary,
     },
     memberSince: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: typography.size.sm,
       color: colors.onSurfaceVariant,
     },

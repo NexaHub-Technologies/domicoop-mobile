@@ -10,6 +10,7 @@ import {
 } from "react-native";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
+import { font } from "@/constants/theme";
 import { MaterialIcons } from "@expo/vector-icons";
 
 interface InputProps {
@@ -38,9 +39,8 @@ const createStyles = (colors: typeof lightColors) =>
       width: "100%",
     },
     label: {
-      fontFamily: theme.typography.fontFamily.label,
+      fontFamily: font("body", "bold"),
       fontSize: theme.typography.size.xs,
-      fontWeight: theme.typography.fontWeight.bold,
       color: colors.onSurfaceVariant,
       textTransform: "uppercase",
       letterSpacing: theme.typography.letterSpacing.widest,
@@ -77,9 +77,8 @@ const createStyles = (colors: typeof lightColors) =>
     },
     input: {
       flex: 1,
-      fontFamily: theme.typography.fontFamily.body,
+      fontFamily: font("body", "medium"),
       fontSize: theme.typography.size.md,
-      fontWeight: theme.typography.fontWeight.medium,
       color: colors.onSurface,
       height: "100%",
     },
@@ -90,7 +89,7 @@ const createStyles = (colors: typeof lightColors) =>
       paddingRight: theme.spacing.sm,
     },
     helper: {
-      fontFamily: theme.typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: theme.typography.size.xs,
       color: colors.onSurfaceVariant,
       marginTop: theme.spacing.md,

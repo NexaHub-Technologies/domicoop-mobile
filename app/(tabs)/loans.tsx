@@ -19,6 +19,7 @@ import Animated, {
   useSharedValue,
 } from "react-native-reanimated";
 import { theme } from "@/styles/theme";
+import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
 import { LoanSummaryStats } from "@/components/loans/LoanSummaryStats";
 import { LoanCard } from "@/components/loans/LoanCard";
@@ -151,12 +152,12 @@ const createStyles = (colors: typeof lightColors) =>
     },
     header: {
       backgroundColor: colors.surface,
-      shadowColor: colors.primary,
+      shadowColor: colors.ambientShadow,
       shadowOffset: {
         width: 0,
         height: 2,
       },
-      shadowOpacity: 0.05,
+      shadowOpacity: 1,
       shadowRadius: 4,
       elevation: 2,
     },
@@ -174,9 +175,8 @@ const createStyles = (colors: typeof lightColors) =>
       minWidth: 44,
     },
     headerTitle: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: typography.size.lg,
-      fontWeight: typography.fontWeight.bold,
     },
     scrollView: {
       flex: 1,
@@ -193,12 +193,12 @@ const createStyles = (colors: typeof lightColors) =>
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
-      shadowColor: colors.primary,
+      shadowColor: colors.ambientShadow,
       shadowOffset: {
         width: 0,
         height: 4,
       },
-      shadowOpacity: 0.2,
+      shadowOpacity: 1,
       shadowRadius: 8,
       elevation: 4,
     },
@@ -211,7 +211,7 @@ const createStyles = (colors: typeof lightColors) =>
       width: 48,
       height: 48,
       borderRadius: 24,
-      backgroundColor: "rgba(255, 255, 255, 0.2)",
+      backgroundColor: `${colors.onPrimary}33`,
       alignItems: "center",
       justifyContent: "center",
     },
@@ -219,13 +219,12 @@ const createStyles = (colors: typeof lightColors) =>
       gap: 2,
     },
     applyButtonTitle: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: typography.size.base,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onPrimary,
     },
     applyButtonSubtitle: {
-      fontFamily: typography.fontFamily.body,
+      fontFamily: font("body", "regular"),
       fontSize: typography.size.xs,
       color: `${colors.onPrimary}90`,
     },
@@ -237,15 +236,13 @@ const createStyles = (colors: typeof lightColors) =>
       marginBottom: theme.spacing.base,
     },
     sectionTitle: {
-      fontFamily: typography.fontFamily.headline,
+      fontFamily: font("display", "bold"),
       fontSize: typography.size.lg,
-      fontWeight: typography.fontWeight.bold,
       color: colors.onSurface,
     },
     viewAllText: {
-      fontFamily: typography.fontFamily.label,
+      fontFamily: font("body", "semibold"),
       fontSize: typography.size.sm,
-      fontWeight: typography.fontWeight.semibold,
       color: colors.primary,
     },
     loansList: {
