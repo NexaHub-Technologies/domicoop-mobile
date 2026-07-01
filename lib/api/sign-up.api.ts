@@ -62,6 +62,19 @@ export const signUp = {
       body: data,
     });
   },
+
+  googleLogin: async (idToken: string): Promise<LoginResponse> => {
+    const response = await request<LoginResponse>("/auth/google", {
+      method: "POST",
+      body: { id_token: idToken },
+    });
+
+    await session.setTokens(response.access_token, response.refresh_token);
+    if (response.user?.email) {
+      await session.setEmail(response.user.email);
+    }
+    return response;
+  },
 };
 
 export default signUp;

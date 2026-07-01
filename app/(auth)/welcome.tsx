@@ -1,11 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Button } from "@/components/common/Button";
+import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { SecurityBadge } from "@/components/auth/SecurityBadge";
 import { HeroSection } from "@/components/auth/HeroSection";
 import { useTheme } from "@/contexts/ThemeContext";
+import { signUp } from "@/lib/api/sign-up.api";
+import { signInWithGoogle } from "@/lib/google-signin";
 import type { lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
 
@@ -14,6 +17,8 @@ export default function WelcomeScreen() {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const styles = createStyles(colors);
+  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
+  const [error, setError] = useState<string | undefined>(undefined);
 
   const handleCreateAccount = () => {
     router.push("/sign-up");
@@ -21,6 +26,23 @@ export default function WelcomeScreen() {
 
   const handleSignIn = () => {
     router.push("/sign-in");
+  };
+
+  const handleGoogleSignIn = async () => {
+    setError(undefined);
+    setIsGoogleLoading(true);
+
+    try {
+      const idToken = await signInWithGoogle();
+      await signUp.googleLogin(idToken);
+      router.replace("/(tabs)");
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : "Google sign-in failed. Please try again.";
+      setError(errorMessage);
+    } finally {
+      setIsGoogleLoading(false);
+    }
   };
 
   return (
@@ -63,6 +85,25 @@ export default function WelcomeScreen() {
               fullWidth
             />
           </View>
+
+          {/* Divider */}
+          <View style={styles.dividerContainer}>
+            <View style={styles.dividerLine} />
+            <Text style={styles.dividerText}>or continue with</Text>
+            <View style={styles.dividerLine} />
+          </View>
+
+          {/* Google Sign-In */}
+          <GoogleSignInButton
+            onPress={handleGoogleSignIn}
+            loading={isGoogleLoading}
+            disabled={isGoogleLoading}
+          />
+
+          {/* Error Message */}
+          {error && (
+            <Text style={styles.errorText}>{error}</Text>
+          )}
 
           {/* Terms & Privacy */}
           <View style={styles.terms}>
@@ -128,5 +169,31 @@ const createStyles = (colors: typeof lightColors) =>
     termsLink: {
       color: colors.primary,
       textDecorationLine: "underline",
+    },
+    dividerContainer: {
+      flexDirection: "row",
+      alignItems: "center",
+      marginBottom: theme.spacing.xl,
+    },
+    dividerLine: {
+      flex: 1,
+      height: 1,
+      backgroundColor: colors.outlineVariant,
+    },
+    dividerText: {
+      fontFamily: theme.typography.fontFamily.label,
+      fontSize: theme.typography.size.xs,
+      fontWeight: theme.typography.fontWeight.semibold,
+      color: colors.onSurfaceVariant,
+      textTransform: "uppercase",
+      letterSpacing: theme.typography.letterSpacing.wider,
+      marginHorizontal: theme.spacing.base,
+    },
+    errorText: {
+      fontFamily: theme.typography.fontFamily.body,
+      fontSize: theme.typography.size.sm,
+      color: colors.error,
+      textAlign: "center",
+      marginTop: theme.spacing.base,
     },
   });
