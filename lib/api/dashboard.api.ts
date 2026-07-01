@@ -1,9 +1,13 @@
 import { authedRequest } from "../http";
-import { transformDashboardSummary, DashboardSummary } from "../types/dashboard";
+import {
+  transformDashboardSummary,
+  ApiDashboardSummary,
+  DashboardSummary,
+} from "../types/dashboard";
 
 export const dashboard = {
   getSummary: async (): Promise<DashboardSummary> => {
-    const raw = await authedRequest<any>("/dashboard/summary", {
+    const raw = await authedRequest<ApiDashboardSummary>("/dashboard/summary", {
       method: "GET",
     });
     return transformDashboardSummary(raw);

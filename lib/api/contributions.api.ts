@@ -1,7 +1,6 @@
 import { authedRequest } from "@/lib/http";
 import {
   Contribution,
-  CreateContributionInput,
   GetContributionsParams,
   ContributionListResponse,
   StoreVerifiedContributionInput,
@@ -36,19 +35,13 @@ export const contributionsApi = {
     return transformContribution(response);
   },
 
-  createContribution: async (data: CreateContributionInput): Promise<Contribution> => {
-    return authedRequest<Contribution>("/contributions/", {
-      method: "POST",
-      body: data,
-    });
-  },
-
   storeVerifiedContribution: async (
     data: StoreVerifiedContributionInput,
   ): Promise<Contribution> => {
-    return authedRequest<Contribution>("/contributions", {
+    const response = await authedRequest<ApiContribution>("/contributions", {
       method: "POST",
       body: data,
     });
+    return transformContribution(response);
   },
 };
