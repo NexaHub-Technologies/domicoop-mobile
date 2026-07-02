@@ -47,3 +47,9 @@ app-example
 domicop-fcm.json
 google-services.json
 
+
+# Firebase Admin SDK service-account keys — server credentials, never commit
+*firebase-adminsdk*.json
+
+#docs
+/docs

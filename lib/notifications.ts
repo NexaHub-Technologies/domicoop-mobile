@@ -32,19 +32,23 @@ export async function ensureAndroidChannel(): Promise<void> {
  * Expo push token, or null when denied or running on an emulator.
  */
 export async function getPushToken(): Promise<string | null> {
-  if (!Device.isDevice) return null;
+  if (!Device.isDevice) {
+    console.log("[Notifications] Skipping push token — not a physical device");
+    return null;
+  }
 
   const { status } = await Notifications.getPermissionsAsync();
   let finalStatus = status;
   if (status !== "granted") {
     finalStatus = (await Notifications.requestPermissionsAsync()).status;
   }
-  if (finalStatus !== "granted") return null;
+  if (finalStatus !== "granted") {
+    console.log("[Notifications] Push permission not granted");
+    return null;
+  }
 
   const projectId = Constants.expoConfig?.extra?.eas?.projectId;
   const token = await Notifications.getExpoPushTokenAsync({ projectId });
-
-  console.log(token.data);
 
   return token.data;
 }

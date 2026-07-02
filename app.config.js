@@ -33,7 +33,7 @@ module.exports = {
       edgeToEdgeEnabled: true,
       predictiveBackGestureEnabled: false,
       package: "com.nexahub.domicop",
-      ...(googleServicesFile ? { googleServicesFile } : {}),
+      googleServicesFile: googleServicesFile,
     },
     web: {
       output: "static",

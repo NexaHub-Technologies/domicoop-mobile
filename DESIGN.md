@@ -12,7 +12,7 @@ Token source of truth: **`constants/theme/`**
 
 Runtime access: `const { colors, isDarkMode } = useTheme()` from
 `contexts/ThemeContext` (which re-exports the palettes for typing:
-`createStyles(colors: typeof lightCohow do I get the google-services.jsonlors)`).
+`createStyles(colors: typeof lightColors)`).
 
 ---
 
