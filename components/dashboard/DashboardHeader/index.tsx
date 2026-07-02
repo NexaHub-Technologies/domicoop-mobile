@@ -7,6 +7,7 @@ import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
 import { typography } from "@/constants/typography";
 import { useProfile } from "@/hooks/useProfile";
+import { useUnreadCount } from "@/hooks/useUnreadCount";
 import { getInitials } from "@/data/mockData";
 import { Skeleton } from "@/components/common/Skeleton";
 
@@ -71,6 +72,26 @@ const createStyles = (colors: typeof lightColors) =>
       borderRadius: theme.borderRadius.full,
       backgroundColor: colors.surfaceContainer,
     },
+    unreadBadge: {
+      position: "absolute",
+      top: 2,
+      right: 2,
+      minWidth: 18,
+      height: 18,
+      borderRadius: theme.borderRadius.full,
+      backgroundColor: colors.error,
+      alignItems: "center",
+      justifyContent: "center",
+      paddingHorizontal: 4,
+      borderWidth: 2,
+      borderColor: colors.surface,
+    },
+    unreadBadgeText: {
+      ...typography.styles.labelBold,
+      fontSize: 9,
+      lineHeight: 12,
+      color: colors.onError,
+    },
     loadingContainer: {
       flexDirection: "row",
       alignItems: "center",
@@ -82,6 +103,7 @@ export const DashboardHeader: React.FC = () => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const { data: profile, isPending } = useProfile();
+  const unreadCount = useUnreadCount();
   const isLoading = isPending;
   const userName = profile?.full_name || "User";
 
@@ -120,6 +142,13 @@ export const DashboardHeader: React.FC = () => {
           activeOpacity={0.7}
         >
           <MaterialIcons name="notifications" size={24} color={colors.onSurfaceVariant} />
+          {unreadCount > 0 && (
+            <View style={styles.unreadBadge}>
+              <Text style={styles.unreadBadgeText}>
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </Text>
+            </View>
+          )}
         </AnimatedTouchable>
       </View>
     </Animated.View>

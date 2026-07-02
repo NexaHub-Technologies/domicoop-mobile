@@ -1,6 +1,5 @@
 import React from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
-import { useRouter } from "expo-router";
 import { MaterialIcons } from "@expo/vector-icons";
 import Animated, {
   useAnimatedStyle,
@@ -13,45 +12,59 @@ import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
 import {
   Notification,
-  getNotificationIcon,
-  getNotificationIconBg,
-  getNotificationIconColor,
+  NotificationType,
   getRelativeTime,
-} from "@/data/mockData";
+} from "@/lib/types/notifications";
 
 type NotificationCardColors = typeof lightColors;
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
+const TYPE_ICONS: Record<NotificationType, keyof typeof MaterialIcons.glyphMap> = {
+  loan: "account-balance-wallet",
+  contribution: "calendar-month",
+  dividend: "campaign",
+  security: "security",
+  meeting: "groups",
+};
+
+const getTypeTint = (
+  type: NotificationType,
+  colors: NotificationCardColors,
+): { bg: string; fg: string } => {
+  switch (type) {
+    case "loan":
+      return { bg: colors.infoContainer, fg: colors.info };
+    case "contribution":
+      return { bg: colors.warningContainer, fg: colors.warning };
+    case "security":
+      return { bg: colors.errorContainer, fg: colors.error };
+    case "meeting":
+      return { bg: colors.infoContainer, fg: colors.info };
+    case "dividend":
+    default:
+      return { bg: colors.surfaceContainerHigh, fg: colors.onSurfaceVariant };
+  }
+};
+
 interface NotificationCardProps {
   notification: Notification;
   onPress?: () => void;
+  onActionPress?: (route: string) => void;
 }
 
 export const NotificationCard: React.FC<NotificationCardProps> = ({
   notification,
   onPress,
+  onActionPress,
 }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
-  const router = useRouter();
   const scale = useSharedValue(1);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
   }));
-
-  const handlePress = () => {
-    if (onPress) {
-      onPress();
-    }
-  };
-
-  const handleActionPress = () => {
-    if (notification.action) {
-      router.push(notification.action.route as any);
-    }
-  };
 
   const handlePressIn = () => {
     scale.value = withSpring(0.98, { damping: 15, stiffness: 300 });
@@ -61,14 +74,12 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
     scale.value = withSpring(1, { damping: 15, stiffness: 300 });
   };
 
-  const iconName = getNotificationIcon(notification.type);
-  const iconBg = getNotificationIconBg(notification.type);
-  const iconColor = getNotificationIconColor(notification.type);
+  const tint = getTypeTint(notification.type, colors);
   const relativeTime = getRelativeTime(notification.timestamp);
 
   return (
     <AnimatedTouchable
-      onPress={handlePress}
+      onPress={onPress}
       onPressIn={handlePressIn}
       onPressOut={handlePressOut}
       style={[
@@ -80,8 +91,12 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
       activeOpacity={0.8}
     >
       <View style={styles.content}>
-        <View style={[styles.iconContainer, { backgroundColor: iconBg }]}>
-          <MaterialIcons name={iconName as any} size={24} color={iconColor} />
+        <View style={[styles.iconContainer, { backgroundColor: tint.bg }]}>
+          <MaterialIcons
+            name={TYPE_ICONS[notification.type]}
+            size={24}
+            color={tint.fg}
+          />
         </View>
         <View style={styles.textContainer}>
           <View style={styles.header}>
@@ -96,10 +111,10 @@ export const NotificationCard: React.FC<NotificationCardProps> = ({
           >
             {notification.message}
           </Text>
-          {notification.action && (
+          {notification.action && onActionPress && (
             <TouchableOpacity
               style={styles.actionButton}
-              onPress={handleActionPress}
+              onPress={() => onActionPress(notification.action!.route)}
               activeOpacity={0.8}
             >
               <Text style={styles.actionButtonText}>{notification.action.label}</Text>
@@ -128,7 +143,7 @@ const createStyles = (colors: NotificationCardColors) =>
     },
     unreadContainer: {
       borderLeftWidth: 4,
-      borderLeftColor: colors.primary,
+      borderLeftColor: colors.primaryBright,
     },
     readContainer: {
       opacity: 0.6,

@@ -1,6 +1,14 @@
 import React, { useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
-import { useRouter } from "expo-router";
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+  RefreshControl,
+  ActivityIndicator,
+} from "react-native";
+import { useRouter, Href } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
@@ -12,35 +20,61 @@ import { typography } from "@/constants/typography";
 import { NotificationCard } from "@/components/notifications/NotificationCard";
 import { SummaryCards } from "@/components/notifications/SummaryCards";
 import { NotificationMenu } from "@/components/notifications/NotificationMenu";
-import { mockNotifications, Notification } from "@/data/mockData";
+import { ConfirmationModal } from "@/components/modals/ConfirmationModal";
+import { EmptyState } from "@/components/common/EmptyState";
+import { Skeleton } from "@/components/common/Skeleton";
+import { Button } from "@/components/common/Button";
+import { useNotifications } from "@/hooks/useNotifications";
+import { Notification, getRelativeTime } from "@/lib/types/notifications";
 
 export default function NotificationsScreen() {
   const router = useRouter();
   const { colors, isDarkMode } = useTheme();
-  const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
-  const [showMenu, setShowMenu] = useState(false);
   const styles = createStyles(colors);
+  const [showMenu, setShowMenu] = useState(false);
+  const [showClearConfirm, setShowClearConfirm] = useState(false);
+
+  const {
+    notifications,
+    unreadCount,
+    isLoading,
+    isRefreshing,
+    error,
+    isOffline,
+    refresh,
+    loadMore,
+    isLoadingMore,
+    hasMore,
+    markRead,
+    markAllRead,
+    clearAll,
+  } = useNotifications();
 
   const unreadNotifications = notifications.filter((n) => !n.isRead);
   const readNotifications = notifications.filter((n) => n.isRead);
+  const hasNotifications = notifications.length > 0;
+  const latestActivity = hasNotifications
+    ? getRelativeTime(notifications[0].timestamp)
+    : undefined;
 
   const handleBack = () => {
     router.back();
   };
 
-  const handleMarkAllAsRead = () => {
-    setNotifications((prev) => prev.map((n) => ({ ...n, isRead: true })));
+  const handleNotificationPress = (notification: Notification) => {
+    markRead(notification.id);
+  };
+
+  const handleActionPress = (notification: Notification, route: string) => {
+    markRead(notification.id);
+    if (route.startsWith("/")) {
+      router.push(route as Href);
+    }
   };
 
   const handleClearAll = () => {
-    setNotifications([]);
-  };
-
-  const handleNotificationPress = (notification: Notification) => {
-    // Mark as read (visual state change only)
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === notification.id ? { ...n, isRead: true } : n)),
-    );
+    setShowClearConfirm(false);
+    clearAll();
   };
 
   return (
@@ -53,7 +87,7 @@ export default function NotificationsScreen() {
           <TouchableOpacity onPress={handleBack} style={styles.backButton}>
             <MaterialIcons name="arrow-back" size={24} color={colors.onSurfaceVariant} />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.primary }]}>
+          <Text style={[styles.headerTitle, { color: colors.primaryBright }]}>
             Notifications
           </Text>
           <TouchableOpacity style={styles.moreButton} onPress={() => setShowMenu(true)}>
@@ -66,16 +100,52 @@ export default function NotificationsScreen() {
         style={styles.scrollView}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={isRefreshing}
+            onRefresh={refresh}
+            tintColor={colors.primary}
+            colors={[colors.primary]}
+          />
+        }
       >
-        {/* Summary Cards */}
-        <SummaryCards unreadCount={unreadNotifications.length} />
+        {isOffline && (
+          <View style={styles.offlineBanner}>
+            <MaterialIcons name="cloud-off" size={16} color={colors.onSurfaceVariant} />
+            <Text style={styles.offlineText}>Showing cached data — offline</Text>
+          </View>
+        )}
 
-        {/* Today Section */}
+        {/* Summary */}
+        <SummaryCards unreadCount={unreadCount} latestActivity={latestActivity} />
+
+        {/* Loading skeleton */}
+        {isLoading && !hasNotifications && (
+          <View style={styles.skeletonList}>
+            <Skeleton variant="card" height={96} />
+            <Skeleton variant="card" height={96} />
+            <Skeleton variant="card" height={96} />
+          </View>
+        )}
+
+        {/* Error */}
+        {error && !isLoading && !hasNotifications && (
+          <Animated.View
+            entering={FadeInUp.delay(200).duration(400)}
+            style={styles.errorContainer}
+          >
+            <MaterialIcons name="error-outline" size={40} color={colors.error} />
+            <Text style={styles.errorText}>{error}</Text>
+            <Button title="Retry" onPress={refresh} variant="tonal" size="sm" />
+          </Animated.View>
+        )}
+
+        {/* New (unread) */}
         {unreadNotifications.length > 0 && (
           <Animated.View entering={FadeInUp.delay(300).duration(400)}>
             <View style={styles.sectionHeader}>
-              <Text style={styles.sectionTitle}>Today</Text>
-              <TouchableOpacity onPress={handleMarkAllAsRead}>
+              <Text style={styles.sectionTitle}>New</Text>
+              <TouchableOpacity onPress={markAllRead}>
                 <Text style={styles.markAllText}>Mark all as read</Text>
               </TouchableOpacity>
             </View>
@@ -85,13 +155,14 @@ export default function NotificationsScreen() {
                   key={notification.id}
                   notification={notification}
                   onPress={() => handleNotificationPress(notification)}
+                  onActionPress={(route) => handleActionPress(notification, route)}
                 />
               ))}
             </View>
           </Animated.View>
         )}
 
-        {/* Earlier Section */}
+        {/* Earlier (read) */}
         {readNotifications.length > 0 && (
           <Animated.View entering={FadeInUp.delay(400).duration(400)}>
             <Text style={styles.sectionTitle}>Earlier</Text>
@@ -101,32 +172,35 @@ export default function NotificationsScreen() {
                   key={notification.id}
                   notification={notification}
                   onPress={() => handleNotificationPress(notification)}
+                  onActionPress={(route) => handleActionPress(notification, route)}
                 />
               ))}
             </View>
           </Animated.View>
         )}
 
-        {/* Empty State */}
-        {notifications.length === 0 && (
-          <Animated.View
-            entering={FadeInUp.delay(300).duration(400)}
-            style={styles.emptyState}
-          >
-            <View style={styles.emptyIconContainer}>
-              <MaterialIcons
-                name="notifications-off"
-                size={48}
-                color={colors.onSurfaceVariant}
-              />
-            </View>
-            <Text style={styles.emptyTitle}>No notifications</Text>
-            <Text style={styles.emptySubtitle}>You&apos;re all caught up!</Text>
+        {/* Empty */}
+        {!isLoading && !error && !hasNotifications && (
+          <Animated.View entering={FadeInUp.delay(300).duration(400)}>
+            <EmptyState
+              icon="notifications-off"
+              title="No notifications"
+              message="You're all caught up! Updates from your cooperative will appear here."
+            />
           </Animated.View>
         )}
 
-        {/* End of Updates */}
-        {notifications.length > 0 && (
+        {/* Load more / end of list */}
+        {hasNotifications && hasMore && (
+          <View style={styles.loadMoreContainer}>
+            {isLoadingMore ? (
+              <ActivityIndicator size="small" color={colors.primary} />
+            ) : (
+              <Button title="Load more" onPress={loadMore} variant="tonal" size="sm" />
+            )}
+          </View>
+        )}
+        {hasNotifications && !hasMore && (
           <Animated.View
             entering={FadeInUp.delay(500).duration(400)}
             style={styles.endOfUpdates}
@@ -150,7 +224,19 @@ export default function NotificationsScreen() {
       <NotificationMenu
         visible={showMenu}
         onClose={() => setShowMenu(false)}
-        onClearAll={handleClearAll}
+        onClearAll={() => setShowClearConfirm(true)}
+      />
+
+      {/* Clear-all confirmation */}
+      <ConfirmationModal
+        visible={showClearConfirm}
+        title="Clear all notifications?"
+        message="This removes your entire notification history. This can't be undone."
+        confirmText="Clear all"
+        cancelText="Cancel"
+        isDestructive
+        onConfirm={handleClearAll}
+        onCancel={() => setShowClearConfirm(false)}
       />
     </SafeAreaView>
   );
@@ -201,6 +287,38 @@ const createStyles = (colors: typeof lightColors) =>
     scrollContent: {
       padding: theme.spacing.lg,
     },
+    offlineBanner: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: theme.spacing.sm,
+      backgroundColor: colors.surfaceContainer,
+      marginBottom: theme.spacing.base,
+      paddingVertical: theme.spacing.sm,
+      paddingHorizontal: theme.spacing.base,
+      borderRadius: theme.borderRadius.lg,
+    },
+    offlineText: {
+      fontFamily: font("body", "regular"),
+      fontSize: typography.size.xs,
+      color: colors.onSurfaceVariant,
+    },
+    skeletonList: {
+      gap: theme.spacing.base,
+      marginBottom: theme.spacing.lg,
+    },
+    errorContainer: {
+      alignItems: "center",
+      justifyContent: "center",
+      paddingVertical: theme.spacing["2xl"],
+      gap: theme.spacing.base,
+    },
+    errorText: {
+      fontFamily: font("body", "regular"),
+      fontSize: typography.size.base,
+      color: colors.error,
+      textAlign: "center",
+    },
     sectionHeader: {
       flexDirection: "row",
       justifyContent: "space-between",
@@ -218,7 +336,7 @@ const createStyles = (colors: typeof lightColors) =>
     markAllText: {
       fontFamily: font("body", "bold"),
       fontSize: typography.size.xs,
-      color: colors.primary,
+      color: colors.primaryBright,
       textTransform: "uppercase",
       letterSpacing: 0.5,
     },
@@ -226,30 +344,9 @@ const createStyles = (colors: typeof lightColors) =>
       gap: theme.spacing.base,
       marginBottom: theme.spacing.lg,
     },
-    emptyState: {
+    loadMoreContainer: {
       alignItems: "center",
-      justifyContent: "center",
-      paddingVertical: theme.spacing["3xl"],
-    },
-    emptyIconContainer: {
-      width: 80,
-      height: 80,
-      borderRadius: 40,
-      backgroundColor: colors.surfaceContainer,
-      alignItems: "center",
-      justifyContent: "center",
-      marginBottom: theme.spacing.lg,
-    },
-    emptyTitle: {
-      fontFamily: font("display", "bold"),
-      fontSize: typography.size.lg,
-      color: colors.onSurface,
-      marginBottom: theme.spacing.xs,
-    },
-    emptySubtitle: {
-      fontFamily: font("body", "regular"),
-      fontSize: typography.size.base,
-      color: colors.onSurfaceVariant,
+      paddingVertical: theme.spacing.base,
     },
     endOfUpdates: {
       alignItems: "center",

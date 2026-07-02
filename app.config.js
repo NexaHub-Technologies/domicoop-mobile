@@ -1,3 +1,11 @@
+const fs = require("fs");
+
+// Required for push notifications on Android (FCM). Absent until the
+// Firebase project is set up — prebuild keeps working without it.
+const googleServicesFile =
+  process.env.GOOGLE_SERVICES_JSON ??
+  (fs.existsSync("./google-services.json") ? "./google-services.json" : undefined);
+
 module.exports = {
   expo: {
     name: "domicop",
@@ -25,6 +33,7 @@ module.exports = {
       edgeToEdgeEnabled: true,
       predictiveBackGestureEnabled: false,
       package: "com.nexahub.domicop",
+      ...(googleServicesFile ? { googleServicesFile } : {}),
     },
     web: {
       output: "static",
@@ -59,6 +68,14 @@ module.exports = {
         },
       ],
       "expo-secure-store",
+      [
+        "expo-notifications",
+        {
+          icon: "./assets/images/android-icon-monochrome.png",
+          color: "#003cad",
+          defaultChannel: "default",
+        },
+      ],
       [
         "expo-build-properties",
         {

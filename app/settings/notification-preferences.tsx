@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -11,28 +11,71 @@ import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import Animated, { FadeIn, FadeInUp } from "react-native-reanimated";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
 import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
 import { ToggleItem } from "@/components/settings/ToggleItem";
-import { usePersistentState } from "@/hooks/usePersistentState";
+import { Skeleton } from "@/components/common/Skeleton";
+import { notificationsApi } from "@/lib/api/notifications.api";
+import {
+  DEFAULT_PREFERENCES,
+  NotificationPreferences,
+  NotificationType,
+} from "@/lib/types/notifications";
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
-interface NotificationCategoryProps {
-  icon: string;
+const PREFERENCES_QUERY_KEY = ["notification-preferences"] as const;
+// Local fallback used while the backend preferences endpoint isn't deployed.
+const LOCAL_PREFS_KEY = "notif_prefs_v2";
+
+interface CategoryRow {
+  key: NotificationType;
+  label: string;
+  subtitle: string;
+}
+
+const CATEGORY_ROWS: CategoryRow[] = [
+  {
+    key: "loan",
+    label: "Loans",
+    subtitle: "Approvals, disbursements and repayment reminders",
+  },
+  {
+    key: "contribution",
+    label: "Contributions",
+    subtitle: "Due reminders and payment confirmations",
+  },
+  {
+    key: "dividend",
+    label: "Dividends",
+    subtitle: "Payout announcements and allocation updates",
+  },
+  {
+    key: "meeting",
+    label: "Meetings",
+    subtitle: "AGM and cooperative meeting notices",
+  },
+];
+
+interface PreferenceCardProps {
+  icon: keyof typeof MaterialIcons.glyphMap;
   title: string;
   subtitle: string;
+  description: string;
   children: React.ReactNode;
   index: number;
 }
 
-const NotificationCategory: React.FC<NotificationCategoryProps> = ({
+const PreferenceCard: React.FC<PreferenceCardProps> = ({
   icon,
   title,
   subtitle,
+  description,
   children,
   index,
 }) => {
@@ -46,72 +89,80 @@ const NotificationCategory: React.FC<NotificationCategoryProps> = ({
     >
       <View style={styles.categoryHeader}>
         <View style={styles.iconContainer}>
-          <MaterialIcons name={icon as any} size={24} color={colors.primary} />
+          <MaterialIcons name={icon} size={24} color={colors.primaryBright} />
         </View>
         <View>
           <Text style={styles.categoryTitle}>{title}</Text>
           <Text style={styles.categorySubtitle}>{subtitle}</Text>
         </View>
       </View>
-      <Text style={styles.categoryDescription}>{getCategoryDescription(title)}</Text>
+      <Text style={styles.categoryDescription}>{description}</Text>
       <View style={styles.togglesContainer}>{children}</View>
     </Animated.View>
   );
 };
 
-const getCategoryDescription = (title: string): string => {
-  switch (title) {
-    case "Transaction Alerts":
-      return "Stay updated on every movement in your account. Essential for tracking your spending and deposits.";
-    case "Promotional Offers":
-      return "Exclusive deals and new product features tailored to your financial goals.";
-    case "Account Security":
-      return "Keep your assets safe with instant alerts on sensitive account changes.";
-    case "Community Updates":
-      return "Engage with other investors and stay informed on global market sentiment.";
-    default:
-      return "";
-  }
-};
-
 export default function NotificationPreferencesScreen() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { colors, isDarkMode } = useTheme();
   const styles = createStyles(colors);
 
-  // Transaction Alerts
-  const [largePurchases, setLargePurchases] = usePersistentState(
-    "notif_largePurchases",
-    true,
-  );
-  const [dailySummary, setDailySummary] = usePersistentState("notif_dailySummary", false);
+  const { data: serverPrefs, isPending } = useQuery({
+    queryKey: PREFERENCES_QUERY_KEY,
+    queryFn: notificationsApi.getPreferences,
+    staleTime: 5 * 60_000,
+  });
 
-  // Promotional Offers
-  const [cashbackRewards, setCashbackRewards] = usePersistentState(
-    "notif_cashbackRewards",
-    true,
-  );
+  const [draft, setDraft] = useState<NotificationPreferences>(DEFAULT_PREFERENCES);
+  const [isSaving, setIsSaving] = useState(false);
 
-  // Account Security (mandatory - always on)
-  const [pinChanges, setPinChanges] = usePersistentState("notif_pinChanges", true);
+  // Seed the draft once loading settles: server prefs win; otherwise the
+  // local fallback from a previous device-only save; otherwise defaults.
+  useEffect(() => {
+    if (isPending) return;
+    if (serverPrefs) {
+      setDraft(serverPrefs);
+      return;
+    }
+    AsyncStorage.getItem(LOCAL_PREFS_KEY)
+      .then((stored) => {
+        if (stored) setDraft(JSON.parse(stored) as NotificationPreferences);
+      })
+      .catch(() => {
+        // keep defaults
+      });
+  }, [isPending, serverPrefs]);
 
-  // Community Updates
-  const [forumMentions, setForumMentions] = usePersistentState(
-    "notif_forumMentions",
-    false,
-  );
+  const setCategory = (key: NotificationType, value: boolean) => {
+    setDraft((prev) => ({
+      ...prev,
+      categories: { ...prev.categories, [key]: value },
+    }));
+  };
 
-  const handleSave = () => {
-    Alert.alert("Success", "Notification preferences saved successfully!");
+  const handleSave = async () => {
+    setIsSaving(true);
+    try {
+      const updated = await notificationsApi.updatePreferences(draft);
+      queryClient.setQueryData(PREFERENCES_QUERY_KEY, updated);
+      setDraft(updated);
+      Alert.alert("Saved", "Your notification preferences have been updated.");
+    } catch {
+      // Endpoint missing or unreachable — keep the choice on this device.
+      try {
+        await AsyncStorage.setItem(LOCAL_PREFS_KEY, JSON.stringify(draft));
+        Alert.alert("Saved on this device", "Preferences will sync once you're back online.");
+      } catch {
+        Alert.alert("Something went wrong", "Your preferences could not be saved. Try again.");
+      }
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const handleRestoreDefaults = () => {
-    setLargePurchases(true);
-    setDailySummary(false);
-    setCashbackRewards(true);
-    setPinChanges(true);
-    setForumMentions(false);
-    Alert.alert("Restored", "Settings have been restored to defaults.");
+    setDraft(DEFAULT_PREFERENCES);
   };
 
   const handleBack = () => {
@@ -128,7 +179,7 @@ export default function NotificationPreferencesScreen() {
           <TouchableOpacity onPress={handleBack} style={styles.backButton}>
             <MaterialIcons name="arrow-back" size={24} color={colors.onSurfaceVariant} />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.primary }]}>
+          <Text style={[styles.headerTitle, { color: colors.primaryBright }]}>
             Notifications
           </Text>
           <View style={styles.backButton} />
@@ -151,104 +202,98 @@ export default function NotificationPreferencesScreen() {
           </Text>
         </Animated.View>
 
-        {/* Transaction Alerts */}
-        <NotificationCategory
-          icon="account-balance-wallet"
-          title="Transaction Alerts"
-          subtitle="Real-time Activity"
-          index={0}
-        >
-          <ToggleItem
-            icon=""
-            label="Large Purchases"
-            subtitle="Notify when a transaction exceeds ₦50,000"
-            value={largePurchases}
-            onValueChange={setLargePurchases}
-          />
-          <View style={styles.divider} />
-          <ToggleItem
-            icon=""
-            label="Daily Summary"
-            subtitle="A curated recap of your daily financial ledger"
-            value={dailySummary}
-            onValueChange={setDailySummary}
-          />
-        </NotificationCategory>
+        {isPending ? (
+          <View style={styles.skeletonList}>
+            <Skeleton variant="card" height={140} />
+            <Skeleton variant="card" height={280} />
+            <Skeleton variant="card" height={140} />
+          </View>
+        ) : (
+          <>
+            {/* Push delivery master switch */}
+            <PreferenceCard
+              icon="notifications-active"
+              title="Push Notifications"
+              subtitle="Delivery"
+              description="Receive alerts on this device. Turning this off stops push delivery — your notification history stays available in the app."
+              index={0}
+            >
+              <ToggleItem
+                icon=""
+                label="Allow push notifications"
+                subtitle="Applies to all categories below"
+                value={draft.pushEnabled}
+                onValueChange={(value) =>
+                  setDraft((prev) => ({ ...prev, pushEnabled: value }))
+                }
+              />
+            </PreferenceCard>
 
-        {/* Promotional Offers */}
-        <NotificationCategory
-          icon="sell"
-          title="Promotional Offers"
-          subtitle="Growth & Rewards"
-          index={1}
-        >
-          <ToggleItem
-            icon=""
-            label="Cashback Rewards"
-            subtitle="Alerts for boosted reward categories"
-            value={cashbackRewards}
-            onValueChange={setCashbackRewards}
-          />
-        </NotificationCategory>
+            {/* Categories */}
+            <PreferenceCard
+              icon="tune"
+              title="Categories"
+              subtitle="What you hear about"
+              description="Choose which cooperative updates reach you."
+              index={1}
+            >
+              {CATEGORY_ROWS.map((row, i) => (
+                <React.Fragment key={row.key}>
+                  {i > 0 && <View style={styles.divider} />}
+                  <ToggleItem
+                    icon=""
+                    label={row.label}
+                    subtitle={row.subtitle}
+                    value={draft.categories[row.key]}
+                    onValueChange={(value) => setCategory(row.key, value)}
+                  />
+                </React.Fragment>
+              ))}
+            </PreferenceCard>
 
-        {/* Account Security */}
-        <NotificationCategory
-          icon="security"
-          title="Account Security"
-          subtitle="Mandatory Protection"
-          index={2}
-        >
-          <ToggleItem
-            icon=""
-            label="New Device Login"
-            subtitle="Required for your account security"
-            value={true}
-            onValueChange={() => {}}
-            disabled={true}
-          />
-          <View style={styles.divider} />
-          <ToggleItem
-            icon=""
-            label="Pin & Password Changes"
-            subtitle="Notify immediately when credentials change"
-            value={pinChanges}
-            onValueChange={setPinChanges}
-          />
-        </NotificationCategory>
+            {/* Security — always on */}
+            <PreferenceCard
+              icon="security"
+              title="Account Security"
+              subtitle="Mandatory protection"
+              description="Security alerts keep your assets safe and can't be turned off."
+              index={2}
+            >
+              <ToggleItem
+                icon=""
+                label="Security alerts"
+                subtitle="Sign-ins, credential changes and account activity"
+                value={true}
+                onValueChange={() => {}}
+                disabled={true}
+              />
+            </PreferenceCard>
 
-        {/* Community Updates */}
-        <NotificationCategory
-          icon="forum"
-          title="Community Updates"
-          subtitle="Social & Network"
-          index={3}
-        >
-          <ToggleItem
-            icon=""
-            label="Forum Mentions"
-            subtitle="Alert when someone replies to your thread"
-            value={forumMentions}
-            onValueChange={setForumMentions}
-          />
-        </NotificationCategory>
+            {/* Action Buttons */}
+            <Animated.View
+              entering={FadeInUp.delay(500).duration(400)}
+              style={styles.actionsContainer}
+            >
+              <AnimatedTouchable
+                onPress={handleSave}
+                disabled={isSaving}
+                style={[styles.saveButton, isSaving && styles.saveButtonDisabled]}
+                activeOpacity={0.8}
+              >
+                <Text style={styles.saveButtonText}>
+                  {isSaving ? "Saving..." : "Save Preferences"}
+                </Text>
+              </AnimatedTouchable>
 
-        {/* Action Buttons */}
-        <Animated.View
-          entering={FadeInUp.delay(600).duration(400)}
-          style={styles.actionsContainer}
-        >
-          <AnimatedTouchable
-            onPress={handleSave}
-            style={styles.saveButton}
-            activeOpacity={0.8}
-          >
-            <Text style={styles.saveButtonText}>Save Preferences</Text>
-          </AnimatedTouchable>
-
-          <TouchableOpacity onPress={handleRestoreDefaults} style={styles.restoreButton}>
-            <Text style={styles.restoreButtonText}>Restore to Default Settings</Text>
-          </TouchableOpacity>
-        </Animated.View>
+              <TouchableOpacity
+                onPress={handleRestoreDefaults}
+                style={styles.restoreButton}
+              >
+                <Text style={styles.restoreButtonText}>Restore to Default Settings</Text>
+              </TouchableOpacity>
+            </Animated.View>
+          </>
+        )}
 
         {/* Bottom padding */}
         <View style={styles.bottomPadding} />
@@ -310,6 +355,9 @@ const createStyles = (colors: typeof lightColors) =>
       fontFamily: font("body", "regular"),
       fontSize: typography.size.sm,
       color: colors.onSurfaceVariant,
+    },
+    skeletonList: {
+      gap: theme.spacing.lg,
     },
     categoryContainer: {
       backgroundColor: colors.surface,
@@ -375,14 +423,17 @@ const createStyles = (colors: typeof lightColors) =>
       borderRadius: theme.borderRadius.xl,
       paddingVertical: theme.spacing.lg,
       alignItems: "center",
-      shadowColor: colors.ambientShadow,
+      shadowColor: colors.primary,
       shadowOffset: {
         width: 0,
         height: 4,
       },
-      shadowOpacity: 1,
-      shadowRadius: 8,
+      shadowOpacity: 0.3,
+      shadowRadius: 12,
       elevation: 4,
+    },
+    saveButtonDisabled: {
+      opacity: 0.6,
     },
     saveButtonText: {
       fontFamily: font("display", "bold"),
