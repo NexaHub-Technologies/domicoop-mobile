@@ -8,17 +8,17 @@ const googleServicesFile =
 
 export default {
   expo: {
-    name: "DOMICOP",
-    slug: "domicop",
+    name: "DOMICOOP",
+    slug: "domicoop",
     version: "1.0.0",
     orientation: "portrait",
     icon: "./assets/images/icon.png",
-    scheme: process.env.EXPO_PUBLIC_SCHEME || "domicop",
+    scheme: process.env.EXPO_PUBLIC_SCHEME || "domicoop",
     userInterfaceStyle: "automatic",
     newArchEnabled: true,
     ios: {
       supportsTablet: true,
-      bundleIdentifier: "com.nexahub.domicop",
+      bundleIdentifier: "com.nexahub.domicoop",
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
       },
@@ -32,7 +32,7 @@ export default {
       },
       edgeToEdgeEnabled: true,
       predictiveBackGestureEnabled: false,
-      package: "com.nexahub.domicop",
+      package: "com.nexahub.domicoop",
       googleServicesFile: googleServicesFile,
     },
     web: {
@@ -92,10 +92,10 @@ export default {
       reactCompiler: true,
     },
     extra: {
-      router: {},
       eas: {
-        projectId: "005a3826-e772-4bfa-8f5c-6be57a2232ca",
+        projectId: "2e673356-8e6c-4fa4-8042-aaae41d5f08d"
       },
+      router: {},
       apiBaseUrl: process.env.EXPO_PUBLIC_API_BASE_URL,
       paystackPublicKey: process.env.EXPO_PUBLIC_PAYSTACK_PUBLIC_KEY,
     },

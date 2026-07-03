@@ -44,7 +44,7 @@ app-example
 .env
 
 # Firebase / Google service account keys
-domicop-fcm.json
+domicoop-fcm.json
 google-services.json
 
 
