@@ -15,6 +15,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import type { lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
 import { font } from "@/constants/theme";
+import { onboarding } from "@/lib/onboarding";
 
 const GUIDELINES = [
   {
@@ -174,6 +175,7 @@ export default function GuidelinesScreen() {
   };
 
   const handleContinue = () => {
+    onboarding.markGuidelinesSeen().catch(() => {});
     router.push("/welcome");
   };
 

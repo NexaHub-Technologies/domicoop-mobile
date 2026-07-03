@@ -13,7 +13,7 @@ import { theme } from "@/styles/theme";
 import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
 import type { Profile } from "@/lib/types/sign-up";
-import { getInitials, formatDate } from "@/data/mockData";
+import { getInitials, formatDate } from "@/lib/utils/format";
 
 interface ProfileHeaderProps {
   profile: Profile | null;

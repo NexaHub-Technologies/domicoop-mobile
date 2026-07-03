@@ -10,7 +10,8 @@ import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
 import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
-import { loanPurposes, LoanPurpose, LoanPurposeConfig } from "@/data/mockData";
+import { loanPurposes } from "@/constants/loans";
+import type { LoanPurpose, LoanPurposeConfig } from "@/lib/types/loans";
 
 type PurposeColors = typeof lightColors;
 

@@ -10,7 +10,7 @@ import { TransactionList, RecentTransaction } from '@/components/dashboard/Trans
 import { useTheme } from '@/contexts/ThemeContext';
 import { useContributions } from '@/hooks/useContributions';
 import { computeAllocationTotals } from '@/lib/utils/contributionAllocation';
-import { formatMonth } from '@/data/mockData';
+import { formatMonth } from '@/lib/utils/format';
 
 export default function DashboardScreen() {
   const { colors, isDarkMode } = useTheme();

@@ -14,7 +14,8 @@ import { PurposeSelector } from '@/components/forms/PurposeSelector';
 import { TermSlider } from '@/components/forms/TermSlider';
 import { LoanCalculator } from '@/components/forms/LoanCalculator';
 import { SuccessModal } from '@/components/modals/SuccessModal/index';
-import { loanConfig, calculateLoan, LoanPurpose } from '@/data/mockData';
+import { loanConfig, calculateLoan } from '@/constants/loans';
+import type { LoanPurpose } from '@/lib/types/loans';
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
@@ -190,6 +191,8 @@ export default function ApplyForLoanScreen() {
       <SuccessModal
         visible={showSuccess}
         onClose={handleSuccessClose}
+        title="Loan Request Submitted"
+        message="Most decisions are made within 24 hours. We'll notify you once your application is reviewed."
       />
     </SafeAreaView>
   );

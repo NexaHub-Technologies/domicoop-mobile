@@ -4,7 +4,7 @@ import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
 import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
-import { formatCurrencyNoSign } from "@/data/mockData";
+import { formatCurrencyNoSign } from "@/lib/utils/format";
 import type { ContributionAllocation } from "@/lib/utils/contributionAllocation";
 
 interface AllocationBreakdownProps {

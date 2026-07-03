@@ -5,7 +5,7 @@ import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
 import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
-import { loanConfig } from "@/data/mockData";
+import { loanConfig } from "@/constants/loans";
 
 type TermSliderColors = typeof lightColors;
 

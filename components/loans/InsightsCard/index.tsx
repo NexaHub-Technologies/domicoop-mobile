@@ -6,7 +6,7 @@ import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
 import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
-import { loanInsights } from "@/data/mockData";
+import { loanInsights } from "@/constants/loans";
 
 const AnimatedView = Animated.createAnimatedComponent(View);
 

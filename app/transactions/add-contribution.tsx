@@ -20,10 +20,11 @@ import { typography } from "@/constants/typography";
 import { AmountInput } from "@/components/forms/AmountInput";
 import { DropdownSelect } from "@/components/forms/DropdownSelect";
 import { Input } from "@/components/common/Input";
-import { getContributionMonths, MIN_CONTRIBUTION_AMOUNT } from "@/data/mockData";
+import { getContributionMonths, MIN_CONTRIBUTION_AMOUNT } from "@/constants/contributions";
 import { SuccessModal } from "@/components/modals/SuccessModal";
 import { usePaystackPayment } from "@/hooks/usePaystackPayment";
 import { contributionsApi } from "@/lib/api/contributions.api";
+import { ApiError } from "@/lib/http";
 import { InfoModal } from "@/components/modals/InfoModal";
 import { getAllocationSummary } from "@/lib/utils/contributionAllocation";
 import { AllocationBreakdown } from "@/components/savings/AllocationBreakdown";
@@ -94,43 +95,62 @@ export default function AddContributionScreen() {
             variable_name: "contribution_month",
             value: selectedMonthLabel,
           },
+          // The verify endpoint takes no notes; keep them on the Paystack
+          // transaction so they aren't lost.
+          ...(notes.trim()
+            ? [
+                {
+                  display_name: "Notes",
+                  variable_name: "notes",
+                  value: notes.trim(),
+                },
+              ]
+            : []),
         ],
       },
-      onSuccess: async (_response, verification) => {
-        if (verification?.status) {
-          try {
-            const [yearStr, monthStr] = month.split("-");
-            const year = parseInt(yearStr, 10);
-            const formattedMonth = `${yearStr}-${monthStr}`;
-
-            const allocation = getAllocationSummary(
-              Math.round(verification.data.amount / 100),
-            );
-
-            const payload = {
-              amount: Math.round(verification.data.amount / 100),
-              month: formattedMonth,
-              year: year,
-              transaction_ref: verification.data.reference,
-              member_no: verification.data.metadata?.member_id,
-              member_email: verification.data.customer.email,
-              payment_method: verification.data.channel,
-              payment_status: verification.data.status as
-                | "pending"
-                | "verified"
-                | "rejected",
-              notes: notes.trim() || undefined,
-              allocation: allocation.allocation,
-            };
-
-            await contributionsApi.storeVerifiedContribution(payload);
-          } catch (storeError) {
-            console.error("Failed to store verified contribution:", storeError);
+      onSuccess: async (response) => {
+        // The server verifies the reference with Paystack and derives the
+        // amount, member, and status from the verified transaction.
+        let stored = false;
+        try {
+          const [yearStr] = month.split("-");
+          const input = {
+            reference: response.reference,
+            month,
+            year: parseInt(yearStr, 10),
+          };
+          // The charge can take a moment to settle after checkout;
+          // verified: false is safe to retry.
+          for (let attempt = 0; attempt < 3; attempt++) {
+            if (attempt > 0) await new Promise((r) => setTimeout(r, 2500));
+            const result = await contributionsApi.verifyContribution(input);
+            if (result.verified) {
+              stored = true;
+              break;
+            }
           }
+        } catch (storeError) {
+          console.error(
+            "Failed to verify contribution:",
+            storeError,
+            storeError instanceof ApiError ? storeError.body : "",
+          );
         }
 
         setIsSubmitting(false);
-        setShowSuccess(true);
+        if (stored) {
+          setShowSuccess(true);
+        } else {
+          // Money left the member's account but the contribution wasn't
+          // recorded — never present this as a plain success.
+          setErrorModal({
+            visible: true,
+            title: "Payment Received, Not Yet Recorded",
+            message:
+              `Your payment was successful, but we couldn't record the contribution on your account right now. ` +
+              `Please contact support and share this transaction reference so it can be applied: ${response.reference}`,
+          });
+        }
       },
       onCancel: () => {
         setIsSubmitting(false);
@@ -317,7 +337,12 @@ export default function AddContributionScreen() {
       </KeyboardAvoidingView>
 
       {/* Success Modal */}
-      <SuccessModal visible={showSuccess} onClose={handleSuccessClose} />
+      <SuccessModal
+        visible={showSuccess}
+        onClose={handleSuccessClose}
+        title="Contribution Recorded"
+        message="Your payment was received and applied to your savings for the selected month."
+      />
 
       {/* Error Modal */}
       <InfoModal

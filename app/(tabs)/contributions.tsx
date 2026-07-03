@@ -23,7 +23,7 @@ import { theme } from "@/styles/theme";
 import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
 import { PortfolioCard } from "@/components/savings/PortfolioCard";
-import { formatCurrency, formatMonth } from "@/data/mockData";
+import { formatCurrency, formatMonth } from "@/lib/utils/format";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { useContributions } from "@/hooks/useContributions";
 import { useSavingsSummary } from "@/hooks/useSavingsSummary";

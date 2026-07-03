@@ -65,17 +65,24 @@ export interface ContributionAllocation {
   deposit: number;
 }
 
-export interface StoreVerifiedContributionInput {
-  amount: number;
+// Sent to POST /contributions/verify. The server verifies the reference with
+// Paystack using the secret key, derives amount/member/status from the
+// verified transaction, and creates the contribution — the client never
+// reports amounts or payment status itself.
+export interface VerifyContributionInput {
+  reference: string;
   month: string;
   year: number;
-  transaction_ref: string;
-  member_no?: string;
-  member_email?: string;
-  payment_method?: string;
-  payment_status?: "pending" | "verified" | "rejected";
-  notes?: string;
-  allocation?: ContributionAllocation;
+}
+
+// Envelope returned by POST /contributions/verify.
+export interface VerifyContributionResponse {
+  verified: boolean;
+  contribution?: ApiContribution;
+  // Paystack charge status when verified is false — safe to retry.
+  status?: string;
+  // True when this reference was already recorded (replay) — treat as success.
+  already_processed?: boolean;
 }
 
 export function mapPaymentStatusToContributionStatus(
@@ -100,7 +107,8 @@ export function transformContribution(apiContribution: ApiContribution): Contrib
 
   return {
     id: contributionId,
-    amount: Math.round(apiContribution.amount / 100),
+    // API amounts are naira — kobo→naira happens once, at Paystack verification.
+    amount: apiContribution.amount,
     month: apiContribution.month,
     status: mapPaymentStatusToContributionStatus(apiContribution.payment_status),
     created_at: createdAt,
@@ -118,7 +126,7 @@ export function transformContributionsResponse(
     total: apiResponse.contributions?.length || 0,
     page: 0,
     limit: 0,
-    totalBalance: Math.round((apiResponse.total_balance || 0) / 100),
-    yearBalance: Math.round((apiResponse.year_balance || 0) / 100),
+    totalBalance: apiResponse.total_balance || 0,
+    yearBalance: apiResponse.year_balance || 0,
   };
 }

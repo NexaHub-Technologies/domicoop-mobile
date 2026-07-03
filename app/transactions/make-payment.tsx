@@ -19,8 +19,11 @@ import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
 import { SuccessModal } from "@/components/modals/SuccessModal";
 import { Money } from "@/components/common/Money";
-import { mockLoans, formatCurrency } from "@/data/mockData";
+import { formatCurrency } from "@/lib/utils/format";
 import { usePaystackPayment } from "@/hooks/usePaystackPayment";
+import { useLoans } from "@/hooks/useLoans";
+import { loansApi } from "@/lib/api/loans.api";
+import { ApiError } from "@/lib/http";
 
 interface Loan {
   id: string;
@@ -47,8 +50,8 @@ export default function MakePaymentScreen() {
   const [showSuccess, setShowSuccess] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
 
-  // Mock data
-  const outstandingLoans: Loan[] = mockLoans
+  const { loans } = useLoans();
+  const outstandingLoans: Loan[] = loans
     .filter((loan) => loan.remainingBalance > 0)
     .map((loan) => ({
       id: loan.id,
@@ -135,9 +138,42 @@ export default function MakePaymentScreen() {
           },
         ],
       },
-      onSuccess: (response) => {
+      onSuccess: async (response) => {
+        // The server verifies the reference with Paystack and applies the
+        // repayment; the client never reports amounts.
+        let recorded = false;
+        try {
+          // The charge can take a moment to settle after checkout;
+          // an unverified result is safe to retry.
+          for (let attempt = 0; attempt < 3; attempt++) {
+            if (attempt > 0) await new Promise((r) => setTimeout(r, 2500));
+            const result = await loansApi.verifyRepayment(
+              selectedLoan.id,
+              response.reference,
+            );
+            if (result.verified) {
+              recorded = true;
+              break;
+            }
+          }
+        } catch (recordError) {
+          console.error(
+            "Failed to record repayment:",
+            recordError,
+            recordError instanceof ApiError ? recordError.body : "",
+          );
+        }
+
         setIsProcessing(false);
-        setShowSuccess(true);
+        if (recorded) {
+          setShowSuccess(true);
+        } else {
+          Alert.alert(
+            "Payment Received, Not Yet Recorded",
+            `Your payment was successful, but we couldn't apply the repayment to your loan right now. ` +
+              `Please contact support and share this transaction reference: ${response.reference}`,
+          );
+        }
       },
       onCancel: () => {
         setIsProcessing(false);
@@ -408,7 +444,12 @@ export default function MakePaymentScreen() {
       </View>
 
       {/* Success Modal */}
-      <SuccessModal visible={showSuccess} onClose={handleSuccessClose} />
+      <SuccessModal
+        visible={showSuccess}
+        onClose={handleSuccessClose}
+        title="Repayment Received"
+        message="Your loan repayment was received. Your balance will update shortly."
+      />
     </SafeAreaView>
   );
 }

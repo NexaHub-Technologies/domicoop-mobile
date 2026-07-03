@@ -1,18 +1,15 @@
 import { usePaystack } from 'react-native-paystack-webview';
 import { members } from "@/lib/api/members.api";
 import { session } from '@/lib/session';
-import { usePaystackVerifyTransaction } from './usePaystackVerifyTransaction';
-import { PaystackVerificationResponse } from '@/types';
 
 export interface PaymentParams {
   amount: number;
   email?: string;
   reference?: string;
   metadata?: Record<string, any>;
-  onSuccess?: (
-    response: PaystackResponse,
-    verification: PaystackVerificationResponse | null
-  ) => void;
+  // Payment verification happens server-side (the API confirms the reference
+  // with Paystack) — the client only learns that checkout completed.
+  onSuccess?: (response: PaystackResponse) => void;
   onCancel?: () => void;
   onError?: (error: any) => void;
 }
@@ -27,7 +24,6 @@ export interface PaystackResponse {
 
 export const usePaystackPayment = () => {
   const { popup } = usePaystack();
-  const { verifyTransaction } = usePaystackVerifyTransaction();
 
   const generateReference = (type: 'contribution' | 'loan' = 'contribution') => {
     const timestamp = Date.now();
@@ -77,11 +73,8 @@ export const usePaystackPayment = () => {
           ...(params.metadata?.custom_fields || []),
         ],
       },
-      onSuccess: async (response: any) => {
-
-        const verification = await verifyTransaction(response.reference);
-
-        params.onSuccess?.(response, verification);
+      onSuccess: (response: any) => {
+        params.onSuccess?.(response);
       },
       onCancel: () => {
         params.onCancel?.();
@@ -140,11 +133,8 @@ export const usePaystackPayment = () => {
           ...(params.metadata?.custom_fields || []),
         ],
       },
-      onSuccess: async (response: any) => {
-
-        const verification = await verifyTransaction(response.reference);
-
-        params.onSuccess?.(response, verification);
+      onSuccess: (response: any) => {
+        params.onSuccess?.(response);
       },
       onCancel: () => {
         params.onCancel?.();

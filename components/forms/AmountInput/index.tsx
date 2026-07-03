@@ -4,7 +4,8 @@ import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
 import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
-import { loanConfig, formatCurrencyNoSign } from "@/data/mockData";
+import { loanConfig } from "@/constants/loans";
+import { formatCurrencyNoSign } from "@/lib/utils/format";
 
 type AmountColors = typeof lightColors;
 

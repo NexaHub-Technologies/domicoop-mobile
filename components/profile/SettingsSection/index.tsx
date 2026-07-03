@@ -13,10 +13,10 @@ import { theme } from "@/styles/theme";
 import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
 import {
-  mockProfileSettings,
+  profileSettings,
   SettingsItem as SettingsItemType,
   SettingsSection as SettingsSectionType,
-} from "@/data/mockData";
+} from "@/constants/profile";
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
@@ -136,7 +136,7 @@ const SettingsItem: React.FC<SettingsItemProps> = ({
     scale.value = withSpring(1, { damping: 15, stiffness: 300 });
   };
 
-  const isLastItem = index === mockProfileSettings[sectionIndex].items.length - 1;
+  const isLastItem = index === profileSettings[sectionIndex].items.length - 1;
 
   return (
     <Animated.View entering={FadeInUp.delay(300 + sectionIndex * 100 + index * 50).duration(300)}>
@@ -227,7 +227,7 @@ export const SettingsSection: React.FC<SettingsSectionProps> = ({
   const styles = createStyles(colors);
   return (
     <View style={styles.container}>
-      {mockProfileSettings.map((section, index) => (
+      {profileSettings.map((section, index) => (
         <SettingsSectionComponent
           key={section.id}
           section={section}

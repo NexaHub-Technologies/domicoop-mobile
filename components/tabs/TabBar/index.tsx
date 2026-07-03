@@ -32,7 +32,7 @@ const tabItemBaseStyle = {
 
 const tabLabelBaseStyle = {
   ...typography.styles.label,
-  fontSize: 10,
+  fontSize: 8,
   marginTop: theme.spacing.xs,
   textTransform: "uppercase" as const,
   letterSpacing: 0.5,

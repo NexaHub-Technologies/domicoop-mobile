@@ -12,7 +12,7 @@ import Animated, {
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
 import { typography } from "@/constants/typography";
-import { mockQuickActions } from "@/data/mockData";
+import { quickActions } from "@/constants/dashboard";
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
@@ -125,7 +125,7 @@ export const QuickActions: React.FC = () => {
       </Animated.Text>
 
       <View style={styles.actionsGrid}>
-        {mockQuickActions.map((action, index) => (
+        {quickActions.map((action, index) => (
           <QuickActionItem
             key={action.id}
             icon={action.icon}

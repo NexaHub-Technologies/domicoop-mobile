@@ -12,7 +12,9 @@ import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
 import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
-import { Loan, getLoanPurposeConfig, formatCurrencyNoSign } from "@/data/mockData";
+import type { Loan } from "@/lib/types/loans";
+import { getLoanPurposeConfig } from "@/constants/loans";
+import { formatCurrencyNoSign } from "@/lib/utils/format";
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 

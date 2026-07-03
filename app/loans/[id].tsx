@@ -10,7 +10,9 @@ import type { lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
 import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
-import { mockLoans, getLoanPurposeConfig, formatCurrencyNoSign } from "@/data/mockData";
+import { getLoanPurposeConfig } from "@/constants/loans";
+import { formatCurrencyNoSign } from "@/lib/utils/format";
+import { useLoans } from "@/hooks/useLoans";
 
 const AnimatedView = Animated.createAnimatedComponent(View);
 
@@ -20,13 +22,16 @@ export default function LoanDetailScreen() {
   const { colors, isDarkMode } = useTheme();
   const styles = createStyles(colors);
 
-  // Find loan by ID
-  const loan = mockLoans.find((l) => l.id === id);
+  // Served from the loans query cache populated by the list screen.
+  const { loans, isLoading } = useLoans();
+  const loan = loans.find((l) => l.id === id);
 
   if (!loan) {
     return (
       <SafeAreaView style={styles.container}>
-        <Text style={{ color: colors.onSurface }}>Loan not found</Text>
+        <Text style={{ color: colors.onSurface }}>
+          {isLoading ? "Loading loan…" : "Loan not found"}
+        </Text>
       </SafeAreaView>
     );
   }

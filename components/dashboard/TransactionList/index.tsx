@@ -14,10 +14,10 @@ import { EmptyState } from "@/components/common/EmptyState";
 import { Button } from "@/components/common/Button";
 import {
   getTransactionIcon,
-  formatDate,
   getDefaultTitle,
   type TransactionType,
-} from "@/data/mockData";
+} from "@/constants/transactions";
+import { formatDate } from "@/lib/utils/format";
 
 export interface RecentTransaction {
   id: string;

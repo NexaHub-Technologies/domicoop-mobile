@@ -127,7 +127,9 @@ export async function authedRequest<T>(
   if (!token) throw new ApiError(401, "Not authenticated");
 
   try {
-    return await request<T>(path, { ...options, token });
+    const result = await request<T>(path, { ...options, token });
+    session.touch().catch(() => {});
+    return result;
   } catch (err) {
     if (!(err instanceof ApiError) || err.status !== 401) throw err;
 
@@ -144,6 +146,8 @@ export async function authedRequest<T>(
     }
 
     const newToken = await session.getToken();
-    return request<T>(path, { ...options, token: newToken ?? undefined });
+    const result = await request<T>(path, { ...options, token: newToken ?? undefined });
+    session.touch().catch(() => {});
+    return result;
   }
 }

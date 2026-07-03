@@ -1,7 +1,8 @@
 import * as Print from "expo-print";
 import * as Sharing from "expo-sharing";
 import { Paths, File, Directory } from "expo-file-system";
-import { formatCurrencyNoSign, Transaction } from "@/data/mockData";
+import { formatCurrencyNoSign } from "@/lib/utils/format";
+import type { Transaction } from "@/constants/transactions";
 import { getAllocationSummary } from "@/lib/utils/contributionAllocation";
 
 export const generateReceiptHTML = (transaction: Transaction): string => {
@@ -11,7 +12,7 @@ export const generateReceiptHTML = (transaction: Transaction): string => {
     ? getAllocationSummary(Math.abs(transaction.amount))
     : null;
 
-  return `
+  return /* html */ `
     <!DOCTYPE html>
     <html>
       <head>
@@ -278,7 +279,9 @@ export const generateReceiptHTML = (transaction: Transaction): string => {
             </div>
           </div>
 
-          ${allocationSummary ? `
+          ${
+            allocationSummary
+              ? `
           <div class="allocation-section">
             <div class="allocation-title">Allocation Breakdown</div>
 
@@ -336,7 +339,9 @@ export const generateReceiptHTML = (transaction: Transaction): string => {
               )}</span>
             </div>
           </div>
-          ` : ''}
+          `
+              : ""
+          }
 
           <div class="footer">
             <div class="footer-text">Thank you for your patronage!</div>
@@ -409,10 +414,8 @@ export const shareReceipt = async (receiptUri: string) => {
 export const downloadReceipt = async (transaction: Transaction): Promise<string> => {
   const generatedUri = await generateReceipt(transaction);
 
-
   try {
     const savedDir = await Directory.pickDirectoryAsync();
-
 
     if (!savedDir) {
       return generatedUri;
@@ -421,7 +424,6 @@ export const downloadReceipt = async (transaction: Transaction): Promise<string>
     const receiptName = `DOMICOP-Receipt-${transaction.id}.pdf`;
 
     const destinationFile = savedDir.createFile(receiptName, "application/pdf");
-
 
     const sourceFile = new File(generatedUri);
 

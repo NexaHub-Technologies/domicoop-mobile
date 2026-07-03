@@ -35,7 +35,8 @@ export interface DashboardSummary {
   }>;
 }
 
-// Wire shape of GET /dashboard/summary — amounts are in kobo.
+// Wire shape of GET /dashboard/summary — amounts are in naira (the API stores
+// naira; kobo exists only at the Paystack boundary).
 export interface ApiDashboardSummary {
   member: DashboardMember;
   total_savings?: number;
@@ -69,21 +70,11 @@ export interface ApiDashboardSummary {
 export function transformDashboardSummary(raw: ApiDashboardSummary): DashboardSummary {
   return {
     member: raw.member,
-    total_savings: Math.round((raw.total_savings || 0) / 100),
+    total_savings: raw.total_savings || 0,
     paid_this_month: raw.paid_this_month,
     current_month: raw.current_month,
-    active_loan: raw.active_loan ? {
-      id: raw.active_loan.id,
-      amount: Math.round(raw.active_loan.amount / 100),
-      balance: Math.round(raw.active_loan.balance / 100),
-      status: raw.active_loan.status,
-      next_payment_date: raw.active_loan.next_payment_date,
-      next_payment_amount: Math.round(raw.active_loan.next_payment_amount / 100),
-    } : null,
-    recent_transactions: (raw.recent_transactions || []).map((t) => ({
-      ...t,
-      amount: Math.round(t.amount / 100),
-    })),
+    active_loan: raw.active_loan,
+    recent_transactions: raw.recent_transactions || [],
     announcements: raw.announcements || [],
   };
 }

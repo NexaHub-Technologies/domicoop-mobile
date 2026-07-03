@@ -8,7 +8,7 @@ import { theme } from "@/styles/theme";
 import { typography } from "@/constants/typography";
 import { useProfile } from "@/hooks/useProfile";
 import { useUnreadCount } from "@/hooks/useUnreadCount";
-import { getInitials } from "@/data/mockData";
+import { getInitials } from "@/lib/utils/format";
 import { Skeleton } from "@/components/common/Skeleton";
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);

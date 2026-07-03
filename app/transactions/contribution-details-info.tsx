@@ -18,7 +18,8 @@ import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
 import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
-import { mockSavingsTransactions, formatCurrency } from "@/data/mockData";
+import { formatCurrency } from "@/lib/utils/format";
+import { useContributions } from "@/hooks/useContributions";
 import { getAllocationSummary } from "@/lib/utils/contributionAllocation";
 import { AllocationBreakdown } from "@/components/savings/AllocationBreakdown";
 
@@ -103,9 +104,37 @@ export default function ContributionDetailsInfoScreen() {
   const styles = createStyles(colors);
   const [isDownloading, setIsDownloading] = useState(false);
 
-  // Find transaction by ID
-  const transaction =
-    mockSavingsTransactions.find((t) => t.id === id) || mockSavingsTransactions[0];
+  // Served from the contributions query cache populated by the list screen.
+  const { contributions, isLoading } = useContributions();
+  const contribution = contributions.find((c) => c.id === id);
+
+  if (!contribution) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <Text style={{ color: colors.onSurface, padding: theme.spacing.lg }}>
+          {isLoading ? "Loading transaction…" : "Transaction not found"}
+        </Text>
+      </SafeAreaView>
+    );
+  }
+
+  const createdAt = new Date(contribution.created_at);
+  const transaction = {
+    id: contribution.id,
+    amount: contribution.amount,
+    date: createdAt.toLocaleDateString("en-NG", {
+      day: "numeric",
+      month: "short",
+      year: "numeric",
+    }),
+    time: createdAt.toLocaleTimeString("en-NG", {
+      hour: "2-digit",
+      minute: "2-digit",
+    }),
+    type: "Contribution",
+    category: "Savings",
+    status: contribution.status,
+  };
 
   const allocationSummary = getAllocationSummary(Math.abs(transaction.amount));
 

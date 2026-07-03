@@ -6,7 +6,7 @@ import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
 import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
-import { getInitials } from "@/data/mockData";
+import { getInitials } from "@/lib/utils/format";
 
 type ProfileImageColors = typeof lightColors;
 

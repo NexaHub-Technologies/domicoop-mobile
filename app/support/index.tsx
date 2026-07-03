@@ -11,7 +11,7 @@ import { font } from "@/constants/theme";
 import { typography } from '@/constants/typography';
 import { FAQAccordion } from '@/components/support/FAQAccordion';
 import { ChatBottomSheet } from '@/components/modals/ChatBottomSheet';
-import { faqData, mockUser } from '@/data/mockData';
+import { faqData } from '@/constants/support';
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
@@ -148,9 +148,7 @@ export default function SupportHelpScreen() {
           <View style={styles.contactCard}>
             <View style={styles.avatarContainer}>
               <View style={styles.avatar}>
-                <Text style={styles.avatarText}>
-                  {mockUser.name.split(' ').map(n => n[0]).join('')}
-                </Text>
+                <MaterialIcons name="support-agent" size={28} color={colors.onPrimary} />
               </View>
             </View>
             <Text style={styles.contactTitle}>Still need help?</Text>

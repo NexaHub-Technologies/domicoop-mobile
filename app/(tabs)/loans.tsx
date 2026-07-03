@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StyleSheet,
   RefreshControl,
+  ActivityIndicator,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -24,27 +25,34 @@ import { typography } from "@/constants/typography";
 import { LoanSummaryStats } from "@/components/loans/LoanSummaryStats";
 import { LoanCard } from "@/components/loans/LoanCard";
 import { InsightsCard } from "@/components/loans/InsightsCard";
-import { mockLoans } from "@/data/mockData";
+import { EmptyState } from "@/components/common/EmptyState";
+import { useLoans } from "@/hooks/useLoans";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
 export default function LoansScreen() {
   const router = useRouter();
-  const [refreshing, setRefreshing] = React.useState(false);
   const scale = useSharedValue(1);
   const { colors, isDarkMode } = useTheme();
+  const {
+    loans,
+    totalDebt,
+    nextPayment,
+    isLoading,
+    isRefreshing,
+    error,
+    isOffline,
+    refresh,
+  } = useLoans();
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
   }));
 
   const onRefresh = React.useCallback(() => {
-    setRefreshing(true);
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 2000);
-  }, []);
+    refresh();
+  }, [refresh]);
 
   const handleApplyForLoan = () => {
     router.push("/transactions/apply-for-loan");
@@ -83,15 +91,22 @@ export default function LoansScreen() {
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
-            refreshing={refreshing}
+            refreshing={isRefreshing}
             onRefresh={onRefresh}
             tintColor={colors.primary}
             colors={[colors.primary]}
           />
         }
       >
+        {isOffline && !isLoading && (
+          <Animated.View entering={FadeIn.duration(300)} style={dynamicStyles.offlineBanner}>
+            <MaterialIcons name="cloud-off" size={16} color={colors.onSurfaceVariant} />
+            <Text style={dynamicStyles.offlineText}>Showing cached data — offline</Text>
+          </Animated.View>
+        )}
+
         {/* Summary Stats */}
-        <LoanSummaryStats />
+        <LoanSummaryStats totalDebt={totalDebt} nextPayment={nextPayment} />
 
         {/* Apply for New Loan Button */}
         <Animated.View entering={FadeInUp.delay(100).duration(400)}>
@@ -122,20 +137,45 @@ export default function LoansScreen() {
           <Animated.Text entering={FadeIn.delay(300)} style={dynamicStyles.sectionTitle}>
             Active Loans
           </Animated.Text>
-          <TouchableOpacity>
-            <Text style={dynamicStyles.viewAllText}>View All</Text>
-          </TouchableOpacity>
         </View>
+
+        {isLoading && (
+          <View style={dynamicStyles.loadingContainer}>
+            <ActivityIndicator size="large" color={colors.primary} />
+            <Text style={dynamicStyles.loadingText}>Loading loans...</Text>
+          </View>
+        )}
+
+        {!isLoading && error && loans.length === 0 && (
+          <Animated.View entering={FadeIn.duration(300)} style={dynamicStyles.errorContainer}>
+            <MaterialIcons name="error-outline" size={48} color={colors.error} />
+            <Text style={dynamicStyles.errorText}>{error}</Text>
+            <TouchableOpacity style={dynamicStyles.retryButton} onPress={onRefresh}>
+              <Text style={dynamicStyles.retryButtonText}>Retry</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        )}
+
+        {!isLoading && !error && loans.length === 0 && (
+          <EmptyState
+            icon="account-balance"
+            title="No loans yet"
+            message="Apply for a loan and it will show up here."
+            action={{ label: "Apply for a Loan", onPress: handleApplyForLoan }}
+          />
+        )}
 
         {/* Loan Cards */}
-        <View style={dynamicStyles.loansList}>
-          {mockLoans.map((loan, index) => (
-            <LoanCard key={loan.id} loan={loan} index={index} />
-          ))}
-        </View>
+        {loans.length > 0 && (
+          <View style={dynamicStyles.loansList}>
+            {loans.map((loan, index) => (
+              <LoanCard key={loan.id} loan={loan} index={index} />
+            ))}
+          </View>
+        )}
 
         {/* Insights Card */}
-        <InsightsCard />
+        {loans.length > 0 && <InsightsCard />}
 
         {/* Bottom padding for tab bar */}
         <SafeAreaView edges={["bottom"]} style={dynamicStyles.bottomPadding} />
@@ -240,14 +280,62 @@ const createStyles = (colors: typeof lightColors) =>
       fontSize: typography.size.lg,
       color: colors.onSurface,
     },
-    viewAllText: {
-      fontFamily: font("body", "semibold"),
-      fontSize: typography.size.sm,
-      color: colors.primary,
-    },
     loansList: {
       paddingHorizontal: theme.spacing.lg,
       marginBottom: theme.spacing.lg,
+    },
+    offlineBanner: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "center",
+      gap: theme.spacing.sm,
+      backgroundColor: `${colors.primary}10`,
+      marginHorizontal: theme.spacing.lg,
+      marginBottom: theme.spacing.base,
+      paddingVertical: theme.spacing.sm,
+      paddingHorizontal: theme.spacing.base,
+      borderRadius: theme.borderRadius.lg,
+    },
+    offlineText: {
+      fontFamily: font("body", "regular"),
+      fontSize: typography.size.xs,
+      color: colors.onSurfaceVariant,
+    },
+    loadingContainer: {
+      alignItems: "center",
+      justifyContent: "center",
+      paddingVertical: theme.spacing["3xl"],
+    },
+    loadingText: {
+      fontFamily: font("body", "regular"),
+      fontSize: typography.size.sm,
+      color: colors.onSurfaceVariant,
+      marginTop: theme.spacing.base,
+    },
+    errorContainer: {
+      alignItems: "center",
+      justifyContent: "center",
+      paddingVertical: theme.spacing["3xl"],
+      gap: theme.spacing.base,
+    },
+    errorText: {
+      fontFamily: font("body", "regular"),
+      fontSize: typography.size.base,
+      color: colors.error,
+      textAlign: "center",
+      marginTop: theme.spacing.base,
+    },
+    retryButton: {
+      backgroundColor: colors.primary,
+      paddingVertical: theme.spacing.base,
+      paddingHorizontal: theme.spacing.xl,
+      borderRadius: theme.borderRadius.lg,
+      marginTop: theme.spacing.base,
+    },
+    retryButtonText: {
+      fontFamily: font("body", "bold"),
+      fontSize: typography.size.base,
+      color: colors.onPrimary,
     },
     bottomPadding: {
       height: 100,

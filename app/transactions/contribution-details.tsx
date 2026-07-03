@@ -16,7 +16,7 @@ import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
 import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
-import { formatCurrency, formatMonth } from "@/data/mockData";
+import { formatCurrency, formatMonth } from "@/lib/utils/format";
 import { contributionsApi } from "@/lib/api/contributions.api";
 import { Contribution } from "@/lib/types/contributions";
 

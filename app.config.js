@@ -6,9 +6,9 @@ const googleServicesFile =
   process.env.GOOGLE_SERVICES_JSON ??
   (fs.existsSync("./google-services.json") ? "./google-services.json" : undefined);
 
-module.exports = {
+export default {
   expo: {
-    name: "domicop",
+    name: "DOMICOP",
     slug: "domicop",
     version: "1.0.0",
     orientation: "portrait",

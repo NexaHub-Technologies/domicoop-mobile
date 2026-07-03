@@ -3,7 +3,8 @@ import {
   Contribution,
   GetContributionsParams,
   ContributionListResponse,
-  StoreVerifiedContributionInput,
+  VerifyContributionInput,
+  VerifyContributionResponse,
   ApiContributionsResponse,
   ApiContribution,
   transformContributionsResponse,
@@ -35,13 +36,28 @@ export const contributionsApi = {
     return transformContribution(response);
   },
 
-  storeVerifiedContribution: async (
-    data: StoreVerifiedContributionInput,
-  ): Promise<Contribution> => {
-    const response = await authedRequest<ApiContribution>("/contributions", {
-      method: "POST",
-      body: data,
-    });
-    return transformContribution(response);
+  /**
+   * Server-side payment verification: the API confirms the reference with
+   * Paystack and creates the contribution from the verified transaction.
+   * `verified: false` means the charge hasn't settled yet — safe to retry.
+   */
+  verifyContribution: async (
+    data: VerifyContributionInput,
+  ): Promise<{
+    verified: boolean;
+    chargeStatus?: string;
+    contribution: Contribution | null;
+  }> => {
+    const response = await authedRequest<VerifyContributionResponse>(
+      "/contributions/verify",
+      { method: "POST", body: data },
+    );
+    return {
+      verified: response.verified || !!response.already_processed,
+      chargeStatus: response.status,
+      contribution: response.contribution
+        ? transformContribution(response.contribution)
+        : null,
+    };
   },
 };

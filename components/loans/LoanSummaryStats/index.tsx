@@ -6,7 +6,12 @@ import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
 import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
-import { getTotalDebt, getNextPayment, formatCurrencyNoSign } from "@/data/mockData";
+import { formatCurrencyNoSign } from "@/lib/utils/format";
+
+interface LoanSummaryStatsProps {
+  totalDebt: number;
+  nextPayment: { date: string; amount: number; daysLeft: number } | null;
+}
 
 const AnimatedView = Animated.createAnimatedComponent(View);
 
@@ -100,11 +105,12 @@ const createStyles = (colors: typeof lightColors) =>
     },
   });
 
-export const LoanSummaryStats: React.FC = () => {
+export const LoanSummaryStats: React.FC<LoanSummaryStatsProps> = ({
+  totalDebt,
+  nextPayment,
+}) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
-  const totalDebt = getTotalDebt();
-  const nextPayment = getNextPayment();
 
   return (
     <AnimatedView entering={FadeInUp.duration(400)} style={styles.container}>
