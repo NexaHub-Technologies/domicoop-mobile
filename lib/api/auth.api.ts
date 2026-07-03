@@ -49,19 +49,6 @@ export const auth = {
     await session.setTokens(response.access_token, response.refresh_token);
     return response;
   },
-
-  googleLogin: async (idToken: string): Promise<LoginResponse> => {
-    const response = await request<LoginResponse>("/auth/oauth/google", {
-      method: "POST",
-      body: { id_token: idToken },
-    });
-
-    await session.setTokens(response.access_token, response.refresh_token);
-    if (response.user?.email) {
-      await session.setEmail(response.user.email);
-    }
-    return response;
-  },
 };
 
 export default auth;

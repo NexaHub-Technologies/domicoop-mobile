@@ -1,14 +1,11 @@
-import React, { useState } from "react";
+import React from "react";
 import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { Button } from "@/components/common/Button";
-import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { SecurityBadge } from "@/components/auth/SecurityBadge";
 import { HeroSection } from "@/components/auth/HeroSection";
 import { useTheme } from "@/contexts/ThemeContext";
-import { auth } from "@/lib/api/auth.api";
-import { signInWithGoogle } from "@/lib/google-signin";
 import type { lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
 import { font } from "@/constants/theme";
@@ -18,8 +15,6 @@ export default function WelcomeScreen() {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
   const styles = createStyles(colors);
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
-  const [error, setError] = useState<string | undefined>(undefined);
 
   const handleCreateAccount = () => {
     router.push("/sign-up");
@@ -27,23 +22,6 @@ export default function WelcomeScreen() {
 
   const handleSignIn = () => {
     router.push("/sign-in");
-  };
-
-  const handleGoogleSignIn = async () => {
-    setError(undefined);
-    setIsGoogleLoading(true);
-
-    try {
-      const idToken = await signInWithGoogle();
-      await auth.googleLogin(idToken);
-      router.replace("/(tabs)");
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Google sign-in failed. Please try again.";
-      setError(errorMessage);
-    } finally {
-      setIsGoogleLoading(false);
-    }
   };
 
   return (
@@ -68,22 +46,6 @@ export default function WelcomeScreen() {
 
         {/* Main Content */}
         <View style={[styles.content, { paddingBottom: insets.bottom }]}>
-          {/* Google Sign-In — the fastest way in */}
-          <GoogleSignInButton
-            onPress={handleGoogleSignIn}
-            loading={isGoogleLoading}
-            disabled={isGoogleLoading}
-          />
-
-          {error && <Text style={styles.errorText}>{error}</Text>}
-
-          {/* Divider */}
-          <View style={styles.dividerContainer}>
-            <View style={styles.dividerLine} />
-            <Text style={styles.dividerText}>or</Text>
-            <View style={styles.dividerLine} />
-          </View>
-
           {/* Create Account — the one primary CTA */}
           <Button
             title="Create Account"
@@ -177,31 +139,5 @@ const createStyles = (colors: typeof lightColors) =>
     termsLink: {
       color: colors.primaryBright,
       textDecorationLine: "underline",
-    },
-    dividerContainer: {
-      flexDirection: "row",
-      alignItems: "center",
-      marginVertical: theme.spacing.xl,
-    },
-    dividerLine: {
-      flex: 1,
-      height: 1,
-      backgroundColor: colors.outlineVariant,
-    },
-    dividerText: {
-      fontFamily: font("body", "semibold"),
-      fontSize: theme.typography.size.xs,
-      color: colors.onSurfaceVariant,
-      textTransform: "uppercase",
-      letterSpacing: theme.typography.letterSpacing.wider,
-      marginHorizontal: theme.spacing.base,
-    },
-    errorText: {
-      fontFamily: font("body", "regular"),
-      fontSize: theme.typography.size.sm,
-      color: colors.error,
-      textAlign: "center",
-      marginTop: theme.spacing.base,
-      marginBottom: -theme.spacing.md,
     },
   });

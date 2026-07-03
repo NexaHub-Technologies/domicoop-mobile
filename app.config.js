@@ -85,7 +85,6 @@ export default {
           },
         },
       ],
-      "@react-native-google-signin/google-signin",
     ],
     experiments: {
       typedRoutes: true,
@@ -93,7 +92,7 @@ export default {
     },
     extra: {
       eas: {
-        projectId: "2e673356-8e6c-4fa4-8042-aaae41d5f08d"
+        projectId: "2e673356-8e6c-4fa4-8042-aaae41d5f08d",
       },
       router: {},
       apiBaseUrl: process.env.EXPO_PUBLIC_API_BASE_URL,

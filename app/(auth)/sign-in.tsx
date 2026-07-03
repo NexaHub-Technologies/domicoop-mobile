@@ -10,10 +10,8 @@ import { SecurityBadge } from "@/components/auth/SecurityBadge";
 import { FormCard } from "@/components/auth/FormCard";
 import { KeyboardAwareWrapper } from "@/components/auth/KeyboardAwareWrapper";
 import { InfoModal } from "@/components/modals/InfoModal";
-import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
 import { useTheme } from "@/contexts/ThemeContext";
 import { auth } from "@/lib/api/auth.api";
-import { signInWithGoogle } from "@/lib/google-signin";
 import type { lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
 import { font } from "@/constants/theme";
@@ -26,7 +24,6 @@ export default function SignInScreen() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [error, setError] = useState<string | undefined>(undefined);
   const [showUnverifiedModal, setShowUnverifiedModal] = useState(false);
 
@@ -65,23 +62,6 @@ export default function SignInScreen() {
 
   const handleJoinArchive = () => {
     router.push("/sign-up");
-  };
-
-  const handleGoogleSignIn = async () => {
-    setError(undefined);
-    setIsGoogleLoading(true);
-
-    try {
-      const idToken = await signInWithGoogle();
-      await auth.googleLogin(idToken);
-      router.replace("/(tabs)");
-    } catch (err) {
-      const errorMessage =
-        err instanceof Error ? err.message : "Google sign-in failed. Please try again.";
-      setError(errorMessage);
-    } finally {
-      setIsGoogleLoading(false);
-    }
   };
 
   return (
@@ -156,20 +136,6 @@ export default function SignInScreen() {
                 disabled={isLoading}
               />
             </FormCard>
-
-            {/* Divider */}
-            <View style={styles.dividerContainer}>
-              <View style={styles.dividerLine} />
-              <Text style={styles.dividerText}>or continue with</Text>
-              <View style={styles.dividerLine} />
-            </View>
-
-            {/* Google Sign-In */}
-            <GoogleSignInButton
-              onPress={handleGoogleSignIn}
-              loading={isGoogleLoading}
-              disabled={isGoogleLoading || isLoading}
-            />
 
             {/* Footer */}
             <View style={[styles.footer, { paddingBottom: insets.bottom }]}>
@@ -276,23 +242,5 @@ const createStyles = (colors: typeof lightColors) =>
     footerLink: {
       color: colors.primary,
       fontFamily: font("body", "bold"),
-    },
-    dividerContainer: {
-      flexDirection: "row",
-      alignItems: "center",
-      marginVertical: theme.spacing.xl,
-    },
-    dividerLine: {
-      flex: 1,
-      height: 1,
-      backgroundColor: colors.outlineVariant,
-    },
-    dividerText: {
-      fontFamily: font("body", "semibold"),
-      fontSize: theme.typography.size.xs,
-      color: colors.onSurfaceVariant,
-      textTransform: "uppercase",
-      letterSpacing: theme.typography.letterSpacing.wider,
-      marginHorizontal: theme.spacing.base,
     },
   });
