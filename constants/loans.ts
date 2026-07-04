@@ -1,18 +1,19 @@
 // Loan product configuration and helpers (extracted from the retired data/mockData.ts).
 
-import type { LoanPurpose, LoanPurposeConfig } from "@/lib/types/loans";
+import type { LoanType, LoanTypeConfig } from "@/lib/types/loans";
 
-// Loan Configuration
+// Loan Configuration. Bounds mirror POST /loans/apply schema validation:
+// amount ≥ ₦1,000 (co-op floor is higher), tenure 1–36 months.
 export const loanConfig = {
   minAmount: 50000, // ₦50,000
   maxAmount: 5000000, // ₦5,000,000
   defaultInterestRate: 12, // 12% APR
   minTerm: 3,
-  maxTerm: 60,
+  maxTerm: 36,
 };
 
-// 10 Loan Purposes with styling
-export const loanPurposes: LoanPurposeConfig[] = [
+// Loan types with styling — the 5 categories accepted by the API.
+export const loanTypes: LoanTypeConfig[] = [
   {
     id: "business",
     label: "Business",
@@ -35,53 +36,23 @@ export const loanPurposes: LoanPurposeConfig[] = [
     bgColor: "#fff7ed",
   },
   {
-    id: "medical",
-    label: "Medical",
-    icon: "medical-services",
-    color: "#0d9488",
-    bgColor: "#f0fdfa",
-  },
-  {
-    id: "home_improvement",
-    label: "Home",
+    id: "housing",
+    label: "Housing",
     icon: "home-repair-service",
     color: "#16a34a",
     bgColor: "#f0fdf4",
   },
   {
-    id: "vehicle",
-    label: "Vehicle",
-    icon: "directions-car",
+    id: "personal",
+    label: "Personal",
+    icon: "account-circle",
     color: "#4f46e5",
     bgColor: "#eef2ff",
   },
-  {
-    id: "wedding",
-    label: "Wedding",
-    icon: "celebration",
-    color: "#db2777",
-    bgColor: "#fdf2f8",
-  },
-  { id: "travel", label: "Travel", icon: "flight", color: "#0891b2", bgColor: "#ecfeff" },
-  {
-    id: "debt_consolidation",
-    label: "Debt",
-    icon: "account-balance",
-    color: "#475569",
-    bgColor: "#f8fafc",
-  },
-  {
-    id: "agriculture",
-    label: "Agriculture",
-    icon: "agriculture",
-    color: "#059669",
-    bgColor: "#ecfdf5",
-  },
 ];
 
-// Helper to get purpose config
-export const getLoanPurposeConfig = (purpose: LoanPurpose): LoanPurposeConfig => {
-  return loanPurposes.find((p) => p.id === purpose) || loanPurposes[0];
+export const getLoanTypeConfig = (type: LoanType): LoanTypeConfig => {
+  return loanTypes.find((t) => t.id === type) || loanTypes[0];
 };
 
 // Loan calculation helper

@@ -9,6 +9,8 @@ import { QuickActions } from '@/components/dashboard/QuickActions';
 import { TransactionList, RecentTransaction } from '@/components/dashboard/TransactionList';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useContributions } from '@/hooks/useContributions';
+import { useExitConfirmation } from '@/hooks/useExitConfirmation';
+import { ConfirmationModal } from '@/components/modals/ConfirmationModal';
 import { computeAllocationTotals } from '@/lib/utils/contributionAllocation';
 import { formatMonth } from '@/lib/utils/format';
 
@@ -24,6 +26,8 @@ export default function DashboardScreen() {
     isOffline,
     refresh: refreshContributions,
   } = useContributions();
+
+  const exitConfirmation = useExitConfirmation();
 
   const allocationTotals = computeAllocationTotals(contributions);
 
@@ -87,6 +91,18 @@ export default function DashboardScreen() {
         {/* Bottom padding for tab bar */}
         <SafeAreaView edges={['bottom']} style={styles.bottomPadding} />
       </ScrollView>
+
+      {/* Exit confirmation on back-press from the dashboard (Android) */}
+      <ConfirmationModal
+        visible={exitConfirmation.isVisible}
+        title="Log out?"
+        message="Going back will log you out of DOMICOOP and return you to the login screen."
+        confirmText="Log out"
+        cancelText="Stay"
+        onConfirm={exitConfirmation.confirm}
+        onCancel={exitConfirmation.cancel}
+        isDestructive
+      />
     </SafeAreaView>
   );
 }

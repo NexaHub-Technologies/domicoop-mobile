@@ -41,8 +41,8 @@ export default function SplashScreen() {
               <Image
                 source={
                   isDarkMode
-                    ? require("@/assets/images/logos/domicop_logo.png")
-                    : require("@/assets/images/logos/domicop_logo_black.png")
+                    ? require("@/assets/images/logos/domicoop_logo.png")
+                    : require("@/assets/images/logos/domicoop_logo_black.png")
                 }
                 style={styles.logoImage}
                 resizeMode="contain"
@@ -51,12 +51,10 @@ export default function SplashScreen() {
           </View>
 
           {/* Brand Name */}
-          <Text style={styles.brandName}>DOMICOP</Text>
+          <Text style={styles.brandName}>DOMICOOP</Text>
 
           {/* Tagline */}
-          <Text style={styles.tagline}>
-            The institutional ledger for modern cooperative financial growth.
-          </Text>
+          <Text style={styles.tagline}>Born to Dominate</Text>
         </View>
 
         {/* Bottom Gradient Fade */}

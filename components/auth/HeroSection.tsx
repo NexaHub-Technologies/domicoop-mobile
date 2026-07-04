@@ -71,8 +71,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
               <Image
                 source={
                   isDarkMode
-                    ? require("@/assets/images/logos/domicop_logo.png")
-                    : require("@/assets/images/logos/domicop_logo_black.png")
+                    ? require("@/assets/images/logos/domicoop_logo.png")
+                    : require("@/assets/images/logos/domicoop_logo_black.png")
                 }
                 style={styles.logoImage}
                 resizeMode="contain"

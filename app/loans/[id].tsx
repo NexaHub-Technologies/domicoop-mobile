@@ -10,7 +10,7 @@ import type { lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
 import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
-import { getLoanPurposeConfig } from "@/constants/loans";
+import { getLoanTypeConfig } from "@/constants/loans";
 import { formatCurrencyNoSign } from "@/lib/utils/format";
 import { useLoans } from "@/hooks/useLoans";
 
@@ -36,7 +36,7 @@ export default function LoanDetailScreen() {
     );
   }
 
-  const purposeConfig = getLoanPurposeConfig(loan.purpose);
+  const purposeConfig = getLoanTypeConfig(loan.type);
   const paidAmount = loan.totalAmount - loan.remainingBalance;
 
   const handleBack = () => {
@@ -79,6 +79,9 @@ export default function LoanDetailScreen() {
           </View>
           <Text style={styles.loanTitle}>{loan.title}</Text>
           <Text style={styles.loanId}>{loan.loanId}</Text>
+          {loan.purpose ? (
+            <Text style={styles.loanPurpose}>{loan.purpose}</Text>
+          ) : null}
 
           <View style={[styles.statusBadge, { backgroundColor: purposeConfig.bgColor }]}>
             <Text style={[styles.statusText, { color: purposeConfig.color }]}>
@@ -257,6 +260,13 @@ const createStyles = (colors: typeof lightColors) =>
       fontFamily: font("body", "regular"),
       fontSize: typography.size.sm,
       color: colors.onSurfaceVariant,
+      marginBottom: theme.spacing.base,
+    },
+    loanPurpose: {
+      fontFamily: font("body", "regular"),
+      fontSize: typography.size.sm,
+      color: colors.onSurfaceVariant,
+      textAlign: "center",
       marginBottom: theme.spacing.base,
     },
     statusBadge: {

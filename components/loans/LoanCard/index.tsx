@@ -13,7 +13,7 @@ import { theme } from "@/styles/theme";
 import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
 import type { Loan } from "@/lib/types/loans";
-import { getLoanPurposeConfig } from "@/constants/loans";
+import { getLoanTypeConfig } from "@/constants/loans";
 import { formatCurrencyNoSign } from "@/lib/utils/format";
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
@@ -176,7 +176,7 @@ export const LoanCard: React.FC<LoanCardProps> = ({ loan, index }) => {
   const styles = createStyles(colors);
   const router = useRouter();
   const scale = useSharedValue(1);
-  const purposeConfig = getLoanPurposeConfig(loan.purpose);
+  const purposeConfig = getLoanTypeConfig(loan.type);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
@@ -213,6 +213,12 @@ export const LoanCard: React.FC<LoanCardProps> = ({ loan, index }) => {
           bg: colors.errorContainer,
           text: colors.error,
           label: "Overdue",
+        };
+      case "rejected":
+        return {
+          bg: colors.errorContainer,
+          text: colors.error,
+          label: "Rejected",
         };
       case "completed":
         return {

@@ -12,17 +12,11 @@ import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
-import Animated, {
-  FadeIn,
-  FadeInUp,
-  useAnimatedStyle,
-  withSpring,
-  useSharedValue,
-} from "react-native-reanimated";
+import Animated, { FadeIn, FadeInUp } from "react-native-reanimated";
 import { theme } from "@/styles/theme";
 import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
-import { LoanSummaryStats } from "@/components/loans/LoanSummaryStats";
+import { LoanPortfolioCard } from "@/components/loans/LoanPortfolioCard";
 import { LoanCard } from "@/components/loans/LoanCard";
 import { InsightsCard } from "@/components/loans/InsightsCard";
 import { EmptyState } from "@/components/common/EmptyState";
@@ -33,7 +27,6 @@ const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
 export default function LoansScreen() {
   const router = useRouter();
-  const scale = useSharedValue(1);
   const { colors, isDarkMode } = useTheme();
   const {
     loans,
@@ -46,9 +39,7 @@ export default function LoansScreen() {
     refresh,
   } = useLoans();
 
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
+  const activeCount = loans.filter((loan) => loan.status !== "completed").length;
 
   const onRefresh = React.useCallback(() => {
     refresh();
@@ -58,19 +49,10 @@ export default function LoansScreen() {
     router.push("/transactions/apply-for-loan");
   };
 
-  const handlePressIn = () => {
-    scale.value = withSpring(0.98, { damping: 15, stiffness: 300 });
-  };
-
-  const handlePressOut = () => {
-    scale.value = withSpring(1, { damping: 15, stiffness: 300 });
-  };
-
-  // Dynamic styles based on theme
   const dynamicStyles = React.useMemo(() => createStyles(colors), [colors]);
 
   return (
-    <SafeAreaView style={[dynamicStyles.container]} edges={["top"]}>
+    <SafeAreaView style={dynamicStyles.container}>
       <StatusBar style={isDarkMode ? "light" : "dark"} />
 
       {/* Header */}
@@ -105,39 +87,25 @@ export default function LoansScreen() {
           </Animated.View>
         )}
 
-        {/* Summary Stats */}
-        <LoanSummaryStats totalDebt={totalDebt} nextPayment={nextPayment} />
+        {/* Portfolio Hero */}
+        <LoanPortfolioCard
+          totalDebt={loans.length === 0 && isLoading ? null : totalDebt}
+          activeCount={activeCount}
+          nextPayment={nextPayment}
+          isLoading={isLoading}
+        />
 
-        {/* Apply for New Loan Button */}
-        <Animated.View entering={FadeInUp.delay(100).duration(400)}>
+        {/* Apply for New Loan */}
+        <Animated.View entering={FadeInUp.delay(200).duration(400)}>
           <AnimatedTouchable
             onPress={handleApplyForLoan}
-            onPressIn={handlePressIn}
-            onPressOut={handlePressOut}
-            style={[dynamicStyles.applyButton, animatedStyle]}
+            style={dynamicStyles.applyButton}
             activeOpacity={0.8}
           >
-            <View style={dynamicStyles.applyButtonContent}>
-              <View style={dynamicStyles.applyIconContainer}>
-                <MaterialIcons name="add-circle" size={28} color={colors.onPrimary} />
-              </View>
-              <View style={dynamicStyles.applyTextContainer}>
-                <Text style={dynamicStyles.applyButtonTitle}>Apply for New Loan</Text>
-                <Text style={dynamicStyles.applyButtonSubtitle}>
-                  Instant approval for qualified members
-                </Text>
-              </View>
-            </View>
-            <MaterialIcons name="chevron-right" size={24} color={colors.onPrimary} />
+            <MaterialIcons name="add-circle" size={20} color={colors.onPrimary} />
+            <Text style={dynamicStyles.applyButtonText}>Apply for a Loan</Text>
           </AnimatedTouchable>
         </Animated.View>
-
-        {/* Active Loans Section */}
-        <View style={dynamicStyles.sectionHeader}>
-          <Animated.Text entering={FadeIn.delay(300)} style={dynamicStyles.sectionTitle}>
-            Active Loans
-          </Animated.Text>
-        </View>
 
         {isLoading && (
           <View style={dynamicStyles.loadingContainer}>
@@ -165,17 +133,24 @@ export default function LoansScreen() {
           />
         )}
 
-        {/* Loan Cards */}
+        {/* Active Loans */}
         {loans.length > 0 && (
-          <View style={dynamicStyles.loansList}>
-            {loans.map((loan, index) => (
-              <LoanCard key={loan.id} loan={loan} index={index} />
-            ))}
-          </View>
-        )}
+          <>
+            <View style={dynamicStyles.sectionHeader}>
+              <Animated.Text entering={FadeIn.delay(300)} style={dynamicStyles.sectionTitle}>
+                Active Loans
+              </Animated.Text>
+            </View>
 
-        {/* Insights Card */}
-        {loans.length > 0 && <InsightsCard />}
+            <View style={dynamicStyles.loansList}>
+              {loans.map((loan, index) => (
+                <LoanCard key={loan.id} loan={loan} index={index} />
+              ))}
+            </View>
+
+            <InsightsCard />
+          </>
+        )}
 
         {/* Bottom padding for tab bar */}
         <SafeAreaView edges={["bottom"]} style={dynamicStyles.bottomPadding} />
@@ -227,12 +202,14 @@ const createStyles = (colors: typeof lightColors) =>
     applyButton: {
       backgroundColor: colors.primary,
       borderRadius: theme.borderRadius.xl,
-      padding: theme.spacing.lg,
-      marginHorizontal: theme.spacing.lg,
-      marginBottom: theme.spacing.lg,
+      paddingVertical: theme.spacing.lg,
+      paddingHorizontal: theme.spacing.xl,
       flexDirection: "row",
       alignItems: "center",
-      justifyContent: "space-between",
+      justifyContent: "center",
+      gap: theme.spacing.sm,
+      marginHorizontal: theme.spacing.lg,
+      marginBottom: theme.spacing.lg,
       shadowColor: colors.ambientShadow,
       shadowOffset: {
         width: 0,
@@ -242,31 +219,10 @@ const createStyles = (colors: typeof lightColors) =>
       shadowRadius: 8,
       elevation: 4,
     },
-    applyButtonContent: {
-      flexDirection: "row",
-      alignItems: "center",
-      gap: theme.spacing.base,
-    },
-    applyIconContainer: {
-      width: 48,
-      height: 48,
-      borderRadius: 24,
-      backgroundColor: `${colors.onPrimary}33`,
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    applyTextContainer: {
-      gap: 2,
-    },
-    applyButtonTitle: {
+    applyButtonText: {
       fontFamily: font("display", "bold"),
       fontSize: typography.size.base,
       color: colors.onPrimary,
-    },
-    applyButtonSubtitle: {
-      fontFamily: font("body", "regular"),
-      fontSize: typography.size.xs,
-      color: `${colors.onPrimary}90`,
     },
     sectionHeader: {
       flexDirection: "row",

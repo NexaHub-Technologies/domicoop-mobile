@@ -282,7 +282,7 @@ export default function ContributionDetailsScreen() {
             <MaterialIcons name="savings" size={64} color={colors.outlineVariant} />
             <Text style={styles.emptyTitle}>No Contributions Yet</Text>
             <Text style={styles.emptyText}>
-              Start making contributions to build your savings with DOMICOP.
+              Start making contributions to build your savings with DOMICOOP.
             </Text>
           </Animated.View>
         )}

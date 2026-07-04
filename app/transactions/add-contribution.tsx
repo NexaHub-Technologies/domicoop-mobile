@@ -223,7 +223,7 @@ export default function AddContributionScreen() {
           >
             <View style={styles.heroContent}>
               <Text style={styles.heroSubtitle}>Institutional Ledger</Text>
-              <Text style={styles.heroTitle}>DOMICOP</Text>
+              <Text style={styles.heroTitle}>DOMICOOP</Text>
               <Text style={styles.heroDescription}>
                 Secure Member Contribution Portal
               </Text>

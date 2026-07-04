@@ -39,7 +39,7 @@ export default function WelcomeScreen() {
         {/* Hero Section */}
         <HeroSection
           title="Let's Get Started!"
-          subtitle="The institutional ledger for your cooperative digital archive and assets."
+          subtitle="Born to Dominate"
           height={620}
           imageSource={require("@/assets/images/auth/hero-welcome.jpg")}
         />

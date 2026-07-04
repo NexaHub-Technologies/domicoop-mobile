@@ -71,7 +71,7 @@ export default function SupportHelpScreen() {
 
   const handleContactAdmin = () => {
     // Open email client
-    Linking.openURL('mailto:support@domicop.com?subject=Support Request');
+    Linking.openURL('mailto:support@domicoop.com?subject=Support Request');
   };
 
   const handleStartConversation = () => {

@@ -13,7 +13,7 @@ export const faqData: FAQ[] = [
     icon: "card-membership",
     question: "Membership eligibility & benefits",
     answer:
-      "DOMICOP membership is open to all residents. Benefits include access to low-interest loans, community savings programs, and exclusive financial literacy workshops.",
+      "DOMICOOP membership is open to all residents. Benefits include access to low-interest loans, community savings programs, and exclusive financial literacy workshops.",
   },
   {
     id: "faq-002",
@@ -27,7 +27,7 @@ export const faqData: FAQ[] = [
     icon: "schedule",
     question: "Payment methods and schedules",
     answer:
-      "Payments are typically processed on the 1st and 15th of each month. We support bank transfers, mobile money, and direct debit from your DOMICOP wallet.",
+      "Payments are typically processed on the 1st and 15th of each month. We support bank transfers, mobile money, and direct debit from your DOMICOOP wallet.",
   },
   {
     id: "faq-004",

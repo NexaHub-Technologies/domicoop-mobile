@@ -1,11 +1,11 @@
-# DOMICOP - Cooperative Banking & Savings App
+# DOMICOOP - Dominion Co-operative Society
 
 <p align="center">
-  <img src="./assets/images/logos/domicop-logo.png" alt="DOMICOP Logo" width="120" />
+  <img src="./assets/images/logos/domicoop-logo.png" alt="DOMICOOP Logo" width="120" />
 </p>
 
 <p align="center">
-  <strong>The institutional ledger for your cooperative digital archive and assets</strong>
+  <strong>Born to Dominate</strong>
 </p>
 
 <p align="center">
@@ -20,7 +20,7 @@
 
 ## 📱 Overview
 
-DOMICOP is a modern mobile banking application designed for cooperative societies. It provides members with a secure and intuitive platform to manage their savings, apply for loans, track transactions, and stay connected with their cooperative community.
+DOMICOOP is the official **digital passbook** for members of **Dominion Co-operative Society**. It replaces the paper passbook with a secure, always-available record of each member's savings, contributions, and loans — letting members see their standing, apply for loans, and track transactions from their phone.
 
 ### Key Features
 
@@ -36,7 +36,7 @@ DOMICOP is a modern mobile banking application designed for cooperative societie
 
 ## 🎨 Design System
 
-DOMICOP follows the **"Blue Cobalt Archive"** design system — see [DESIGN.md](./DESIGN.md) for the full spec (tokens, typography, elevation rules, primitives).
+DOMICOOP follows the **"Blue Cobalt Archive"** design system — see [DESIGN.md](./DESIGN.md) for the full spec (tokens, typography, elevation rules, primitives).
 
 - **Primary Color**: Blue Cobalt (#0b50da)
 - **Typography**: Plus Jakarta Sans (display, money) + Inter (body), natively embedded
@@ -98,8 +98,8 @@ Token source of truth: `constants/theme/colors.ts`.
 
 1. **Clone the repository**
    ```bash
-   git clone https://github.com/nexahub-tech/domicop-mobile.git
-   cd domicop-mobile
+   git clone https://github.com/nexahub-tech/domicoop-mobile.git
+   cd domicoop-mobile
    ```
 
 2. **Install dependencies**
@@ -135,7 +135,7 @@ npx expo run:android
 ## 📁 Project Structure
 
 ```
-domicop/
+domicoop/
 ├── app/                          # Main application code (Expo Router)
 │   ├── (auth)/                   # Auth group routes
 │   │   ├── _layout.tsx          # Auth layout with SafeAreaProvider
@@ -313,10 +313,10 @@ This project is proprietary and confidential. Unauthorized copying, distribution
 
 ## 🤝 Support
 
-For support, email support@domicop.com or join our community chat.
+For support, email support@domicoop.com or join our community chat.
 
 ---
 
 <p align="center">
-  Built with ❤️ by the DOMICOP Team
+  Built with ❤️ by the DOMICOOP Team
 </p>

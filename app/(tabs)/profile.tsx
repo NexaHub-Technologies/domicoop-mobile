@@ -3,21 +3,16 @@ import { ScrollView, StyleSheet, RefreshControl } from "react-native";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
-import { useQueryClient } from "@tanstack/react-query";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { SettingsSection } from "@/components/profile/SettingsSection";
 import { ConfirmationModal } from "@/components/modals/ConfirmationModal";
-import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useTheme } from "@/contexts/ThemeContext";
-import { auth } from "@/lib/api/auth.api";
-import { notificationsApi } from "@/lib/api/notifications.api";
-import { PUSH_TOKEN_KEY } from "@/lib/notifications";
-import { NOTIFICATIONS_CACHE_KEY } from "@/hooks/useNotifications";
 import { useProfile } from "@/hooks/useProfile";
+import { useLogout } from "@/hooks/useLogout";
 
 export default function ProfileScreen() {
   const router = useRouter();
-  const queryClient = useQueryClient();
+  const logout = useLogout();
   const { data, isPending, isRefetching, refetch } = useProfile();
   const profile = data ?? null;
   const isLoading = isPending;
@@ -42,24 +37,7 @@ export default function ProfileScreen() {
 
   const confirmLogout = async () => {
     setShowLogoutModal(false);
-    // Best-effort push unregister — never blocks logout.
-    try {
-      const pushToken = await AsyncStorage.getItem(PUSH_TOKEN_KEY);
-      if (pushToken) {
-        notificationsApi.unregisterDevice(pushToken).catch(() => {});
-      }
-    } catch {
-      // ignore
-    }
-    try {
-      await auth.logout();
-    } catch (error) {
-      console.error("Logout error:", error);
-    }
-    // Drop all cached data so the next account doesn't see this one's.
-    queryClient.clear();
-    AsyncStorage.multiRemove([PUSH_TOKEN_KEY, NOTIFICATIONS_CACHE_KEY]).catch(() => {});
-    router.replace("/sign-in");
+    await logout();
   };
 
   const confirmDeleteAccount = () => {

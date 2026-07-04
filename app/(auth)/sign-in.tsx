@@ -56,6 +56,14 @@ export default function SignInScreen() {
     }
   };
 
+  const handleBack = () => {
+    if (router.canGoBack()) {
+      router.back();
+    } else {
+      router.replace("/welcome");
+    }
+  };
+
   const handleForgotPassword = () => {
     router.push("/forgot-password");
   };
@@ -68,7 +76,7 @@ export default function SignInScreen() {
     <View style={styles.container}>
       {/* Back Button - positioned with top inset */}
       <View style={[styles.backButtonContainer, { top: insets.top + theme.spacing.lg }]}>
-        <BackButton onPress={() => router.back()} />
+        <BackButton onPress={handleBack} />
       </View>
 
       {/* Security Badge - positioned with top inset */}

@@ -198,7 +198,7 @@ export default function NotificationPreferencesScreen() {
         >
           <Text style={styles.title}>Notification Preferences</Text>
           <Text style={styles.subtitle}>
-            Manage how and when you receive updates from DOMICOP.
+            Manage how and when you receive updates from DOMICOOP.
           </Text>
         </Animated.View>
 

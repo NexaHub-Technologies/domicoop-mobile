@@ -10,15 +10,15 @@ import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
 import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
-import { loanPurposes } from "@/constants/loans";
-import type { LoanPurpose, LoanPurposeConfig } from "@/lib/types/loans";
+import { loanTypes } from "@/constants/loans";
+import type { LoanType, LoanTypeConfig } from "@/lib/types/loans";
 
 type PurposeColors = typeof lightColors;
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
 interface PurposeItemProps {
-  purpose: LoanPurposeConfig;
+  purpose: LoanTypeConfig;
   isSelected: boolean;
   onPress: () => void;
   colors: PurposeColors;
@@ -79,27 +79,27 @@ const PurposeItem: React.FC<PurposeItemProps> = ({
 };
 
 interface PurposeSelectorProps {
-  selectedPurpose: LoanPurpose | null;
-  onSelectPurpose: (purpose: LoanPurpose) => void;
+  selectedType: LoanType | null;
+  onSelectType: (type: LoanType) => void;
 }
 
 export const PurposeSelector: React.FC<PurposeSelectorProps> = ({
-  selectedPurpose,
-  onSelectPurpose,
+  selectedType,
+  onSelectType,
 }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>Purpose of Loan</Text>
+      <Text style={styles.label}>Loan Type</Text>
       <View style={styles.grid}>
-        {loanPurposes.map((purpose) => (
+        {loanTypes.map((type) => (
           <PurposeItem
-            key={purpose.id}
-            purpose={purpose}
-            isSelected={selectedPurpose === purpose.id}
-            onPress={() => onSelectPurpose(purpose.id)}
+            key={type.id}
+            purpose={type}
+            isSelected={selectedType === type.id}
+            onPress={() => onSelectType(type.id)}
             colors={colors}
           />
         ))}

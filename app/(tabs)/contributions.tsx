@@ -297,7 +297,7 @@ export default function SavingsScreen() {
             <Text style={dynamicStyles.emptyTitle}>No Contributions Yet</Text>
             <Text style={dynamicStyles.emptyText}>
               Your contribution balance is ₦{formatCurrency(totalBalance)}.
-              {"\n"}Start making contributions to build your savings with DOMICOP.
+              {"\n"}Start making contributions to build your savings with DOMICOOP.
             </Text>
             <TouchableOpacity
               style={dynamicStyles.emptyButton}

@@ -51,5 +51,6 @@ google-services.json
 # Firebase Admin SDK service-account keys — server credentials, never commit
 *firebase-adminsdk*.json
 
-#docs
+#folders
 /docs
+/store

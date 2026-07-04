@@ -1,10 +1,20 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+  ActivityIndicator,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
 import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
+import { useQueryClient } from '@tanstack/react-query';
 import { useTheme, lightColors } from '@/contexts/ThemeContext';
 import { theme } from '@/styles/theme';
 import { font } from "@/constants/theme";
@@ -13,25 +23,38 @@ import { AmountInput } from '@/components/forms/AmountInput';
 import { PurposeSelector } from '@/components/forms/PurposeSelector';
 import { TermSlider } from '@/components/forms/TermSlider';
 import { LoanCalculator } from '@/components/forms/LoanCalculator';
+import { Input } from '@/components/common/Input';
 import { SuccessModal } from '@/components/modals/SuccessModal/index';
+import { InfoModal } from '@/components/modals/InfoModal';
 import { loanConfig, calculateLoan } from '@/constants/loans';
-import type { LoanPurpose } from '@/lib/types/loans';
+import { loansApi } from '@/lib/api/loans.api';
+import type { LoanType } from '@/lib/types/loans';
+
+const MIN_PURPOSE_LENGTH = 10;
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
 export default function ApplyForLoanScreen() {
   const router = useRouter();
+  const queryClient = useQueryClient();
   const { colors, isDarkMode } = useTheme();
+  const insets = useSafeAreaInsets();
   const styles = getStyles(colors);
-  
+
   // Form state
   const [amount, setAmount] = useState('');
-  const [purpose, setPurpose] = useState<LoanPurpose | null>(null);
+  const [type, setType] = useState<LoanType | null>(null);
+  const [purpose, setPurpose] = useState('');
   const [term, setTerm] = useState(12);
   const [interestRate, setInterestRate] = useState(loanConfig.defaultInterestRate);
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [errors, setErrors] = useState<{ amount?: string; purpose?: string }>({});
+  const [errors, setErrors] = useState<{
+    amount?: string;
+    type?: string;
+    purpose?: string;
+  }>({});
+  const [submitError, setSubmitError] = useState<string | null>(null);
 
   // Calculate loan details
   const loanDetails = useMemo(() => {
@@ -41,7 +64,7 @@ export default function ApplyForLoanScreen() {
 
   // Validation
   const validateForm = useCallback(() => {
-    const newErrors: { amount?: string; purpose?: string } = {};
+    const newErrors: { amount?: string; type?: string; purpose?: string } = {};
     const numericAmount = parseFloat(amount.replace(/,/g, '')) || 0;
 
     if (!amount || numericAmount < loanConfig.minAmount) {
@@ -50,25 +73,44 @@ export default function ApplyForLoanScreen() {
       newErrors.amount = `Maximum loan amount is ₦${loanConfig.maxAmount.toLocaleString()}`;
     }
 
-    if (!purpose) {
-      newErrors.purpose = 'Please select a loan purpose';
+    if (!type) {
+      newErrors.type = 'Please select a loan type';
+    }
+
+    if (purpose.trim().length < MIN_PURPOSE_LENGTH) {
+      newErrors.purpose = `Please describe your purpose (at least ${MIN_PURPOSE_LENGTH} characters)`;
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
-  }, [amount, purpose]);
+  }, [amount, type, purpose]);
 
   // Handle submission
   const handleSubmit = async () => {
-    if (!validateForm()) return;
+    if (!validateForm() || !type) return;
+
+    const numericAmount = parseFloat(amount.replace(/,/g, '')) || 0;
 
     setIsSubmitting(true);
-    
-    // Simulate API call
-    await new Promise(resolve => setTimeout(resolve, 1500));
-    
-    setIsSubmitting(false);
-    setShowSuccess(true);
+    try {
+      await loansApi.apply({
+        amount: numericAmount,
+        purpose: purpose.trim(),
+        type,
+        tenure_months: term,
+      });
+      // Refresh the loans list so the new pending application shows up.
+      queryClient.invalidateQueries({ queryKey: ['loans'] });
+      setShowSuccess(true);
+    } catch (err) {
+      setSubmitError(
+        err instanceof Error
+          ? err.message
+          : 'Could not submit your application. Please try again.',
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   // Handle success modal close
@@ -83,109 +125,153 @@ export default function ApplyForLoanScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={[styles.container, { paddingTop: insets.top }]}>
       <StatusBar style={isDarkMode ? 'light' : 'dark'} />
 
       {/* Header */}
       <Animated.View entering={FadeIn.duration(300)} style={styles.header}>
         <View style={styles.headerContent}>
           <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-            <MaterialIcons name="arrow-back" size={24} color={colors.onSurfaceVariant} />
+            <MaterialIcons name="arrow-back" size={24} color={colors.onSurface} />
           </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.primary }]}>Loan Application</Text>
+          <Text style={[styles.headerTitle, { color: colors.primary }]}>
+            Loan Application
+          </Text>
           <View style={styles.backButton} />
         </View>
       </Animated.View>
 
-      <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
-        showsVerticalScrollIndicator={false}
-        keyboardShouldPersistTaps="handled"
+      <KeyboardAvoidingView
+        behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        style={styles.keyboardView}
       >
-        {/* Hero Section */}
-        <Animated.View entering={FadeInUp.delay(100).duration(400)} style={styles.heroSection}>
-          <View style={styles.heroIconContainer}>
-            <MaterialIcons name="account-balance" size={24} color={colors.primary} />
+        <ScrollView
+          style={styles.scrollView}
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+          keyboardShouldPersistTaps="handled"
+        >
+          {/* Hero Card */}
+          <Animated.View
+            entering={FadeInUp.delay(100).duration(400)}
+            style={styles.heroCard}
+          >
+            <View style={styles.heroContent}>
+              <Text style={styles.heroSubtitle}>DOMICOOP Cooperative</Text>
+              <Text style={styles.heroTitle}>Apply for a Loan</Text>
+              <Text style={styles.heroDescription}>
+                Complete the form below to submit your request. Most decisions
+                are made within 24 hours.
+              </Text>
+            </View>
+            <View style={styles.watermarkContainer}>
+              <MaterialIcons
+                name="account-balance"
+                size={120}
+                color={`${colors.onPrimary}1A`}
+              />
+            </View>
+          </Animated.View>
+
+          {/* Form */}
+          <View style={styles.formContainer}>
+            {/* Amount Input */}
+            <Animated.View entering={FadeInUp.delay(200).duration(400)}>
+              <AmountInput
+                value={amount}
+                onChangeText={setAmount}
+                error={errors.amount}
+              />
+            </Animated.View>
+
+            {/* Loan Type */}
+            <Animated.View entering={FadeInUp.delay(300).duration(400)}>
+              <PurposeSelector
+                selectedType={type}
+                onSelectType={(next) => {
+                  setType(next);
+                  if (errors.type) setErrors((e) => ({ ...e, type: undefined }));
+                }}
+              />
+              {errors.type && <Text style={styles.errorText}>{errors.type}</Text>}
+            </Animated.View>
+
+            {/* Purpose Description */}
+            <Animated.View entering={FadeInUp.delay(350).duration(400)}>
+              <Input
+                label="Purpose"
+                placeholder="Briefly describe what this loan is for…"
+                value={purpose}
+                onChangeText={(text) => {
+                  setPurpose(text);
+                  if (errors.purpose) setErrors((e) => ({ ...e, purpose: undefined }));
+                }}
+                multiline
+                numberOfLines={3}
+                error={errors.purpose}
+              />
+            </Animated.View>
+
+            {/* Term Slider */}
+            <Animated.View entering={FadeInUp.delay(400).duration(400)}>
+              <TermSlider value={term} onValueChange={setTerm} />
+            </Animated.View>
+
+            {/* Loan Calculator */}
+            <Animated.View entering={FadeInUp.delay(500).duration(400)}>
+              <LoanCalculator
+                monthlyPayment={loanDetails.monthlyPayment}
+                totalRepayment={loanDetails.totalRepayment}
+                totalInterest={loanDetails.totalInterest}
+                interestRate={interestRate}
+                onInterestRateChange={setInterestRate}
+              />
+            </Animated.View>
+
+            {/* Submit Button */}
+            <Animated.View entering={FadeInUp.delay(600).duration(400)}>
+              <AnimatedTouchable
+                onPress={handleSubmit}
+                disabled={isSubmitting}
+                style={[
+                  styles.submitButton,
+                  isSubmitting && styles.submitButtonDisabled,
+                ]}
+                activeOpacity={0.8}
+              >
+                {isSubmitting ? (
+                  <ActivityIndicator color={colors.onPrimary} />
+                ) : (
+                  <>
+                    <MaterialIcons name="send" size={20} color={colors.onPrimary} />
+                    <Text style={styles.submitButtonText}>Apply for Loan</Text>
+                  </>
+                )}
+              </AnimatedTouchable>
+            </Animated.View>
           </View>
-          <Text style={styles.heroSubtitle}>DOMICOP Cooperative</Text>
-          <Text style={styles.heroTitle}>Apply for a Loan</Text>
-          <Text style={styles.heroDescription}>
-            Complete the form below to submit your request. Most decisions are made within 24 hours.
-          </Text>
-        </Animated.View>
 
-        {/* Form */}
-        <View style={styles.formContainer}>
-          {/* Amount Input */}
-          <Animated.View entering={FadeInUp.delay(200).duration(400)}>
-            <AmountInput
-              value={amount}
-              onChangeText={setAmount}
-              error={errors.amount}
-            />
+          {/* Compliance Note */}
+          <Animated.View
+            entering={FadeInUp.delay(700).duration(400)}
+            style={styles.complianceContainer}
+          >
+            <View style={styles.complianceIcon}>
+              <MaterialIcons name="verified-user" size={24} color={colors.primary} />
+            </View>
+            <View style={styles.complianceTextContainer}>
+              <Text style={styles.complianceTitle}>Fast & Secure Review</Text>
+              <Text style={styles.complianceText}>
+                Most loan decisions are made within 24 hours. By applying, you
+                agree to DOMICOOP&apos;s Terms of Service and Privacy Policy.
+              </Text>
+            </View>
           </Animated.View>
 
-          {/* Purpose Selector */}
-          <Animated.View entering={FadeInUp.delay(300).duration(400)}>
-            <PurposeSelector
-              selectedPurpose={purpose}
-              onSelectPurpose={setPurpose}
-            />
-            {errors.purpose && (
-              <Text style={styles.errorText}>{errors.purpose}</Text>
-            )}
-          </Animated.View>
-
-          {/* Term Slider */}
-          <Animated.View entering={FadeInUp.delay(400).duration(400)}>
-            <TermSlider
-              value={term}
-              onValueChange={setTerm}
-            />
-          </Animated.View>
-
-          {/* Loan Calculator */}
-          <Animated.View entering={FadeInUp.delay(500).duration(400)}>
-            <LoanCalculator
-              monthlyPayment={loanDetails.monthlyPayment}
-              totalRepayment={loanDetails.totalRepayment}
-              totalInterest={loanDetails.totalInterest}
-              interestRate={interestRate}
-              onInterestRateChange={setInterestRate}
-            />
-          </Animated.View>
-
-          {/* Submit Button */}
-          <Animated.View entering={FadeInUp.delay(600).duration(400)}>
-            <AnimatedTouchable
-              onPress={handleSubmit}
-              disabled={isSubmitting}
-              style={[
-                styles.submitButton,
-                isSubmitting && styles.submitButtonDisabled,
-              ]}
-              activeOpacity={0.8}
-            >
-              {isSubmitting ? (
-                <ActivityIndicator color={colors.onPrimary} />
-              ) : (
-                <>
-                  <Text style={styles.submitButtonText}>Apply for Loan</Text>
-                  <MaterialIcons name="send" size={20} color={colors.onPrimary} />
-                </>
-              )}
-            </AnimatedTouchable>
-            
-            <Text style={styles.termsText}>
-              By clicking apply, you agree to DOMICOP&apos;s Terms of Service and Privacy Policy.
-            </Text>
-          </Animated.View>
-        </View>
-
-        {/* Bottom padding */}
-        <View style={styles.bottomPadding} />
-      </ScrollView>
+          {/* Bottom padding */}
+          <View style={styles.bottomPadding} />
+        </ScrollView>
+      </KeyboardAvoidingView>
 
       {/* Success Modal */}
       <SuccessModal
@@ -194,129 +280,169 @@ export default function ApplyForLoanScreen() {
         title="Loan Request Submitted"
         message="Most decisions are made within 24 hours. We'll notify you once your application is reviewed."
       />
-    </SafeAreaView>
+
+      {/* Error Modal */}
+      <InfoModal
+        visible={submitError !== null}
+        onClose={() => setSubmitError(null)}
+        icon="info"
+        iconColor={colors.error}
+        title="Application Failed"
+        message={submitError ?? ''}
+        primaryButtonText="Try Again"
+      />
+    </View>
   );
 }
 
-const getStyles = (colors: typeof lightColors) => StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: colors.background,
-  },
-  header: {
-    backgroundColor: colors.surface,
-    shadowColor: colors.ambientShadow,
-    shadowOffset: {
-      width: 0,
-      height: 2,
+const getStyles = (colors: typeof lightColors) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
     },
-    shadowOpacity: 1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  headerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: theme.spacing.lg,
-    paddingTop: theme.spacing.lg,
-    paddingBottom: theme.spacing.base,
-  },
-  backButton: {
-    padding: theme.spacing.sm,
-    borderRadius: theme.borderRadius.full,
-    minWidth: 44,
-  },
-  headerTitle: {
-    fontFamily: font("display", "bold"),
-    fontSize: typography.size.lg,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingTop: theme.spacing.lg,
-  },
-  heroSection: {
-    paddingHorizontal: theme.spacing.lg,
-    marginBottom: theme.spacing['2xl'],
-  },
-  heroIconContainer: {
-    width: 48,
-    height: 48,
-    borderRadius: 12,
-    backgroundColor: `${colors.primary}10`,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: theme.spacing.sm,
-  },
-  heroSubtitle: {
-    fontFamily: font("body", "semibold"),
-    fontSize: typography.size.xs,
-    color: colors.primary,
-    textTransform: 'uppercase',
-    letterSpacing: 1,
-    marginBottom: theme.spacing.xs,
-  },
-  heroTitle: {
-    fontFamily: font("display", "extrabold"),
-    fontSize: typography.size['2xl'],
-    color: colors.onSurface,
-    marginBottom: theme.spacing.xs,
-  },
-  heroDescription: {
-    fontFamily: font("body", "regular"),
-    fontSize: typography.size.base,
-    color: colors.onSurfaceVariant,
-    lineHeight: 22,
-  },
-  formContainer: {
-    paddingHorizontal: theme.spacing.lg,
-  },
-  errorText: {
-    fontFamily: font("body", "regular"),
-    fontSize: typography.size.xs,
-    color: colors.error,
-    marginTop: theme.spacing.xs,
-    marginBottom: theme.spacing.sm,
-  },
-  submitButton: {
-    backgroundColor: colors.primary,
-    borderRadius: theme.borderRadius.xl,
-    paddingVertical: theme.spacing.lg,
-    paddingHorizontal: theme.spacing.xl,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: theme.spacing.sm,
-    marginTop: theme.spacing.lg,
-    shadowColor: colors.ambientShadow,
-    shadowOffset: {
-      width: 0,
-      height: 4,
+    header: {
+      backgroundColor: colors.surface,
+      shadowColor: colors.ambientShadow,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 1,
+      shadowRadius: 4,
+      elevation: 2,
     },
-    shadowOpacity: 1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  submitButtonDisabled: {
-    opacity: 0.7,
-  },
-  submitButtonText: {
-    fontFamily: font("display", "bold"),
-    fontSize: typography.size.base,
-    color: colors.onPrimary,
-  },
-  termsText: {
-    fontFamily: font("body", "regular"),
-    fontSize: typography.size.xs - 2,
-    color: colors.onSurfaceVariant,
-    textAlign: 'center',
-    marginTop: theme.spacing.base,
-    paddingHorizontal: theme.spacing['2xl'],
-    lineHeight: 16,
-  },
-  bottomPadding: {
-    height: 40,
-  },
-});
+    headerContent: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: theme.spacing.lg,
+      paddingTop: theme.spacing.lg,
+      paddingBottom: theme.spacing.base,
+    },
+    backButton: {
+      padding: theme.spacing.sm,
+      borderRadius: theme.borderRadius.full,
+      minWidth: 44,
+    },
+    headerTitle: {
+      fontFamily: font('display', 'bold'),
+      fontSize: typography.size.lg,
+    },
+    keyboardView: {
+      flex: 1,
+    },
+    scrollView: {
+      flex: 1,
+    },
+    scrollContent: {
+      padding: theme.spacing.lg,
+    },
+    heroCard: {
+      backgroundColor: colors.primary,
+      borderRadius: theme.borderRadius.xl,
+      padding: theme.spacing['2xl'],
+      marginBottom: theme.spacing.lg,
+      overflow: 'hidden',
+      position: 'relative',
+      shadowColor: colors.ambientShadow,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 1,
+      shadowRadius: 8,
+      elevation: 4,
+    },
+    heroContent: {
+      zIndex: 1,
+    },
+    heroSubtitle: {
+      fontFamily: font('body', 'bold'),
+      fontSize: typography.size.xs,
+      color: `${colors.onPrimary}80`,
+      textTransform: 'uppercase',
+      letterSpacing: 2,
+      marginBottom: theme.spacing.xs,
+    },
+    heroTitle: {
+      fontFamily: font('display', 'extrabold'),
+      fontSize: typography.size['2xl'],
+      color: colors.onPrimary,
+      marginBottom: 4,
+    },
+    heroDescription: {
+      fontFamily: font('body', 'regular'),
+      fontSize: typography.size.sm,
+      color: `${colors.onPrimary}90`,
+      lineHeight: 20,
+    },
+    watermarkContainer: {
+      position: 'absolute',
+      bottom: -24,
+      right: -24,
+      zIndex: 0,
+    },
+    formContainer: {
+      gap: theme.spacing.lg,
+    },
+    errorText: {
+      fontFamily: font('body', 'regular'),
+      fontSize: typography.size.xs,
+      color: colors.error,
+      marginTop: theme.spacing.xs,
+    },
+    submitButton: {
+      backgroundColor: colors.primary,
+      borderRadius: theme.borderRadius.xl,
+      paddingVertical: theme.spacing.lg,
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: theme.spacing.sm,
+      shadowColor: colors.ambientShadow,
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 1,
+      shadowRadius: 8,
+      elevation: 4,
+    },
+    submitButtonDisabled: {
+      opacity: 0.7,
+    },
+    submitButtonText: {
+      fontFamily: font('display', 'bold'),
+      fontSize: typography.size.base,
+      color: colors.onPrimary,
+    },
+    complianceContainer: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: theme.spacing.base,
+      backgroundColor: `${colors.surface}80`,
+      borderRadius: theme.borderRadius.xl,
+      padding: theme.spacing.lg,
+      marginTop: theme.spacing.lg,
+      borderWidth: 1,
+      borderColor: `${colors.outline}30`,
+    },
+    complianceIcon: {
+      width: 48,
+      height: 48,
+      borderRadius: 12,
+      backgroundColor: `${colors.primary}10`,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    complianceTextContainer: {
+      flex: 1,
+    },
+    complianceTitle: {
+      fontFamily: font('display', 'bold'),
+      fontSize: typography.size.xs,
+      color: colors.onSurface,
+      marginBottom: 4,
+    },
+    complianceText: {
+      fontFamily: font('body', 'regular'),
+      fontSize: typography.size.xs - 1,
+      color: colors.secondary,
+      lineHeight: 18,
+    },
+    bottomPadding: {
+      height: 40,
+    },
+  });

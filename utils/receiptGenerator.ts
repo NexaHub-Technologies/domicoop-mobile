@@ -250,7 +250,7 @@ export const generateReceiptHTML = (transaction: Transaction): string => {
         <div class="receipt">
           <div class="header">
             <div class="logo">D</div>
-            <div class="company-name">DOMICOP</div>
+            <div class="company-name">DOMICOOP</div>
             <div class="receipt-title">Official Receipt</div>
           </div>
 
@@ -370,7 +370,7 @@ export const generateReceipt = async (transaction: Transaction): Promise<string>
       return uri;
     }
 
-    const receiptName = `DOMICOP-Receipt-${transaction.id}.pdf`;
+    const receiptName = `DOMICOOP-Receipt-${transaction.id}.pdf`;
     const sourceFile = new File(uri);
 
     if (!sourceFile.exists) {
@@ -421,7 +421,7 @@ export const downloadReceipt = async (transaction: Transaction): Promise<string>
       return generatedUri;
     }
 
-    const receiptName = `DOMICOP-Receipt-${transaction.id}.pdf`;
+    const receiptName = `DOMICOOP-Receipt-${transaction.id}.pdf`;
 
     const destinationFile = savedDir.createFile(receiptName, "application/pdf");
 
