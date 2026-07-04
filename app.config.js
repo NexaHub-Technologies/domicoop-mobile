@@ -8,7 +8,7 @@ const googleServicesFile =
 
 export default {
   expo: {
-    name: "DOMICOOP",
+    name: process.env.APP_ENV === "production" ? "DOMICOOP" : "DOMICOOP (DEV)",
     slug: "domicoop",
     version: "1.0.0",
     orientation: "portrait",
@@ -18,7 +18,10 @@ export default {
     newArchEnabled: true,
     ios: {
       supportsTablet: true,
-      bundleIdentifier: "com.nexahub.domicoop",
+      bundleIdentifier:
+        process.env.APP_ENV === "production"
+          ? "com.nexahub.domicoop"
+          : "com.nexahub.domicoop-dev",
       infoPlist: {
         ITSAppUsesNonExemptEncryption: false,
       },
