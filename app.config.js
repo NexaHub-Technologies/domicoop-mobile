@@ -16,6 +16,7 @@ export default {
     scheme: process.env.EXPO_PUBLIC_SCHEME || "domicoop",
     userInterfaceStyle: "automatic",
     newArchEnabled: true,
+    versionCode: 2,
     ios: {
       supportsTablet: true,
       bundleIdentifier:
