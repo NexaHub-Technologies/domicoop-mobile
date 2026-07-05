@@ -315,49 +315,21 @@ export default function ApplyForLoanScreen() {
         primaryButtonText="Try Again"
       />
 
-      {/* Insufficient Contributions Banner */}
-      {eligibilityError && (
-        <Animated.View
-          entering={FadeInUp.duration(300)}
-          style={styles.eligibilityBanner}
-        >
-          <View style={styles.eligibilityBannerHeader}>
-            <MaterialIcons name="info-outline" size={20} color={colors.error} />
-            <Text style={styles.eligibilityBannerTitle}>Not Enough Contributions</Text>
-          </View>
-          <Text style={styles.eligibilityBannerText}>
-            You need {eligibilityError.eligibility.short_by} more verified
-            contribution(s) to apply for a loan.
-          </Text>
-          <View style={styles.eligibilityProgressContainer}>
-            <View style={styles.eligibilityProgressBar}>
-              <View
-                style={[
-                  styles.eligibilityProgressFill,
-                  {
-                    width: `${Math.min(
-                      100,
-                      (eligibilityError.eligibility.verified_count /
-                        eligibilityError.eligibility.required_count) *
-                        100,
-                    )}%`,
-                  },
-                ]}
-              />
-            </View>
-            <Text style={styles.eligibilityProgressLabel}>
-              {eligibilityError.eligibility.verified_count}/
-              {eligibilityError.eligibility.required_count} contributions verified
-            </Text>
-          </View>
-          <TouchableOpacity
-            onPress={handleDismissEligibilityError}
-            style={styles.eligibilityBannerClose}
-          >
-            <MaterialIcons name="close" size={18} color={colors.onSurfaceVariant} />
-          </TouchableOpacity>
-        </Animated.View>
-      )}
+      {/* Insufficient Contributions Modal */}
+      <InfoModal
+        visible={eligibilityError !== null}
+        onClose={handleDismissEligibilityError}
+        icon="info"
+        iconColor={colors.error}
+        title="Not Enough Contributions"
+        message={
+          eligibilityError
+            ? `You need ${eligibilityError.eligibility.short_by} more verified contribution(s) to apply for a loan. Currently ${eligibilityError.eligibility.verified_count}/${eligibilityError.eligibility.required_count} contributions verified.`
+            : ''
+        }
+        primaryButtonText="OK"
+        onPrimaryPress={handleDismissEligibilityError}
+      />
 
       {/* Active Loan Exists Error */}
       <InfoModal
@@ -520,57 +492,6 @@ const getStyles = (colors: typeof lightColors) =>
       fontSize: typography.size.xs - 1,
       color: colors.secondary,
       lineHeight: 18,
-    },
-    eligibilityBanner: {
-      backgroundColor: colors.errorContainer,
-      borderRadius: theme.borderRadius.xl,
-      padding: theme.spacing.lg,
-      marginBottom: theme.spacing.lg,
-      borderWidth: 1,
-      borderColor: `${colors.error}30`,
-    },
-    eligibilityBannerHeader: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: theme.spacing.sm,
-      marginBottom: theme.spacing.sm,
-    },
-    eligibilityBannerTitle: {
-      fontFamily: font('display', 'bold'),
-      fontSize: typography.size.sm,
-      color: colors.error,
-    },
-    eligibilityBannerText: {
-      fontFamily: font('body', 'regular'),
-      fontSize: typography.size.sm,
-      color: colors.onSurface,
-      marginBottom: theme.spacing.base,
-      lineHeight: 20,
-    },
-    eligibilityProgressContainer: {
-      gap: theme.spacing.xs,
-    },
-    eligibilityProgressBar: {
-      height: 8,
-      backgroundColor: `${colors.error}20`,
-      borderRadius: 4,
-      overflow: 'hidden',
-    },
-    eligibilityProgressFill: {
-      height: '100%',
-      backgroundColor: colors.error,
-      borderRadius: 4,
-    },
-    eligibilityProgressLabel: {
-      fontFamily: font('body', 'medium'),
-      fontSize: typography.size.xs,
-      color: colors.onSurfaceVariant,
-    },
-    eligibilityBannerClose: {
-      position: 'absolute',
-      top: theme.spacing.base,
-      right: theme.spacing.base,
-      padding: theme.spacing.xs,
     },
     bottomPadding: {
       height: 40,

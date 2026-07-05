@@ -91,6 +91,8 @@ export const TabBar: React.FC<BottomTabBarProps> = ({
         return "payments";
       case "contributions":
         return "account-balance-wallet";
+      case "announcements":
+        return "campaign";
       case "profile":
         return "person";
       default:
@@ -106,6 +108,8 @@ export const TabBar: React.FC<BottomTabBarProps> = ({
         return "Loans";
       case "contributions":
         return "Contributions";
+      case "announcements":
+        return "Alerts";
       case "profile":
         return "Profile";
       default:

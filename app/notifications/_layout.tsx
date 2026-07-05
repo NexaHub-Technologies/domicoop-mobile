@@ -21,6 +21,7 @@ function NotificationsLayoutContent() {
         }}
       >
         <Stack.Screen name="index" />
+        <Stack.Screen name="announcement" />
       </Stack>
     </>
   );

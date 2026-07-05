@@ -29,6 +29,7 @@ const TYPE_ROUTES: Record<NotificationType, Href> = {
   dividend: "/(tabs)/contributions",
   security: "/notifications",
   meeting: "/notifications",
+  announcement: "/(tabs)/announcements",
 };
 
 const getPushData = (

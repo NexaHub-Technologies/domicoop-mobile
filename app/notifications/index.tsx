@@ -63,6 +63,17 @@ export default function NotificationsScreen() {
 
   const handleNotificationPress = (notification: Notification) => {
     markRead(notification.id);
+    if (notification.type === "announcement") {
+      router.push({
+        pathname: "/notifications/announcement/[id]",
+        params: {
+          id: notification.id,
+          title: notification.title,
+          message: notification.message,
+          timestamp: notification.timestamp,
+        },
+      });
+    }
   };
 
   const handleActionPress = (notification: Notification, route: string) => {

@@ -26,6 +26,7 @@ const TYPE_ICONS: Record<NotificationType, keyof typeof MaterialIcons.glyphMap> 
   dividend: "campaign",
   security: "security",
   meeting: "groups",
+  announcement: "campaign",
 };
 
 const getTypeTint = (
@@ -42,8 +43,9 @@ const getTypeTint = (
     case "meeting":
       return { bg: colors.infoContainer, fg: colors.info };
     case "dividend":
-    default:
       return { bg: colors.surfaceContainerHigh, fg: colors.onSurfaceVariant };
+    case "announcement":
+      return { bg: colors.primaryContainer, fg: colors.primary };
   }
 };
 

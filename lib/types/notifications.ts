@@ -3,7 +3,8 @@ export type NotificationType =
   | "contribution"
   | "dividend"
   | "security"
-  | "meeting";
+  | "meeting"
+  | "announcement";
 
 // ── Wire shapes (snake_case, ISO dates) ────────────────────────────────────
 
@@ -71,6 +72,7 @@ export const DEFAULT_PREFERENCES: NotificationPreferences = {
     dividend: true,
     security: true,
     meeting: true,
+    announcement: true,
   },
 };
 
