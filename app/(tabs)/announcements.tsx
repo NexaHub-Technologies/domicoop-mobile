@@ -18,7 +18,7 @@ import { typography } from "@/constants/typography";
 import { NotificationCard } from "@/components/notifications/NotificationCard";
 import { EmptyState } from "@/components/common/EmptyState";
 import { Skeleton } from "@/components/common/Skeleton";
-import { useNotifications } from "@/hooks/useNotifications";
+import { useAnnouncements } from "@/hooks/useAnnouncements";
 import { Notification } from "@/lib/types/notifications";
 
 export default function AnnouncementsScreen() {
@@ -27,22 +27,15 @@ export default function AnnouncementsScreen() {
   const styles = createStyles(colors);
 
   const {
-    notifications,
+    announcements,
     isLoading,
     isRefreshing,
     error,
     isOffline,
     refresh,
-    markRead,
-  } = useNotifications();
-
-  const announcements = notifications.filter((n) => n.type === "announcement");
-  const unreadAnnouncements = announcements.filter((n) => !n.isRead);
-  const readAnnouncements = announcements.filter((n) => n.isRead);
-  const hasAnnouncements = announcements.length > 0;
+  } = useAnnouncements();
 
   const handleAnnouncementPress = (notification: Notification) => {
-    markRead(notification.id);
     router.push({
       pathname: "/notifications/announcement/[id]",
       params: {
@@ -88,7 +81,7 @@ export default function AnnouncementsScreen() {
         )}
 
         {/* Loading skeleton */}
-        {isLoading && !hasAnnouncements && (
+        {isLoading && announcements.length === 0 && (
           <View style={styles.skeletonList}>
             <Skeleton variant="card" height={96} />
             <Skeleton variant="card" height={96} />
@@ -97,7 +90,7 @@ export default function AnnouncementsScreen() {
         )}
 
         {/* Error */}
-        {error && !isLoading && !hasAnnouncements && (
+        {error && !isLoading && announcements.length === 0 && (
           <Animated.View
             entering={FadeInUp.delay(200).duration(400)}
             style={styles.errorContainer}
@@ -107,28 +100,11 @@ export default function AnnouncementsScreen() {
           </Animated.View>
         )}
 
-        {/* Unread announcements */}
-        {unreadAnnouncements.length > 0 && (
+        {/* Announcements list */}
+        {announcements.length > 0 && (
           <Animated.View entering={FadeInUp.delay(300).duration(400)}>
-            <Text style={styles.sectionTitle}>New</Text>
             <View style={styles.list}>
-              {unreadAnnouncements.map((notification) => (
-                <NotificationCard
-                  key={notification.id}
-                  notification={notification}
-                  onPress={() => handleAnnouncementPress(notification)}
-                />
-              ))}
-            </View>
-          </Animated.View>
-        )}
-
-        {/* Read announcements */}
-        {readAnnouncements.length > 0 && (
-          <Animated.View entering={FadeInUp.delay(400).duration(400)}>
-            <Text style={styles.sectionTitle}>Earlier</Text>
-            <View style={styles.list}>
-              {readAnnouncements.map((notification) => (
+              {announcements.map((notification) => (
                 <NotificationCard
                   key={notification.id}
                   notification={notification}
@@ -140,7 +116,7 @@ export default function AnnouncementsScreen() {
         )}
 
         {/* Empty */}
-        {!isLoading && !error && !hasAnnouncements && (
+        {!isLoading && !error && announcements.length === 0 && (
           <Animated.View entering={FadeInUp.delay(300).duration(400)}>
             <EmptyState
               icon="campaign"
@@ -220,13 +196,6 @@ const createStyles = (colors: typeof lightColors) =>
       fontSize: typography.size.base,
       color: colors.error,
       textAlign: "center",
-    },
-    sectionTitle: {
-      fontFamily: font("display", "bold"),
-      fontSize: typography.size.lg,
-      color: colors.onSurface,
-      marginBottom: theme.spacing.base,
-      paddingHorizontal: theme.spacing.xs,
     },
     list: {
       gap: theme.spacing.base,
