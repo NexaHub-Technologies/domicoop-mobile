@@ -5,6 +5,7 @@
   },
   "build": {
     "development": {
+      "environment": "development",
       "env": {
         "APP_ENV": "development"
       }
@@ -16,7 +17,11 @@
     },
     "preview": {
       "extends": "production",
-      "distribution": "internal"
+      "distribution": "internal",
+      "environment": "development",
+      "env": {
+        "APP_ENV": "development"
+      }
     }
   },
   "submit": {
