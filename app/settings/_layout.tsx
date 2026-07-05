@@ -26,6 +26,7 @@ function SettingsLayoutContent() {
         <Stack.Screen name="security" />
         <Stack.Screen name="change-password" />
         <Stack.Screen name="guidelines" />
+        <Stack.Screen name="privacy-policy" />
       </Stack>
     </>
   );

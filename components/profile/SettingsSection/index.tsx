@@ -121,8 +121,6 @@ const SettingsItem: React.FC<SettingsItemProps> = ({
       onLogout();
     } else if (item.route === "/delete-account" && onDeleteAccount) {
       onDeleteAccount();
-    } else if (item.route === "/privacy") {
-      // Handle privacy policy
     } else {
       router.push(item.route as any);
     }

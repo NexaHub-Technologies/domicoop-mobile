@@ -48,7 +48,7 @@ export const faqData: FAQ[] = [
     icon: "security",
     question: "Account security best practices",
     answer:
-      "Enable two-factor authentication, use strong passwords, and never share your login credentials. We also recommend reviewing your login history regularly.",
+      "Use strong passwords and never share your login credentials.",
   },
   {
     id: "faq-007",

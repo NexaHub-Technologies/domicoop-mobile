@@ -69,6 +69,32 @@ export interface ApiLoansResponse {
   loans?: ApiLoan[];
 }
 
+// --- Loan application error responses ---
+
+export interface InsufficientContributionsError {
+  success: false;
+  reason: "insufficient_contributions";
+  eligibility: {
+    verified_count: number;
+    required_count: number;
+    short_by: number;
+  };
+}
+
+export interface ActiveLoanExistsError {
+  success: false;
+  reason: "active_loan_exists";
+  active_loan_id: string;
+}
+
+export type LoanApplicationError =
+  | InsufficientContributionsError
+  | ActiveLoanExistsError;
+
+export type LoanApplicationReason =
+  | "insufficient_contributions"
+  | "active_loan_exists";
+
 const VALID_TYPES: LoanType[] = [
   "emergency",
   "personal",

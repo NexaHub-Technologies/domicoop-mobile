@@ -1,8 +1,10 @@
-import { authedRequest } from "@/lib/http";
+import { authedRequest, ApiError } from "@/lib/http";
 import type { Loan, LoanType } from "@/lib/types/loans";
 import {
   ApiLoan,
   ApiLoansResponse,
+  LoanApplicationError,
+  LoanApplicationReason,
   transformLoan,
   transformLoansResponse,
 } from "@/lib/types/loans";
@@ -16,6 +18,23 @@ export interface LoanApplicationPayload {
   purpose: string;
   type: LoanType;
   tenure_months: number;
+}
+
+/**
+ * Thrown when a loan application fails due to an eligibility or conflict
+ * reason. Carries the structured server response so the UI can render
+ * specific guidance (e.g. progress bar, active-loan message).
+ */
+export class LoanApplicationRejection extends Error {
+  reason: LoanApplicationReason;
+  data: LoanApplicationError;
+
+  constructor(reason: LoanApplicationReason, data: LoanApplicationError) {
+    super(reason);
+    this.name = "LoanApplicationRejection";
+    this.reason = reason;
+    this.data = data;
+  }
 }
 
 // Success body of POST /loans/:id/repayment (see LOANS_API_CONTRACT.md §5).
@@ -43,13 +62,23 @@ export const loansApi = {
    * the loans list. Interest/terms may be re-derived server-side.
    */
   apply: async (payload: LoanApplicationPayload): Promise<Loan | null> => {
-    const response = await authedRequest<{ loan?: ApiLoan } | ApiLoan>("/loans/apply", {
-      method: "POST",
-      body: payload,
-    });
-    const apiLoan =
-      response && "loan" in response ? response.loan : (response as ApiLoan);
-    return apiLoan && apiLoan.id ? transformLoan(apiLoan) : null;
+    try {
+      const response = await authedRequest<{ loan?: ApiLoan } | ApiLoan>(
+        "/loans/apply",
+        { method: "POST", body: payload },
+      );
+      const apiLoan =
+        response && "loan" in response ? response.loan : (response as ApiLoan);
+      return apiLoan && apiLoan.id ? transformLoan(apiLoan) : null;
+    } catch (err) {
+      if (err instanceof ApiError && (err.status === 403 || err.status === 409)) {
+        const body = err.body as LoanApplicationError | undefined;
+        if (body?.reason) {
+          throw new LoanApplicationRejection(body.reason, body);
+        }
+      }
+      throw err;
+    }
   },
 
   /**

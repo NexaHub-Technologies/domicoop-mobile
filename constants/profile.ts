@@ -32,7 +32,7 @@ export const profileSettings: SettingsSection[] = [
         id: "security",
         icon: "security",
         title: "Security Settings",
-        subtitle: "Passwords and 2FA",
+        subtitle: "Password management",
         route: "/settings/security",
       },
       {
@@ -72,7 +72,7 @@ export const profileSettings: SettingsSection[] = [
         id: "privacy",
         icon: "description",
         title: "Privacy Policy",
-        route: "/privacy",
+        route: "/settings/privacy-policy",
       },
       {
         id: "logout",

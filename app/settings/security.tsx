@@ -5,7 +5,6 @@ import {
   TouchableOpacity,
   StyleSheet,
   ScrollView,
-  Alert,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
@@ -16,8 +15,7 @@ import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
 import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
-import { ToggleItem } from "@/components/settings/ToggleItem";
-import { usePersistentState } from "@/hooks/usePersistentState";
+
 
 interface SettingsItemProps {
   icon: string;
@@ -62,41 +60,8 @@ export default function SecuritySettingsScreen() {
   const insets = useSafeAreaInsets();
   const styles = createStyles(colors, insets.bottom);
 
-  // Persistent state for toggles
-  const [twoFAEnabled, setTwoFAEnabled] = usePersistentState("twoFAEnabled", true);
-  const [biometricEnabled, setBiometricEnabled] = usePersistentState(
-    "biometricEnabled",
-    false,
-  );
-
   const handleChangePassword = () => {
     router.push("/settings/change-password");
-  };
-
-  const handleLoginHistory = () => {
-    Alert.alert("Coming Soon", "Login history feature is under development.");
-  };
-
-  const handleTrustedDevices = () => {
-    Alert.alert("Coming Soon", "Trusted devices management is under development.");
-  };
-
-  const handleLogoutAllDevices = () => {
-    Alert.alert(
-      "Log Out All Devices",
-      "This will log you out from all devices except this one. Continue?",
-      [
-        { text: "Cancel", style: "cancel" },
-        {
-          text: "Log Out",
-          style: "destructive",
-          onPress: () => {
-            // Simulate logout all
-            Alert.alert("Success", "You have been logged out from all other devices.");
-          },
-        },
-      ],
-    );
   };
 
   const handleBack = () => {
@@ -170,48 +135,11 @@ export default function SecuritySettingsScreen() {
             subtitle="Last updated 3 months ago"
             onPress={handleChangePassword}
           />
-
-          {/* 2FA Toggle */}
-          <ToggleItem
-            icon="vibration"
-            label="Two-Factor Authentication (2FA)"
-            subtitle="Enhanced account protection"
-            value={twoFAEnabled}
-            onValueChange={setTwoFAEnabled}
-          />
-
-          {/* Biometric Toggle */}
-          <ToggleItem
-            icon="fingerprint"
-            label="Biometric Login"
-            subtitle="Face ID or Fingerprint"
-            value={biometricEnabled}
-            onValueChange={setBiometricEnabled}
-          />
-        </Animated.View>
-
-        {/* Activity Tracking Section */}
-        <Animated.View entering={FadeInUp.delay(400).duration(400)}>
-          <Text style={styles.sectionTitle}>Activity Tracking</Text>
-          <View style={styles.settingsList}>
-            <SettingsItem
-              icon="history"
-              label="Login History"
-              subtitle="View your recent active sessions"
-              onPress={handleLoginHistory}
-            />
-            <SettingsItem
-              icon="devices"
-              label="Trusted Devices"
-              subtitle="iPhone 15 Pro, MacBook Pro M3"
-              onPress={handleTrustedDevices}
-            />
-          </View>
         </Animated.View>
 
         {/* Security Tip */}
         <Animated.View
-          entering={FadeInUp.delay(500).duration(400)}
+          entering={FadeInUp.delay(400).duration(400)}
           style={styles.tipContainer}
         >
           <View style={styles.tipContent}>
@@ -223,21 +151,11 @@ export default function SecuritySettingsScreen() {
             <View style={styles.tipTextContainer}>
               <Text style={styles.tipTitle}>Pro Security Tip</Text>
               <Text style={styles.tipText}>
-                Regularly updating your password and monitoring your login history
-                significantly reduces the risk of unauthorized access.
+                Regularly updating your password significantly reduces the
+                  risk of unauthorized access.
               </Text>
             </View>
           </View>
-        </Animated.View>
-
-        {/* Logout All Devices */}
-        <Animated.View
-          entering={FadeInUp.delay(600).duration(400)}
-          style={styles.logoutContainer}
-        >
-          <TouchableOpacity onPress={handleLogoutAllDevices}>
-            <Text style={styles.logoutText}>Log Out of All Other Devices</Text>
-          </TouchableOpacity>
         </Animated.View>
 
         {/* Bottom padding */}
@@ -404,14 +322,6 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) =>
       color: colors.onSurfaceVariant,
       marginTop: 2,
     },
-    sectionTitle: {
-      fontFamily: font("body", "bold"),
-      fontSize: typography.size.xs - 2,
-      color: colors.onSurfaceVariant,
-      textTransform: "uppercase",
-      letterSpacing: 1,
-      marginBottom: theme.spacing.base,
-    },
     tipContainer: {
       backgroundColor: colors.surfaceContainerLow,
       borderRadius: theme.borderRadius.xl,
@@ -438,15 +348,6 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) =>
       fontSize: typography.size.xs,
       color: colors.onSurfaceVariant,
       lineHeight: 18,
-    },
-    logoutContainer: {
-      alignItems: "center",
-      paddingVertical: theme.spacing.lg,
-    },
-    logoutText: {
-      fontFamily: font("body", "semibold"),
-      fontSize: typography.size.sm,
-      color: colors.error,
     },
     bottomPadding: {
       height: 40,

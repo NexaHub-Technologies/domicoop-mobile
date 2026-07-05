@@ -27,8 +27,8 @@ import { Input } from '@/components/common/Input';
 import { SuccessModal } from '@/components/modals/SuccessModal/index';
 import { InfoModal } from '@/components/modals/InfoModal';
 import { loanConfig, calculateLoan } from '@/constants/loans';
-import { loansApi } from '@/lib/api/loans.api';
-import type { LoanType } from '@/lib/types/loans';
+import { loansApi, LoanApplicationRejection } from '@/lib/api/loans.api';
+import type { LoanType, InsufficientContributionsError, ActiveLoanExistsError } from '@/lib/types/loans';
 import { parseNairaInput, toApiAmount } from '@/lib/utils/currency';
 
 const MIN_PURPOSE_LENGTH = 10;
@@ -56,6 +56,10 @@ export default function ApplyForLoanScreen() {
     purpose?: string;
   }>({});
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [eligibilityError, setEligibilityError] =
+    useState<InsufficientContributionsError | null>(null);
+  const [activeLoanError, setActiveLoanError] =
+    useState<ActiveLoanExistsError | null>(null);
 
   // Calculate loan details
   const loanDetails = useMemo(() => {
@@ -104,11 +108,19 @@ export default function ApplyForLoanScreen() {
       queryClient.invalidateQueries({ queryKey: ['loans'] });
       setShowSuccess(true);
     } catch (err) {
-      setSubmitError(
-        err instanceof Error
-          ? err.message
-          : 'Could not submit your application. Please try again.',
-      );
+      if (err instanceof LoanApplicationRejection) {
+        if (err.reason === 'insufficient_contributions') {
+          setEligibilityError(err.data as InsufficientContributionsError);
+        } else if (err.reason === 'active_loan_exists') {
+          setActiveLoanError(err.data as ActiveLoanExistsError);
+        }
+      } else {
+        setSubmitError(
+          err instanceof Error
+            ? err.message
+            : 'Could not submit your application. Please try again.',
+        );
+      }
     } finally {
       setIsSubmitting(false);
     }
@@ -118,6 +130,16 @@ export default function ApplyForLoanScreen() {
   const handleSuccessClose = () => {
     setShowSuccess(false);
     router.replace('/(tabs)/loans');
+  };
+
+  // Dismiss eligibility error
+  const handleDismissEligibilityError = () => {
+    setEligibilityError(null);
+  };
+
+  // Dismiss active loan error
+  const handleDismissActiveLoanError = () => {
+    setActiveLoanError(null);
   };
 
   // Navigate back
@@ -292,6 +314,62 @@ export default function ApplyForLoanScreen() {
         message={submitError ?? ''}
         primaryButtonText="Try Again"
       />
+
+      {/* Insufficient Contributions Banner */}
+      {eligibilityError && (
+        <Animated.View
+          entering={FadeInUp.duration(300)}
+          style={styles.eligibilityBanner}
+        >
+          <View style={styles.eligibilityBannerHeader}>
+            <MaterialIcons name="info-outline" size={20} color={colors.error} />
+            <Text style={styles.eligibilityBannerTitle}>Not Enough Contributions</Text>
+          </View>
+          <Text style={styles.eligibilityBannerText}>
+            You need {eligibilityError.eligibility.short_by} more verified
+            contribution(s) to apply for a loan.
+          </Text>
+          <View style={styles.eligibilityProgressContainer}>
+            <View style={styles.eligibilityProgressBar}>
+              <View
+                style={[
+                  styles.eligibilityProgressFill,
+                  {
+                    width: `${Math.min(
+                      100,
+                      (eligibilityError.eligibility.verified_count /
+                        eligibilityError.eligibility.required_count) *
+                        100,
+                    )}%`,
+                  },
+                ]}
+              />
+            </View>
+            <Text style={styles.eligibilityProgressLabel}>
+              {eligibilityError.eligibility.verified_count}/
+              {eligibilityError.eligibility.required_count} contributions verified
+            </Text>
+          </View>
+          <TouchableOpacity
+            onPress={handleDismissEligibilityError}
+            style={styles.eligibilityBannerClose}
+          >
+            <MaterialIcons name="close" size={18} color={colors.onSurfaceVariant} />
+          </TouchableOpacity>
+        </Animated.View>
+      )}
+
+      {/* Active Loan Exists Error */}
+      <InfoModal
+        visible={activeLoanError !== null}
+        onClose={handleDismissActiveLoanError}
+        icon="info"
+        iconColor={colors.error}
+        title="Active Loan Exists"
+        message="You already have an active loan. Please repay or close it before applying for a new one."
+        primaryButtonText="OK"
+        onPrimaryPress={handleDismissActiveLoanError}
+      />
     </View>
   );
 }
@@ -442,6 +520,57 @@ const getStyles = (colors: typeof lightColors) =>
       fontSize: typography.size.xs - 1,
       color: colors.secondary,
       lineHeight: 18,
+    },
+    eligibilityBanner: {
+      backgroundColor: colors.errorContainer,
+      borderRadius: theme.borderRadius.xl,
+      padding: theme.spacing.lg,
+      marginBottom: theme.spacing.lg,
+      borderWidth: 1,
+      borderColor: `${colors.error}30`,
+    },
+    eligibilityBannerHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.sm,
+      marginBottom: theme.spacing.sm,
+    },
+    eligibilityBannerTitle: {
+      fontFamily: font('display', 'bold'),
+      fontSize: typography.size.sm,
+      color: colors.error,
+    },
+    eligibilityBannerText: {
+      fontFamily: font('body', 'regular'),
+      fontSize: typography.size.sm,
+      color: colors.onSurface,
+      marginBottom: theme.spacing.base,
+      lineHeight: 20,
+    },
+    eligibilityProgressContainer: {
+      gap: theme.spacing.xs,
+    },
+    eligibilityProgressBar: {
+      height: 8,
+      backgroundColor: `${colors.error}20`,
+      borderRadius: 4,
+      overflow: 'hidden',
+    },
+    eligibilityProgressFill: {
+      height: '100%',
+      backgroundColor: colors.error,
+      borderRadius: 4,
+    },
+    eligibilityProgressLabel: {
+      fontFamily: font('body', 'medium'),
+      fontSize: typography.size.xs,
+      color: colors.onSurfaceVariant,
+    },
+    eligibilityBannerClose: {
+      position: 'absolute',
+      top: theme.spacing.base,
+      right: theme.spacing.base,
+      padding: theme.spacing.xs,
     },
     bottomPadding: {
       height: 40,
