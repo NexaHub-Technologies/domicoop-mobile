@@ -3,6 +3,10 @@ import { members } from "@/lib/api/members.api";
 import { session } from '@/lib/session';
 
 export interface PaymentParams {
+  // Whole Naira. `react-native-paystack-webview` multiplies by 100 internally
+  // before calling Paystack (its lib/utils.js does `amount * 100`), so pass
+  // Naira here — do NOT apply nairaToKobo() or the member is charged 100×.
+  // See currency-contract.md §3 and lib/utils/currency.ts.
   amount: number;
   email?: string;
   reference?: string;

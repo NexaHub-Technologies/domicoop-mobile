@@ -28,6 +28,7 @@ import { ApiError } from "@/lib/http";
 import { InfoModal } from "@/components/modals/InfoModal";
 import { getAllocationSummary } from "@/lib/utils/contributionAllocation";
 import { AllocationBreakdown } from "@/components/savings/AllocationBreakdown";
+import { parseNairaInput } from "@/lib/utils/currency";
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
@@ -63,7 +64,7 @@ export default function AddContributionScreen() {
 
   const validateForm = () => {
     const newErrors: { amount?: string; month?: string } = {};
-    const numericAmount = parseFloat(amount.replace(/,/g, "")) || 0;
+    const numericAmount = parseNairaInput(amount) || 0;
 
     if (!amount || numericAmount < MIN_CONTRIBUTION_AMOUNT) {
       newErrors.amount = `Minimum contribution is ₦${MIN_CONTRIBUTION_AMOUNT.toLocaleString()}`;
@@ -82,7 +83,7 @@ export default function AddContributionScreen() {
 
     setIsSubmitting(true);
 
-    const numericAmount = parseFloat(amount.replace(/,/g, "")) || 0;
+    const numericAmount = parseNairaInput(amount) || 0;
     const selectedMonthLabel =
       contributionMonths.find((m) => m.value === month)?.label || month;
 
@@ -112,6 +113,10 @@ export default function AddContributionScreen() {
         // The server verifies the reference with Paystack and derives the
         // amount, member, and status from the verified transaction.
         let stored = false;
+        // A verified charge under ₦6,000 is rejected with 422
+        // { reason: "below_minimum" } — deterministic, so don't retry it and
+        // tell the member exactly why (currency-contract.md §5).
+        let belowMinimum = false;
         try {
           const [yearStr] = month.split("-");
           const input = {
@@ -130,6 +135,13 @@ export default function AddContributionScreen() {
             }
           }
         } catch (storeError) {
+          const reason =
+            storeError instanceof ApiError &&
+            storeError.body &&
+            typeof storeError.body === "object"
+              ? (storeError.body as { reason?: string }).reason
+              : undefined;
+          belowMinimum = reason === "below_minimum";
           console.error(
             "Failed to verify contribution:",
             storeError,
@@ -140,6 +152,14 @@ export default function AddContributionScreen() {
         setIsSubmitting(false);
         if (stored) {
           setShowSuccess(true);
+        } else if (belowMinimum) {
+          setErrorModal({
+            visible: true,
+            title: "Below Minimum Contribution",
+            message:
+              `Contributions must be at least ₦${MIN_CONTRIBUTION_AMOUNT.toLocaleString()}, but the payment came through for less, so it couldn't be recorded. ` +
+              `Please contact support with this reference for a refund or top-up: ${response.reference}`,
+          });
         } else {
           // Money left the member's account but the contribution wasn't
           // recorded — never present this as a plain success.
@@ -181,7 +201,7 @@ export default function AddContributionScreen() {
     router.back();
   };
 
-  const numericAmount = parseFloat(amount.replace(/,/g, "")) || 0;
+  const numericAmount = parseNairaInput(amount) || 0;
   const hasTypedAmount = amount.length > 0;
   const isBelowMinimum =
     hasTypedAmount && numericAmount > 0 && numericAmount < MIN_CONTRIBUTION_AMOUNT;

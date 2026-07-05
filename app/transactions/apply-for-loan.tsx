@@ -29,6 +29,7 @@ import { InfoModal } from '@/components/modals/InfoModal';
 import { loanConfig, calculateLoan } from '@/constants/loans';
 import { loansApi } from '@/lib/api/loans.api';
 import type { LoanType } from '@/lib/types/loans';
+import { parseNairaInput, toApiAmount } from '@/lib/utils/currency';
 
 const MIN_PURPOSE_LENGTH = 10;
 
@@ -58,14 +59,14 @@ export default function ApplyForLoanScreen() {
 
   // Calculate loan details
   const loanDetails = useMemo(() => {
-    const numericAmount = parseFloat(amount.replace(/,/g, '')) || 0;
+    const numericAmount = parseNairaInput(amount) || 0;
     return calculateLoan(numericAmount, term, interestRate);
   }, [amount, term, interestRate]);
 
   // Validation
   const validateForm = useCallback(() => {
     const newErrors: { amount?: string; type?: string; purpose?: string } = {};
-    const numericAmount = parseFloat(amount.replace(/,/g, '')) || 0;
+    const numericAmount = parseNairaInput(amount) || 0;
 
     if (!amount || numericAmount < loanConfig.minAmount) {
       newErrors.amount = `Minimum loan amount is ₦${loanConfig.minAmount.toLocaleString()}`;
@@ -89,12 +90,12 @@ export default function ApplyForLoanScreen() {
   const handleSubmit = async () => {
     if (!validateForm() || !type) return;
 
-    const numericAmount = parseFloat(amount.replace(/,/g, '')) || 0;
-
     setIsSubmitting(true);
     try {
+      // Whole Naira, ≤ 2dp, range-checked — the server validates with strict
+      // t.Number and rejects strings / out-of-range values (currency-contract.md).
       await loansApi.apply({
-        amount: numericAmount,
+        amount: toApiAmount(parseNairaInput(amount), loanConfig.minAmount),
         purpose: purpose.trim(),
         type,
         tenure_months: term,
