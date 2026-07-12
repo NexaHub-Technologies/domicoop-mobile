@@ -21,6 +21,9 @@
       "extends": "production",
       "distribution": "internal",
       "environment": "development",
+      "android": {
+        "buildType": "app-bundle"
+      },
       "env": {
         "APP_ENV": "development"
       }
