@@ -43,7 +43,6 @@ function RootLayoutContent() {
           }}
         />
         <Stack.Screen name="settings" />
-        <Stack.Screen name="guidelines" />
         <Stack.Screen name="transactions" />
         <Stack.Screen name="notifications" />
         <Stack.Screen name="support" />

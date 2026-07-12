@@ -67,7 +67,7 @@ export function usePushNotifications() {
         await ensureAndroidChannel();
         const token = await getPushToken();
         if (!token || cancelled) return;
-        console.log("[Notifications] Push token:", token);
+
         await notificationsApi.registerDevice(
           token,
           Platform.OS,
