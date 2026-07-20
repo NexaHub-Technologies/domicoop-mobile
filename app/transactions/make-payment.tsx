@@ -22,7 +22,7 @@ import { Money } from "@/components/common/Money";
 import { formatCurrency } from "@/lib/utils/format";
 import { usePaystackPayment } from "@/hooks/usePaystackPayment";
 import { useLoans } from "@/hooks/useLoans";
-import { loansApi } from "@/lib/api/loans.api";
+import { loansApi, RepaymentLoanNotFoundError } from "@/lib/api/loans.api";
 import { ApiError } from "@/lib/http";
 
 interface Loan {
@@ -142,6 +142,7 @@ export default function MakePaymentScreen() {
         // The server verifies the reference with Paystack and applies the
         // repayment; the client never reports amounts.
         let recorded = false;
+        let loanNotFound = false;
         try {
           // The charge can take a moment to settle after checkout;
           // an unverified result is safe to retry.
@@ -157,6 +158,7 @@ export default function MakePaymentScreen() {
             }
           }
         } catch (recordError) {
+          loanNotFound = recordError instanceof RepaymentLoanNotFoundError;
           console.error(
             "Failed to record repayment:",
             recordError,
@@ -167,6 +169,12 @@ export default function MakePaymentScreen() {
         setIsProcessing(false);
         if (recorded) {
           setShowSuccess(true);
+        } else if (loanNotFound) {
+          Alert.alert(
+            "Loan Not Found",
+            `We couldn't find this loan on your account, so the payment couldn't be applied. ` +
+              `Please contact support and share this transaction reference: ${response.reference}`,
+          );
         } else {
           Alert.alert(
             "Payment Received, Not Yet Recorded",

@@ -3,6 +3,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import NetInfo from "@react-native-community/netinfo";
 import { useFocusEffect } from "expo-router";
 import { useQuery, QueryKey } from "@tanstack/react-query";
+import { ApiError } from "@/lib/http";
 
 /**
  * useQuery with an AsyncStorage-persisted fallback: successful responses are
@@ -37,6 +38,15 @@ export function usePersistedQuery<T>(options: {
       return;
     }
     if (!query.isError) return;
+
+    // A 403 means the account is blocked (pending/suspended) from this
+    // resource, not that the network failed — serving stale cached data
+    // here would misrepresent the account's current access.
+    if (query.error instanceof ApiError && query.error.status === 403) {
+      setFallback(null);
+      setIsOffline(false);
+      return;
+    }
 
     let cancelled = false;
     (async () => {

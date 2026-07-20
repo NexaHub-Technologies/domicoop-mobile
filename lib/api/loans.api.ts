@@ -37,6 +37,19 @@ export class LoanApplicationRejection extends Error {
   }
 }
 
+/**
+ * Thrown when POST /loans/:id/repayment returns 404
+ * { success: false, reason: "loan_not_found" } — the loan doesn't exist or
+ * doesn't belong to the caller. Not transient, so callers should stop
+ * retrying instead of treating it like an unsettled charge.
+ */
+export class RepaymentLoanNotFoundError extends Error {
+  constructor() {
+    super("loan_not_found");
+    this.name = "RepaymentLoanNotFoundError";
+  }
+}
+
 // Success body of POST /loans/:id/repayment (see LOANS_API_CONTRACT.md §5).
 // Failures (non-2xx) surface as ApiError with `{ success: false, reason }` or
 // `{ error }` in the body.
@@ -90,14 +103,25 @@ export const loansApi = {
     loanId: string,
     reference: string,
   ): Promise<{ verified: boolean; chargeStatus?: string }> => {
-    const response = await authedRequest<RepaymentResponse>(
-      `/loans/${loanId}/repayment`,
-      { method: "POST", body: { reference } },
-    );
-    return {
-      verified: response.success === true || !!response.already_processed,
-      chargeStatus: response.status,
-    };
+    try {
+      const response = await authedRequest<RepaymentResponse>(
+        `/loans/${loanId}/repayment`,
+        { method: "POST", body: { reference } },
+      );
+      return {
+        verified: response.success === true || !!response.already_processed,
+        chargeStatus: response.status,
+      };
+    } catch (err) {
+      if (
+        err instanceof ApiError &&
+        err.status === 404 &&
+        (err.body as { reason?: string } | undefined)?.reason === "loan_not_found"
+      ) {
+        throw new RepaymentLoanNotFoundError();
+      }
+      throw err;
+    }
   },
 };
 

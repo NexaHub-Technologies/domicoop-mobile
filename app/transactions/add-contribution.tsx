@@ -117,6 +117,7 @@ export default function AddContributionScreen() {
         // { reason: "below_minimum" } — deterministic, so don't retry it and
         // tell the member exactly why (currency-contract.md §5).
         let belowMinimum = false;
+        let suspended = false;
         try {
           const [yearStr] = month.split("-");
           const input = {
@@ -142,6 +143,7 @@ export default function AddContributionScreen() {
               ? (storeError.body as { reason?: string }).reason
               : undefined;
           belowMinimum = reason === "below_minimum";
+          suspended = storeError instanceof ApiError && storeError.status === 403;
           console.error(
             "Failed to verify contribution:",
             storeError,
@@ -159,6 +161,14 @@ export default function AddContributionScreen() {
             message:
               `Contributions must be at least ₦${MIN_CONTRIBUTION_AMOUNT.toLocaleString()}, but the payment came through for less, so it couldn't be recorded. ` +
               `Please contact support with this reference for a refund or top-up: ${response.reference}`,
+          });
+        } else if (suspended) {
+          setErrorModal({
+            visible: true,
+            title: "Account Suspended",
+            message:
+              `Your account is suspended, so this contribution couldn't be recorded. ` +
+              `Please contact support for assistance and share this transaction reference: ${response.reference}`,
           });
         } else {
           // Money left the member's account but the contribution wasn't
