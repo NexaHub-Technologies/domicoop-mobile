@@ -1,13 +1,6 @@
 import React from "react";
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from "react-native";
-import { MaterialIcons } from "@expo/vector-icons";
-import Animated, {
-  FadeIn,
-  FadeInUp,
-  useAnimatedStyle,
-  withSpring,
-  useSharedValue,
-} from "react-native-reanimated";
+import { View, Text, StyleSheet, ActivityIndicator } from "react-native";
+import Animated, { FadeIn, FadeInUp } from "react-native-reanimated";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
 import { font } from "@/constants/theme";
@@ -19,8 +12,6 @@ interface ProfileHeaderProps {
   profile: Profile | null;
   isLoading?: boolean;
 }
-
-const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
 const createStyles = (colors: typeof lightColors) =>
   StyleSheet.create({
@@ -84,27 +75,6 @@ const createStyles = (colors: typeof lightColors) =>
       fontSize: typography.size["3xl"],
       color: colors.onPrimary,
     },
-    editIconContainer: {
-      position: "absolute",
-      bottom: 4,
-      right: 4,
-      width: 32,
-      height: 32,
-      borderRadius: 16,
-      backgroundColor: colors.primary,
-      borderWidth: 2,
-      borderColor: colors.surface,
-      alignItems: "center",
-      justifyContent: "center",
-      shadowColor: colors.ambientShadow,
-      shadowOffset: {
-        width: 0,
-        height: 2,
-      },
-      shadowOpacity: 1,
-      shadowRadius: 4,
-      elevation: 2,
-    },
     infoContainer: {
       alignItems: "center",
     },
@@ -143,23 +113,6 @@ const createStyles = (colors: typeof lightColors) =>
 export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, isLoading }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
-  const scale = useSharedValue(1);
-
-  const animatedStyle = useAnimatedStyle(() => ({
-    transform: [{ scale: scale.value }],
-  }));
-
-  const handleEditAvatarPress = () => {
-    // Handle avatar edit
-  };
-
-  const handlePressIn = () => {
-    scale.value = withSpring(0.95, { damping: 15, stiffness: 300 });
-  };
-
-  const handlePressOut = () => {
-    scale.value = withSpring(1, { damping: 15, stiffness: 300 });
-  };
 
   if (isLoading || !profile) {
     return (
@@ -200,21 +153,11 @@ export const ProfileHeader: React.FC<ProfileHeaderProps> = ({ profile, isLoading
       <View style={styles.profileContainer}>
         <View style={styles.avatarSection}>
           <Animated.View entering={FadeInUp.delay(100).duration(400)}>
-            <AnimatedTouchable
-              onPress={handleEditAvatarPress}
-              onPressIn={handlePressIn}
-              onPressOut={handlePressOut}
-              style={[styles.avatarContainer, animatedStyle]}
-              activeOpacity={0.8}
-            >
+            <View style={styles.avatarContainer}>
               <View style={styles.avatar}>
                 <Text style={styles.avatarText}>{initials}</Text>
               </View>
-              {/* Edit Icon */}
-              <View style={styles.editIconContainer}>
-                <MaterialIcons name="edit" size={14} color={colors.onPrimary} />
-              </View>
-            </AnimatedTouchable>
+            </View>
           </Animated.View>
         </View>
 
