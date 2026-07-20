@@ -65,7 +65,7 @@ export default function SignUpScreen() {
   const [currentStep, setCurrentStep] = useState<SignUpStep>(1);
   const [isLoading, setIsLoading] = useState(false);
   const [errors, setErrors] = useState<SignUpErrors>({});
-  const [showVerificationModal, setShowVerificationModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const [formData, setFormData] = useState<SignUpData>({
     email: "",
@@ -181,7 +181,10 @@ export default function SignUpScreen() {
 
     try {
       await auth.register(formData);
-      setShowVerificationModal(true);
+      // Accounts are active immediately (no email verification step), so log
+      // the new user straight in to establish a session for the dashboard.
+      await auth.login(formData.email, formData.password);
+      setShowSuccessModal(true);
     } catch (error) {
       setErrors({
         general: error instanceof Error ? error.message : "Registration failed. Please try again.",
@@ -191,10 +194,10 @@ export default function SignUpScreen() {
     }
   };
 
-  // Handle verification modal close
-  const handleVerificationModalClose = () => {
-    setShowVerificationModal(false);
-    router.replace("/sign-in");
+  // Handle success modal close
+  const handleSuccessModalClose = () => {
+    setShowSuccessModal(false);
+    router.replace("/(tabs)");
   };
 
   // Handle image selection
@@ -511,15 +514,16 @@ export default function SignUpScreen() {
         </ScrollView>
       </KeyboardAvoidingView>
 
-      {/* Email Verification Modal */}
+      {/* Sign Up Success Modal */}
       <InfoModal
-        visible={showVerificationModal}
-        onClose={handleVerificationModalClose}
-        icon="email"
-        title="Verify Your Email"
-        message="Your account has been created. Please check your email (including spam folder) and click the verification link to activate your account."
-        primaryButtonText="Go to Sign In"
-        onPrimaryPress={handleVerificationModalClose}
+        visible={showSuccessModal}
+        onClose={handleSuccessModalClose}
+        icon="check-circle"
+        title="Welcome to DOMICOOP!"
+        message="Your account has been created successfully. You're all set to get started."
+        primaryButtonText="Go to Dashboard"
+        onPrimaryPress={handleSuccessModalClose}
+        showCloseButton={false}
       />
     </View>
   );
