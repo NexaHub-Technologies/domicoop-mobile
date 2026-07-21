@@ -54,3 +54,7 @@ google-services.json
 #folders
 /docs
 /store
+
+# Local EAS build output
+*.aab
+*.apk
