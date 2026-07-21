@@ -45,7 +45,6 @@ app-example
 
 # Firebase / Google service account keys
 domicoop-fcm.json
-google-services.json
 
 
 # Firebase Admin SDK service-account keys — server credentials, never commit

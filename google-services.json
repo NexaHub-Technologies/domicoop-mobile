@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "324302027895",
+    "project_id": "domicoop-fcm",
+    "storage_bucket": "domicoop-fcm.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:324302027895:android:1d461f3df7e08b89d75a72",
+        "android_client_info": {
+          "package_name": "com.nexahub.domicoop"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCfHtnhbaIR8p0apEJw2gfoe4Aah43GqrI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
