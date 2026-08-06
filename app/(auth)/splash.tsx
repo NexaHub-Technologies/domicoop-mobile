@@ -8,7 +8,6 @@ import { useTheme } from "@/contexts/ThemeContext";
 import type { lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
 import { font } from "@/constants/theme";
-import { onboarding } from "@/lib/onboarding";
 
 export default function SplashScreen() {
   const router = useRouter();
@@ -16,9 +15,8 @@ export default function SplashScreen() {
   const insets = useSafeAreaInsets();
   const styles = createStyles(colors);
 
-  const handleGetStarted = async () => {
-    const seenGuidelines = await onboarding.hasSeenGuidelines().catch(() => false);
-    router.push(seenGuidelines ? "/welcome" : "/settings/guidelines?context=onboarding");
+  const handleGetStarted = () => {
+    router.push("/settings/guidelines?context=onboarding");
   };
 
   return (

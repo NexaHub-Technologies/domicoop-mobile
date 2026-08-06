@@ -26,6 +26,8 @@ interface DialogShellProps {
   iconColor?: string;
   title: string;
   message?: string;
+  /** Extra content rendered below the message and above the perforation. */
+  bodyContent?: React.ReactNode;
   /** Tapping the backdrop closes the dialog. Default true. */
   dismissible?: boolean;
   /** Action buttons, rendered below the perforation. */
@@ -54,6 +56,7 @@ export const DialogShell: React.FC<DialogShellProps> = ({
   iconColor,
   title,
   message,
+  bodyContent,
   dismissible = true,
   children,
 }) => {
@@ -149,6 +152,7 @@ export const DialogShell: React.FC<DialogShellProps> = ({
 
             <Text style={styles.title}>{title}</Text>
             {!!message && <Text style={styles.message}>{message}</Text>}
+            {bodyContent}
 
             {children ? (
               <>

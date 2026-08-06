@@ -4,6 +4,7 @@ const ACCESS_TOKEN_KEY = "access_token";
 const REFRESH_TOKEN_KEY = "refresh_token";
 const USER_EMAIL_KEY = "user_email";
 const LAST_ACTIVITY_KEY = "last_activity_at";
+const GUIDELINES_ACK_KEY = "guidelines_acknowledged";
 
 // Session expires after this long without user activity (API calls bump it).
 const SESSION_TTL_MS = 10 * 60 * 1000;
@@ -53,11 +54,23 @@ export const session = {
     return await SecureStore.getItemAsync(USER_EMAIL_KEY);
   },
 
+  /** True once the current session has cleared the guidelines acknowledgment gate. */
+  isGuidelinesAcknowledged: async (): Promise<boolean> => {
+    return (await SecureStore.getItemAsync(GUIDELINES_ACK_KEY)) === "true";
+  },
+
+  /** Marks the guidelines gate as cleared for the current session. */
+  acknowledgeGuidelines: async (): Promise<void> => {
+    await SecureStore.setItemAsync(GUIDELINES_ACK_KEY, "true");
+  },
+
   clearTokens: async (): Promise<void> => {
     lastTouchAt = 0;
     await SecureStore.deleteItemAsync(ACCESS_TOKEN_KEY);
     await SecureStore.deleteItemAsync(REFRESH_TOKEN_KEY);
     await SecureStore.deleteItemAsync(USER_EMAIL_KEY);
     await SecureStore.deleteItemAsync(LAST_ACTIVITY_KEY);
+    // Re-gate on next login: a fresh session must re-acknowledge the guidelines.
+    await SecureStore.deleteItemAsync(GUIDELINES_ACK_KEY);
   },
 };

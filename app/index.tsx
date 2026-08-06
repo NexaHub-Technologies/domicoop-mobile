@@ -4,7 +4,6 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { Redirect, type Href } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { session } from "@/lib/session";
-import { onboarding } from "@/lib/onboarding";
 
 export default function Index() {
   const { isDarkMode, colors } = useTheme();
@@ -23,8 +22,9 @@ export default function Index() {
         return "/(auth)/sign-in";
       }
 
-      const seenGuidelines = await onboarding.hasSeenGuidelines();
-      return seenGuidelines ? "/(auth)/welcome" : "/(auth)/splash";
+      // No token at all: a genuinely brand-new user, send them through
+      // first-run onboarding (splash → full guidelines → welcome).
+      return "/(auth)/splash";
     };
 
     resolveRoute()
