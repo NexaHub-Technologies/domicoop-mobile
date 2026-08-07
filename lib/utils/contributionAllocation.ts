@@ -5,6 +5,11 @@ export const SOCIAL_FIXED = 1000;
 export const MAX_SAVINGS = 46000;
 export const STANDARD_MAX = 51000;
 
+// Tier 0 boundary — below this, a contribution is the cooperative's least
+// payment tier and is credited 100% to Shares, with no split across
+// Social/Savings/Deposit (docs/currency-contract.md).
+export const SHARES_BENCHMARK = 6000;
+
 export interface ContributionAllocation {
   shares: number;
   social: number;
@@ -24,6 +29,12 @@ export interface ContributionAllocationSummary {
 }
 
 export function calculateAllocation(amount: number): ContributionAllocation {
+  // Tier 0 — the least payment tier. Everything goes to Shares until the
+  // member has built up to the shares benchmark; nothing else is credited.
+  if (amount < SHARES_BENCHMARK) {
+    return { shares: amount, social: 0, savings: 0, deposit: 0 };
+  }
+
   const shares = SHARES_FIXED;
   const social = SOCIAL_FIXED;
 

@@ -1,12 +1,15 @@
 // Contribution rules and helpers (extracted from the retired data/mockData.ts).
 // Allocation constants (SHARES_FIXED etc.) live in lib/utils/contributionAllocation.ts.
 
-// Cooperative minimum monthly subscription: Shares ₦4,000 + Social ₦1,000 +
-// Savings ₦1,000. Enforced server-side — POST /v1/contributions rejects
-// amount < 6000, and /v1/contributions/verify returns 422 { reason:
-// "below_minimum" } if the verified Paystack charge is under this. The client
-// mirrors it in the form and on the Paystack charge (currency-contract.md §5).
-export const MIN_CONTRIBUTION_AMOUNT = 6000;
+// Cooperative minimum monthly subscription — three tiers (docs/currency-contract.md):
+//   Tier 0 (₦5,000–₦5,999): least payment tier, 100% credited to Shares.
+//   Tier 1 (₦6,000–₦51,000): Shares ₦4,000 + Social ₦1,000 + Savings (remainder).
+//   Tier 2 (>₦51,000): Tier 1 plus overflow credited to Deposit.
+// Enforced server-side — POST /v1/contributions rejects amount < 5000, and
+// /v1/contributions/verify returns 422 { reason: "below_minimum" } if the
+// verified Paystack charge is under this. The client mirrors it in the form
+// and on the Paystack charge (currency-contract.md).
+export const MIN_CONTRIBUTION_AMOUNT = 5000;
 
 // Generate contribution months for dropdown (next 12 months)
 export const getContributionMonths = () => {
