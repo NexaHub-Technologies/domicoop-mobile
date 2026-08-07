@@ -41,7 +41,7 @@ export const faqData: FAQ[] = [
     icon: "savings",
     question: "Savings contribution rules",
     answer:
-      "Members are encouraged to contribute a minimum of ₦10,000 monthly. Higher contributions unlock better loan rates and increased borrowing limits.",
+      "Members are expected to contribute a minimum of ₦6,000 monthly. Higher contributions unlock better loan rates and increased borrowing limits.",
   },
   {
     id: "faq-006",

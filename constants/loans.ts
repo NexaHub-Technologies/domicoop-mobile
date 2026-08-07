@@ -6,8 +6,8 @@ import type { LoanType, LoanTypeConfig } from "@/lib/types/loans";
 // amount ≥ ₦1,000 (co-op floor is higher), tenure 1–36 months.
 export const loanConfig = {
   minAmount: 50000, // ₦50,000
-  maxAmount: 5000000, // ₦5,000,000
-  defaultInterestRate: 12, // 12% APR
+  maxAmount: 10000000, // ₦10,000,000
+  defaultInterestRate: 10, // 10% APR
   minTerm: 3,
   maxTerm: 36,
 };
