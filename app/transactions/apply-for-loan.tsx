@@ -3,22 +3,23 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
-  StyleSheet,
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  StyleSheet,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
-import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
-import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTheme, lightColors } from '@/contexts/ThemeContext';
 import { theme } from '@/styles/theme';
-import { font } from "@/constants/theme";
 import { typography } from '@/constants/typography';
+import { createElevation } from '@/constants/theme';
+import { ScreenHeader } from '@/components/common/ScreenHeader';
+import { Button } from '@/components/common/Button';
 import { AmountInput } from '@/components/forms/AmountInput';
 import { PurposeSelector } from '@/components/forms/PurposeSelector';
 import { TermSlider } from '@/components/forms/TermSlider';
@@ -33,14 +34,12 @@ import { parseNairaInput, toApiAmount } from '@/lib/utils/currency';
 
 const MIN_PURPOSE_LENGTH = 10;
 
-const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
-
 export default function ApplyForLoanScreen() {
   const router = useRouter();
   const queryClient = useQueryClient();
   const { colors, isDarkMode } = useTheme();
-  const insets = useSafeAreaInsets();
   const styles = getStyles(colors);
+  const elevations = createElevation(colors);
 
   // Form state
   const [amount, setAmount] = useState('');
@@ -148,21 +147,10 @@ export default function ApplyForLoanScreen() {
   };
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <StatusBar style={isDarkMode ? 'light' : 'dark'} />
 
-      {/* Header */}
-      <Animated.View entering={FadeIn.duration(300)} style={styles.header}>
-        <View style={styles.headerContent}>
-          <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-            <MaterialIcons name="arrow-back" size={24} color={colors.onSurface} />
-          </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.primary }]}>
-            Loan Application
-          </Text>
-          <View style={styles.backButton} />
-        </View>
-      </Animated.View>
+      <ScreenHeader title="Loan Application" onBack={handleBack} />
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -177,7 +165,7 @@ export default function ApplyForLoanScreen() {
           {/* Hero Card */}
           <Animated.View
             entering={FadeInUp.delay(100).duration(400)}
-            style={styles.heroCard}
+            style={[styles.heroCard, elevations.raised]}
           >
             <View style={styles.heroContent}>
               <Text style={styles.heroSubtitle}>DOMICOOP Cooperative</Text>
@@ -253,31 +241,28 @@ export default function ApplyForLoanScreen() {
 
             {/* Submit Button */}
             <Animated.View entering={FadeInUp.delay(600).duration(400)}>
-              <AnimatedTouchable
-                onPress={handleSubmit}
-                disabled={isSubmitting}
-                style={[
-                  styles.submitButton,
-                  isSubmitting && styles.submitButtonDisabled,
-                ]}
-                activeOpacity={0.8}
-              >
-                {isSubmitting ? (
+              {isSubmitting ? (
+                <View style={[styles.submitButton, styles.submitButtonDisabled]}>
                   <ActivityIndicator color={colors.onPrimary} />
-                ) : (
-                  <>
-                    <MaterialIcons name="send" size={20} color={colors.onPrimary} />
-                    <Text style={styles.submitButtonText}>Apply for Loan</Text>
-                  </>
-                )}
-              </AnimatedTouchable>
+                </View>
+              ) : (
+                <Button
+                  title="Apply for Loan"
+                  onPress={handleSubmit}
+                  variant="primary"
+                  size="lg"
+                  icon="send"
+                  iconPosition="left"
+                  fullWidth
+                />
+              )}
             </Animated.View>
           </View>
 
           {/* Compliance Note */}
           <Animated.View
             entering={FadeInUp.delay(700).duration(400)}
-            style={styles.complianceContainer}
+            style={[styles.complianceContainer, elevations.flat]}
           >
             <View style={styles.complianceIcon}>
               <MaterialIcons name="verified-user" size={24} color={colors.primary} />
@@ -342,7 +327,7 @@ export default function ApplyForLoanScreen() {
         primaryButtonText="OK"
         onPrimaryPress={handleDismissActiveLoanError}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -351,31 +336,6 @@ const getStyles = (colors: typeof lightColors) =>
     container: {
       flex: 1,
       backgroundColor: colors.background,
-    },
-    header: {
-      backgroundColor: colors.surface,
-      shadowColor: colors.ambientShadow,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 1,
-      shadowRadius: 4,
-      elevation: 2,
-    },
-    headerContent: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingHorizontal: theme.spacing.lg,
-      paddingTop: theme.spacing.lg,
-      paddingBottom: theme.spacing.base,
-    },
-    backButton: {
-      padding: theme.spacing.sm,
-      borderRadius: theme.borderRadius.full,
-      minWidth: 44,
-    },
-    headerTitle: {
-      fontFamily: font('display', 'bold'),
-      fontSize: typography.size.lg,
     },
     keyboardView: {
       flex: 1,
@@ -393,34 +353,25 @@ const getStyles = (colors: typeof lightColors) =>
       marginBottom: theme.spacing.lg,
       overflow: 'hidden',
       position: 'relative',
-      shadowColor: colors.ambientShadow,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 1,
-      shadowRadius: 8,
-      elevation: 4,
     },
     heroContent: {
       zIndex: 1,
     },
     heroSubtitle: {
-      fontFamily: font('body', 'bold'),
-      fontSize: typography.size.xs,
+      ...typography.styles.sectionLabel,
       color: `${colors.onPrimary}80`,
-      textTransform: 'uppercase',
-      letterSpacing: 2,
       marginBottom: theme.spacing.xs,
     },
     heroTitle: {
-      fontFamily: font('display', 'extrabold'),
+      ...typography.styles.displayLarge,
       fontSize: typography.size['2xl'],
+      lineHeight: 30,
       color: colors.onPrimary,
       marginBottom: 4,
     },
     heroDescription: {
-      fontFamily: font('body', 'regular'),
-      fontSize: typography.size.sm,
+      ...typography.styles.bodyText,
       color: `${colors.onPrimary}90`,
-      lineHeight: 20,
     },
     watermarkContainer: {
       position: 'absolute',
@@ -432,7 +383,7 @@ const getStyles = (colors: typeof lightColors) =>
       gap: theme.spacing.lg,
     },
     errorText: {
-      fontFamily: font('body', 'regular'),
+      ...typography.styles.bodySmall,
       fontSize: typography.size.xs,
       color: colors.error,
       marginTop: theme.spacing.xs,
@@ -445,30 +396,18 @@ const getStyles = (colors: typeof lightColors) =>
       alignItems: 'center',
       justifyContent: 'center',
       gap: theme.spacing.sm,
-      shadowColor: colors.ambientShadow,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 1,
-      shadowRadius: 8,
-      elevation: 4,
     },
     submitButtonDisabled: {
       opacity: 0.7,
-    },
-    submitButtonText: {
-      fontFamily: font('display', 'bold'),
-      fontSize: typography.size.base,
-      color: colors.onPrimary,
     },
     complianceContainer: {
       flexDirection: 'row',
       alignItems: 'flex-start',
       gap: theme.spacing.base,
-      backgroundColor: `${colors.surface}80`,
+      backgroundColor: colors.surfaceContainerLow,
       borderRadius: theme.borderRadius.xl,
       padding: theme.spacing.lg,
       marginTop: theme.spacing.lg,
-      borderWidth: 1,
-      borderColor: `${colors.outline}30`,
     },
     complianceIcon: {
       width: 48,
@@ -482,15 +421,15 @@ const getStyles = (colors: typeof lightColors) =>
       flex: 1,
     },
     complianceTitle: {
-      fontFamily: font('display', 'bold'),
+      ...typography.styles.label,
       fontSize: typography.size.xs,
       color: colors.onSurface,
       marginBottom: 4,
     },
     complianceText: {
-      fontFamily: font('body', 'regular'),
+      ...typography.styles.bodySmall,
       fontSize: typography.size.xs - 1,
-      color: colors.secondary,
+      color: colors.onSurfaceVariant,
       lineHeight: 18,
     },
     bottomPadding: {

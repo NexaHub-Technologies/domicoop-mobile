@@ -1,131 +1,121 @@
 import React from "react";
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, ScrollView, StyleSheet } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
-import Animated, { FadeIn, FadeInUp } from "react-native-reanimated";
+import Animated, { FadeInUp } from "react-native-reanimated";
 import { useTheme } from "@/contexts/ThemeContext";
 import type { lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
-import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
+import { createElevation } from "@/constants/theme";
+import { ScreenHeader } from "@/components/common/ScreenHeader";
+import { Badge, BadgeStatus } from "@/components/common/Badge";
+import { Money } from "@/components/common/Money";
+import { Button } from "@/components/common/Button";
+import { TransactionDetailCard } from "@/components/savings/TransactionDetailCard";
 import { getLoanTypeConfig } from "@/constants/loans";
 import { formatCurrencyNoSign } from "@/lib/utils/format";
 import { useLoans } from "@/hooks/useLoans";
+import type { LoanStatus } from "@/lib/types/loans";
 
-const AnimatedView = Animated.createAnimatedComponent(View);
+const STATUS_META: Record<LoanStatus, { badge: BadgeStatus; label: string }> = {
+  on_track: { badge: "success", label: "ON TRACK" },
+  pending: { badge: "warning", label: "PENDING" },
+  overdue: { badge: "error", label: "OVERDUE" },
+  rejected: { badge: "error", label: "REJECTED" },
+  completed: { badge: "neutral", label: "COMPLETED" },
+};
 
 export default function LoanDetailScreen() {
   const router = useRouter();
-  const { id } = useLocalSearchParams();
+  const { id } = useLocalSearchParams<{ id: string }>();
   const { colors, isDarkMode } = useTheme();
   const styles = createStyles(colors);
+  const elevations = createElevation(colors);
 
   // Served from the loans query cache populated by the list screen.
   const { loans, isLoading } = useLoans();
   const loan = loans.find((l) => l.id === id);
 
+  const handleBack = () => {
+    router.back();
+  };
+
   if (!loan) {
     return (
-      <SafeAreaView style={styles.container}>
-        <Text style={{ color: colors.onSurface }}>
-          {isLoading ? "Loading loan…" : "Loan not found"}
-        </Text>
+      <SafeAreaView style={styles.container} edges={["top"]}>
+        <StatusBar style={isDarkMode ? "light" : "dark"} />
+        <ScreenHeader title="Loan Details" onBack={handleBack} />
+        <View style={styles.notFoundContainer}>
+          <MaterialIcons
+            name={isLoading ? "hourglass-empty" : "search-off"}
+            size={48}
+            color={colors.outlineVariant}
+          />
+          <Text style={styles.notFoundText}>
+            {isLoading ? "Loading loan…" : "Loan not found"}
+          </Text>
+        </View>
       </SafeAreaView>
     );
   }
 
   const purposeConfig = getLoanTypeConfig(loan.type);
+  const statusMeta = STATUS_META[loan.status];
   const paidAmount = loan.totalAmount - loan.remainingBalance;
-
-  const handleBack = () => {
-    router.back();
-  };
 
   const handleMakePayment = () => {
     router.push("/transactions/make-payment");
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       <StatusBar style={isDarkMode ? "light" : "dark"} />
 
-      {/* Header */}
-      <Animated.View entering={FadeIn.duration(300)} style={styles.header}>
-        <View style={styles.headerContent}>
-          <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-            <MaterialIcons name="arrow-back" size={24} color={colors.onSurfaceVariant} />
-          </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.primary }]}>
-            Loan Details
-          </Text>
-          <View style={styles.backButton} />
-        </View>
-      </Animated.View>
+      <ScreenHeader title="Loan Details" onBack={handleBack} />
 
-      <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
-        {/* Loan Header Card */}
-        <AnimatedView
+      <ScrollView
+        style={styles.scrollView}
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        {/* Hero */}
+        <Animated.View
           entering={FadeInUp.delay(100).duration(400)}
-          style={styles.loanHeaderCard}
+          style={[styles.amountSection, elevations.raised]}
         >
-          <View style={[styles.purposeIcon, { backgroundColor: purposeConfig.bgColor }]}>
+          <View style={styles.watermarkContainer}>
             <MaterialIcons
               name={purposeConfig.icon as any}
-              size={32}
+              size={140}
+              color={`${purposeConfig.color}08`}
+            />
+          </View>
+          <View style={[styles.iconContainer, { backgroundColor: purposeConfig.bgColor }]}>
+            <MaterialIcons
+              name={purposeConfig.icon as any}
+              size={28}
               color={purposeConfig.color}
             />
           </View>
-          <Text style={styles.loanTitle}>{loan.title}</Text>
-          <Text style={styles.loanId}>{loan.loanId}</Text>
-          {loan.purpose ? (
-            <Text style={styles.loanPurpose}>{loan.purpose}</Text>
-          ) : null}
+          <Text style={styles.amountLabel}>Remaining Balance</Text>
+          <Money amount={loan.remainingBalance} size="xl" style={styles.amountValue} />
+          <Badge status={statusMeta.badge} label={statusMeta.label} />
+        </Animated.View>
 
-          <View style={[styles.statusBadge, { backgroundColor: purposeConfig.bgColor }]}>
-            <Text style={[styles.statusText, { color: purposeConfig.color }]}>
-              {loan.status.replace("_", " ").toUpperCase()}
-            </Text>
-          </View>
-        </AnimatedView>
-
-        {/* Balance Card */}
-        <AnimatedView
+        {/* Repayment Progress */}
+        <Animated.View
           entering={FadeInUp.delay(200).duration(400)}
-          style={styles.balanceCard}
+          style={[styles.sectionCard, elevations.flat]}
         >
-          <View style={styles.balanceRow}>
-            <View style={styles.balanceItem}>
-              <Text style={styles.balanceLabel}>Total Amount</Text>
-              <Text style={styles.balanceValue}>
-                ₦{formatCurrencyNoSign(loan.totalAmount)}
-              </Text>
-            </View>
-            <View style={styles.balanceDivider} />
-            <View style={styles.balanceItem}>
-              <Text style={styles.balanceLabel}>Paid So Far</Text>
-              <Text style={styles.balanceValuePaid}>
-                ₦{formatCurrencyNoSign(paidAmount)}
-              </Text>
-            </View>
-          </View>
-
-          <View style={styles.remainingContainer}>
-            <Text style={styles.remainingLabel}>Remaining Balance</Text>
-            <Text style={styles.remainingValue}>
-              ₦{formatCurrencyNoSign(loan.remainingBalance)}
-            </Text>
-          </View>
-        </AnimatedView>
-
-        {/* Progress Section */}
-        <AnimatedView entering={FadeInUp.delay(300).duration(400)} style={styles.section}>
           <Text style={styles.sectionTitle}>Repayment Progress</Text>
-          <View style={styles.progressCard}>
+
+          <View>
             <View style={styles.progressHeader}>
               <Text style={styles.progressPercent}>{loan.progress}% Complete</Text>
-              <Text style={styles.progressText}>{loan.termMonths} months term</Text>
+              <Text style={styles.progressTermText}>{loan.termMonths} months term</Text>
             </View>
             <View style={styles.progressBarBackground}>
               <View
@@ -136,60 +126,80 @@ export default function LoanDetailScreen() {
               />
             </View>
           </View>
-        </AnimatedView>
 
-        {/* Loan Details */}
-        <AnimatedView entering={FadeInUp.delay(400).duration(400)} style={styles.section}>
+          <View style={styles.amountsRow}>
+            <View style={styles.amountItem}>
+              <Text style={styles.amountItemLabel}>Total Loan</Text>
+              <Money amount={loan.totalAmount} size="md" />
+            </View>
+            <View style={[styles.amountItem, styles.amountItemRight]}>
+              <Text style={styles.amountItemLabel}>Paid So Far</Text>
+              <Money amount={paidAmount} size="md" tone="success" />
+            </View>
+          </View>
+        </Animated.View>
+
+        {/* Loan Information */}
+        <Animated.View
+          entering={FadeInUp.delay(300).duration(400)}
+          style={[styles.sectionCard, elevations.flat]}
+        >
           <Text style={styles.sectionTitle}>Loan Information</Text>
-          <View style={styles.detailsCard}>
-            <DetailRow
+          <View style={styles.detailsContainer}>
+            <TransactionDetailCard
+              icon="fingerprint"
+              label="Loan ID"
+              value={loan.loanId}
+              showCopy
+            />
+            <TransactionDetailCard icon="category" label="Loan Type" value={purposeConfig.label} />
+            {loan.purpose ? (
+              <TransactionDetailCard icon="notes" label="Purpose" value={loan.purpose} />
+            ) : null}
+            <TransactionDetailCard
+              icon="payment"
               label="Monthly Payment"
               value={`₦${formatCurrencyNoSign(loan.monthlyPayment)}`}
             />
-            <DetailRow label="Interest Rate" value={`${loan.interestRate}% APR`} />
-            <DetailRow label="Start Date" value={loan.startDate} />
-            <DetailRow
+            <TransactionDetailCard
+              icon="percent"
+              label="Interest Rate"
+              value={`${loan.interestRate}% APR`}
+            />
+            <TransactionDetailCard
+              icon="calendar-today"
+              label="Start Date"
+              value={loan.startDate}
+            />
+            <TransactionDetailCard
+              icon="event"
               label="Next Payment"
               value={`₦${formatCurrencyNoSign(loan.nextPayment.amount)} on ${loan.nextPayment.date}`}
             />
           </View>
-        </AnimatedView>
+        </Animated.View>
 
-        {/* Make Payment Button */}
-        <AnimatedView
-          entering={FadeInUp.delay(500).duration(400)}
+        {/* Make Payment */}
+        <Animated.View
+          entering={FadeInUp.delay(400).duration(400)}
           style={styles.actionContainer}
         >
-          <TouchableOpacity style={styles.paymentButton} onPress={handleMakePayment}>
-            <MaterialIcons name="payment" size={20} color={colors.onPrimary} />
-            <Text style={styles.paymentButtonText}>Make a Payment</Text>
-          </TouchableOpacity>
-        </AnimatedView>
+          <Button
+            title="Make a Payment"
+            onPress={handleMakePayment}
+            variant="primary"
+            size="lg"
+            icon="payment"
+            iconPosition="left"
+            fullWidth
+          />
+        </Animated.View>
 
-        {/* Bottom padding */}
         <View style={styles.bottomPadding} />
       </ScrollView>
     </SafeAreaView>
   );
 }
-
-// Detail Row Component
-interface DetailRowProps {
-  label: string;
-  value: string;
-}
-
-const DetailRow: React.FC<DetailRowProps> = ({ label, value }) => {
-  const { colors } = useTheme();
-  const styles = createStyles(colors);
-
-  return (
-    <View style={styles.detailRow}>
-      <Text style={styles.detailLabel}>{label}</Text>
-      <Text style={styles.detailValue}>{value}</Text>
-    </View>
-  );
-};
 
 const createStyles = (colors: typeof lightColors) =>
   StyleSheet.create({
@@ -197,168 +207,66 @@ const createStyles = (colors: typeof lightColors) =>
       flex: 1,
       backgroundColor: colors.background,
     },
-    header: {
-      backgroundColor: colors.surface,
-      shadowColor: colors.ambientShadow,
-      shadowOffset: {
-        width: 0,
-        height: 2,
-      },
-      shadowOpacity: 1,
-      shadowRadius: 4,
-      elevation: 2,
-    },
-    headerContent: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      paddingHorizontal: theme.spacing.lg,
-      paddingTop: theme.spacing.lg,
-      paddingBottom: theme.spacing.base,
-    },
-    backButton: {
-      padding: theme.spacing.sm,
-      borderRadius: theme.borderRadius.full,
-      minWidth: 44,
-    },
-    headerTitle: {
-      fontFamily: font("display", "bold"),
-      fontSize: typography.size.lg,
-    },
     scrollView: {
       flex: 1,
     },
-    loanHeaderCard: {
-      backgroundColor: colors.surface,
-      marginHorizontal: theme.spacing.lg,
-      marginTop: theme.spacing.lg,
-      marginBottom: theme.spacing.base,
-      padding: theme.spacing["2xl"],
-      borderRadius: theme.borderRadius["2xl"],
-      alignItems: "center",
-      shadowColor: colors.ambientShadow,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 1,
-      shadowRadius: 4,
-      elevation: 2,
+    scrollContent: {
+      padding: theme.spacing.lg,
     },
-    purposeIcon: {
-      width: 64,
-      height: 64,
-      borderRadius: 16,
+    notFoundContainer: {
+      flex: 1,
+      alignItems: "center",
+      justifyContent: "center",
+      gap: theme.spacing.base,
+      paddingHorizontal: theme.spacing.xl,
+    },
+    notFoundText: {
+      ...typography.styles.bodyText,
+      color: colors.onSurfaceVariant,
+    },
+    amountSection: {
+      backgroundColor: colors.surface,
+      borderRadius: theme.borderRadius["2xl"],
+      padding: theme.spacing["2xl"],
+      alignItems: "center",
+      marginBottom: theme.spacing.lg,
+      overflow: "hidden",
+      position: "relative",
+    },
+    watermarkContainer: {
+      position: "absolute",
+      bottom: -20,
+      right: -20,
+    },
+    iconContainer: {
+      width: 48,
+      height: 48,
+      borderRadius: 24,
       alignItems: "center",
       justifyContent: "center",
       marginBottom: theme.spacing.base,
     },
-    loanTitle: {
-      fontFamily: font("display", "bold"),
-      fontSize: typography.size.xl,
-      color: colors.onSurface,
-      marginBottom: 4,
-    },
-    loanId: {
-      fontFamily: font("body", "regular"),
-      fontSize: typography.size.sm,
-      color: colors.onSurfaceVariant,
-      marginBottom: theme.spacing.base,
-    },
-    loanPurpose: {
-      fontFamily: font("body", "regular"),
-      fontSize: typography.size.sm,
-      color: colors.onSurfaceVariant,
-      textAlign: "center",
-      marginBottom: theme.spacing.base,
-    },
-    statusBadge: {
-      paddingHorizontal: theme.spacing.md,
-      paddingVertical: theme.spacing.xs,
-      borderRadius: theme.borderRadius.full,
-    },
-    statusText: {
-      fontFamily: font("body", "bold"),
-      fontSize: typography.size.xs - 2,
-      letterSpacing: 0.5,
-    },
-    balanceCard: {
-      backgroundColor: colors.primary,
-      marginHorizontal: theme.spacing.lg,
-      marginBottom: theme.spacing.lg,
-      padding: theme.spacing["2xl"],
-      borderRadius: theme.borderRadius["2xl"],
-      shadowColor: colors.ambientShadow,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 1,
-      shadowRadius: 8,
-      elevation: 4,
-    },
-    balanceRow: {
-      flexDirection: "row",
-      marginBottom: theme.spacing.lg,
-    },
-    balanceItem: {
-      flex: 1,
-      alignItems: "center",
-    },
-    balanceDivider: {
-      width: 1,
-      backgroundColor: `${colors.onPrimary}33`,
-    },
-    balanceLabel: {
-      fontFamily: font("body", "bold"),
-      fontSize: typography.size.xs - 2,
-      color: `${colors.onPrimary}70`,
-      textTransform: "uppercase",
-      letterSpacing: 0.5,
-      marginBottom: 4,
-    },
-    balanceValue: {
-      fontFamily: font("display", "bold"),
-      fontSize: typography.size.lg,
-      color: colors.onPrimary,
-    },
-    balanceValuePaid: {
-      fontFamily: font("display", "bold"),
-      fontSize: typography.size.lg,
-      color: colors.successContainer,
-    },
-    remainingContainer: {
-      alignItems: "center",
-      paddingTop: theme.spacing.base,
-      borderTopWidth: 1,
-      borderTopColor: `${colors.onPrimary}1A`,
-    },
-    remainingLabel: {
-      fontFamily: font("body", "bold"),
+    amountLabel: {
+      ...typography.styles.sectionLabel,
       fontSize: typography.size.xs,
-      color: `${colors.onPrimary}90`,
-      textTransform: "uppercase",
-      letterSpacing: 0.5,
-      marginBottom: 4,
+      color: colors.onSurfaceVariant,
+      letterSpacing: 2,
+      marginBottom: theme.spacing.xs,
     },
-    remainingValue: {
-      fontFamily: font("display", "extrabold"),
-      fontSize: typography.size["2xl"],
-      color: colors.onPrimary,
+    amountValue: {
+      marginBottom: theme.spacing.base,
     },
-    section: {
-      marginHorizontal: theme.spacing.lg,
+    sectionCard: {
+      backgroundColor: colors.surfaceContainerLow,
+      borderRadius: theme.borderRadius.xl,
+      padding: theme.spacing.lg,
+      gap: theme.spacing.base,
       marginBottom: theme.spacing.lg,
     },
     sectionTitle: {
-      fontFamily: font("display", "bold"),
-      fontSize: typography.size.base,
-      color: colors.onSurface,
-      marginBottom: theme.spacing.base,
-    },
-    progressCard: {
-      backgroundColor: colors.surface,
-      borderRadius: theme.borderRadius.xl,
-      padding: theme.spacing.lg,
-      shadowColor: colors.ambientShadow,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 1,
-      shadowRadius: 4,
-      elevation: 2,
+      ...typography.styles.sectionLabel,
+      fontSize: typography.size.xs,
+      color: colors.onSurfaceVariant,
     },
     progressHeader: {
       flexDirection: "row",
@@ -366,13 +274,12 @@ const createStyles = (colors: typeof lightColors) =>
       marginBottom: theme.spacing.sm,
     },
     progressPercent: {
-      fontFamily: font("display", "bold"),
+      ...typography.styles.cardTitle,
       fontSize: typography.size.lg,
       color: colors.onSurface,
     },
-    progressText: {
-      fontFamily: font("body", "regular"),
-      fontSize: typography.size.sm,
+    progressTermText: {
+      ...typography.styles.bodySmall,
       color: colors.onSurfaceVariant,
     },
     progressBarBackground: {
@@ -385,56 +292,29 @@ const createStyles = (colors: typeof lightColors) =>
       height: "100%",
       borderRadius: 4,
     },
-    detailsCard: {
-      backgroundColor: colors.surface,
-      borderRadius: theme.borderRadius.xl,
-      padding: theme.spacing.lg,
-      shadowColor: colors.ambientShadow,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 1,
-      shadowRadius: 4,
-      elevation: 2,
-    },
-    detailRow: {
+    amountsRow: {
       flexDirection: "row",
-      justifyContent: "space-between",
-      alignItems: "center",
-      paddingVertical: theme.spacing.base,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.outlineVariant,
+      paddingTop: theme.spacing.base,
+      borderTopWidth: 1,
+      borderTopColor: colors.outlineVariant,
     },
-    detailLabel: {
-      fontFamily: font("body", "regular"),
-      fontSize: typography.size.sm,
+    amountItem: {
+      flex: 1,
+    },
+    amountItemRight: {
+      alignItems: "flex-end",
+    },
+    amountItemLabel: {
+      ...typography.styles.sectionLabel,
+      fontSize: typography.size.xs - 1,
       color: colors.onSurfaceVariant,
+      marginBottom: 4,
     },
-    detailValue: {
-      fontFamily: font("display", "semibold"),
-      fontSize: typography.size.sm,
-      color: colors.onSurface,
+    detailsContainer: {
+      gap: theme.spacing.base,
     },
     actionContainer: {
-      marginHorizontal: theme.spacing.lg,
       marginTop: theme.spacing.base,
-    },
-    paymentButton: {
-      backgroundColor: colors.primary,
-      borderRadius: theme.borderRadius.xl,
-      paddingVertical: theme.spacing.lg,
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: theme.spacing.sm,
-      shadowColor: colors.ambientShadow,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 1,
-      shadowRadius: 8,
-      elevation: 4,
-    },
-    paymentButtonText: {
-      fontFamily: font("display", "bold"),
-      fontSize: typography.size.base,
-      color: colors.onPrimary,
     },
     bottomPadding: {
       height: 40,

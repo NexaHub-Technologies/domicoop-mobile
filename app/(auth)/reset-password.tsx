@@ -165,7 +165,7 @@ const createStyles = (colors: typeof lightColors) =>
       color: colors.onSurfaceVariant,
     },
     signInLinkText: {
-      color: colors.primary,
+      color: colors.primaryBright,
       fontFamily: font("body", "bold"),
     },
   });

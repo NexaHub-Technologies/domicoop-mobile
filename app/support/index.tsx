@@ -4,11 +4,13 @@ import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { MaterialIcons } from '@expo/vector-icons';
-import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
-import { useTheme , lightColors } from '@/contexts/ThemeContext';
+import Animated, { FadeInUp } from 'react-native-reanimated';
+import { useTheme, lightColors } from '@/contexts/ThemeContext';
 import { theme } from '@/styles/theme';
-import { font } from "@/constants/theme";
 import { typography } from '@/constants/typography';
+import { createElevation } from '@/constants/theme';
+import { ScreenHeader } from '@/components/common/ScreenHeader';
+import { Button } from '@/components/common/Button';
 import { FAQAccordion } from '@/components/support/FAQAccordion';
 import { ChatBottomSheet } from '@/components/modals/ChatBottomSheet';
 import { faqData } from '@/constants/support';
@@ -35,18 +37,24 @@ const QuickActionButton: React.FC<QuickActionButtonProps> = ({
   colors,
 }) => {
   const styles = createStyles(colors);
+  const elevations = createElevation(colors);
   return (
     <AnimatedTouchable
       entering={FadeInUp.delay(200 + index * 100).duration(400)}
       onPress={onPress}
-      style={[styles.quickActionButton, variant === 'secondary' && styles.quickActionButtonSecondary]}
+      style={[styles.quickActionButton, elevations.flat]}
       activeOpacity={0.8}
     >
-      <View style={[styles.quickActionIcon, variant === 'primary' ? styles.quickActionIconPrimary : styles.quickActionIconSecondary]}>
+      <View
+        style={[
+          styles.quickActionIcon,
+          variant === 'primary' ? styles.quickActionIconPrimary : styles.quickActionIconSecondary,
+        ]}
+      >
         <MaterialIcons
           name={icon as any}
-          size={24}
-          color={variant === 'primary' ? colors.onPrimary : colors.primary}
+          size={22}
+          color={variant === 'primary' ? colors.onPrimary : colors.primaryBright}
         />
       </View>
       <Text style={styles.quickActionLabel}>{label}</Text>
@@ -60,6 +68,7 @@ export default function SupportHelpScreen() {
   const { colors, isDarkMode } = useTheme();
   const [isChatOpen, setIsChatOpen] = useState(false);
   const styles = createStyles(colors);
+  const elevations = createElevation(colors);
 
   const handleBack = () => {
     router.back();
@@ -79,19 +88,10 @@ export default function SupportHelpScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <StatusBar style={isDarkMode ? 'light' : 'dark'} />
 
-      {/* Header */}
-      <Animated.View entering={FadeIn.duration(300)} style={styles.header}>
-        <View style={styles.headerContent}>
-          <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-            <MaterialIcons name="arrow-back" size={24} color={colors.onSurfaceVariant} />
-          </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.primary }]}>Help Center</Text>
-          <View style={styles.backButton} />
-        </View>
-      </Animated.View>
+      <ScreenHeader title="Help Center" onBack={handleBack} />
 
       <ScrollView
         style={styles.scrollView}
@@ -99,7 +99,10 @@ export default function SupportHelpScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Hero Banner */}
-        <Animated.View entering={FadeInUp.delay(100).duration(400)} style={styles.heroBanner}>
+        <Animated.View
+          entering={FadeInUp.delay(100).duration(400)}
+          style={[styles.heroBanner, elevations.raised]}
+        >
           <View style={styles.heroContent}>
             <Text style={styles.heroTitle}>How can we help?</Text>
             <Text style={styles.heroSubtitle}>
@@ -148,20 +151,20 @@ export default function SupportHelpScreen() {
           <View style={styles.contactCard}>
             <View style={styles.avatarContainer}>
               <View style={styles.avatar}>
-                <MaterialIcons name="support-agent" size={28} color={colors.onPrimary} />
+                <MaterialIcons name="support-agent" size={26} color={colors.onPrimary} />
               </View>
             </View>
             <Text style={styles.contactTitle}>Still need help?</Text>
             <Text style={styles.contactSubtitle}>
               Our support team is available 24/7 to assist you with any inquiries.
             </Text>
-            <TouchableOpacity
-              style={styles.contactButton}
+            <Button
+              title="Start Conversation"
               onPress={handleStartConversation}
-              activeOpacity={0.8}
-            >
-              <Text style={styles.contactButtonText}>Start Conversation</Text>
-            </TouchableOpacity>
+              variant="primary"
+              size="md"
+              fullWidth
+            />
           </View>
         </Animated.View>
 
@@ -183,34 +186,6 @@ const createStyles = (colors: typeof lightColors) => StyleSheet.create({
     flex: 1,
     backgroundColor: colors.background,
   },
-  header: {
-    backgroundColor: colors.surface,
-    shadowColor: colors.ambientShadow,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  headerContent: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: theme.spacing.lg,
-    paddingTop: theme.spacing.lg,
-    paddingBottom: theme.spacing.base,
-  },
-  backButton: {
-    padding: theme.spacing.sm,
-    borderRadius: theme.borderRadius.full,
-    minWidth: 44,
-  },
-  headerTitle: {
-    fontFamily: font("display", "bold"),
-    fontSize: typography.size.lg,
-  },
   scrollView: {
     flex: 1,
   },
@@ -219,7 +194,7 @@ const createStyles = (colors: typeof lightColors) => StyleSheet.create({
   },
   heroBanner: {
     backgroundColor: colors.primary,
-    borderRadius: theme.borderRadius.xl,
+    borderRadius: theme.borderRadius['2xl'],
     padding: theme.spacing['2xl'],
     marginBottom: theme.spacing.lg,
     overflow: 'hidden',
@@ -229,16 +204,13 @@ const createStyles = (colors: typeof lightColors) => StyleSheet.create({
     zIndex: 1,
   },
   heroTitle: {
-    fontFamily: font("display", "bold"),
-    fontSize: typography.size['2xl'],
+    ...typography.styles.screenTitle,
     color: colors.onPrimary,
     marginBottom: theme.spacing.xs,
   },
   heroSubtitle: {
-    fontFamily: font("body", "regular"),
-    fontSize: typography.size.base,
-    color: `${colors.onPrimary}90`,
-    marginBottom: theme.spacing.lg,
+    ...typography.styles.bodyText,
+    color: `${colors.onPrimary}CC`,
   },
   heroDecoration1: {
     position: 'absolute',
@@ -269,53 +241,29 @@ const createStyles = (colors: typeof lightColors) => StyleSheet.create({
     borderRadius: theme.borderRadius.xl,
     padding: theme.spacing.lg,
     alignItems: 'center',
-    borderWidth: 1,
-    borderColor: `${colors.primary}10`,
-    shadowColor: colors.ambientShadow,
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 1,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  quickActionButtonSecondary: {
-    backgroundColor: `${colors.primary}05`,
   },
   quickActionIcon: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 44,
+    height: 44,
+    borderRadius: theme.borderRadius.full,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: theme.spacing.sm,
   },
   quickActionIconPrimary: {
     backgroundColor: colors.primary,
-    shadowColor: colors.ambientShadow,
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 1,
-    shadowRadius: 8,
-    elevation: 4,
   },
   quickActionIconSecondary: {
-    backgroundColor: colors.surface,
-    borderWidth: 1,
-    borderColor: `${colors.primary}10`,
+    backgroundColor: colors.surfaceContainer,
   },
   quickActionLabel: {
-    fontFamily: font("display", "semibold"),
+    ...typography.styles.label,
     fontSize: typography.size.sm,
     color: colors.onSurface,
     marginBottom: 2,
   },
   quickActionSubtitle: {
-    fontFamily: font("body", "regular"),
-    fontSize: typography.size.xs,
+    ...typography.styles.caption,
     color: colors.onSurfaceVariant,
   },
   faqHeader: {
@@ -325,14 +273,15 @@ const createStyles = (colors: typeof lightColors) => StyleSheet.create({
     marginBottom: theme.spacing.base,
   },
   faqTitle: {
-    fontFamily: font("display", "bold"),
-    fontSize: typography.size.lg,
-    color: colors.onSurface,
+    ...typography.styles.sectionLabel,
+    color: colors.onSurfaceVariant,
   },
   viewAllText: {
-    fontFamily: font("body", "semibold"),
-    fontSize: typography.size.sm,
-    color: colors.primary,
+    ...typography.styles.label,
+    fontSize: typography.size.xs,
+    color: colors.primaryBright,
+    textTransform: 'uppercase',
+    letterSpacing: 0.5,
   },
   contactContainer: {
     marginTop: theme.spacing.lg,
@@ -350,61 +299,26 @@ const createStyles = (colors: typeof lightColors) => StyleSheet.create({
     marginBottom: theme.spacing.base,
   },
   avatar: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
+    width: 60,
+    height: 60,
+    borderRadius: 30,
     backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 4,
     borderColor: colors.surface,
-    shadowColor: colors.ambientShadow,
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  avatarText: {
-    fontFamily: font("display", "bold"),
-    fontSize: typography.size.xl,
-    color: colors.onPrimary,
   },
   contactTitle: {
-    fontFamily: font("display", "bold"),
-    fontSize: typography.size.lg,
+    ...typography.styles.cardTitle,
     color: colors.onSurface,
     marginBottom: theme.spacing.xs,
   },
   contactSubtitle: {
-    fontFamily: font("body", "regular"),
+    ...typography.styles.bodyText,
     fontSize: typography.size.sm,
     color: colors.onSurfaceVariant,
     textAlign: 'center',
     marginBottom: theme.spacing.lg,
-  },
-  contactButton: {
-    backgroundColor: colors.primary,
-    borderRadius: theme.borderRadius.xl,
-    paddingVertical: theme.spacing.lg,
-    paddingHorizontal: theme.spacing['2xl'],
-    width: '100%',
-    alignItems: 'center',
-    shadowColor: colors.ambientShadow,
-    shadowOffset: {
-      width: 0,
-      height: 4,
-    },
-    shadowOpacity: 1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  contactButtonText: {
-    fontFamily: font("display", "bold"),
-    fontSize: typography.size.base,
-    color: colors.onPrimary,
   },
   bottomPadding: {
     height: 40,

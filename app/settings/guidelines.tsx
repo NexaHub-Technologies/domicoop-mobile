@@ -14,7 +14,7 @@ import { Button } from "@/components/common/Button";
 import { useTheme } from "@/contexts/ThemeContext";
 import type { lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
-import { font } from "@/constants/theme";
+import { typography } from "@/constants/typography";
 import { GUIDELINES } from "@/constants/guidelines";
 import { onboarding } from "@/lib/onboarding";
 import { session } from "@/lib/session";
@@ -154,25 +154,24 @@ const createStyles = (colors: typeof lightColors) =>
       marginBottom: theme.spacing.xl,
     },
     screenTitle: {
-      fontFamily: font("display", "bold"),
-      fontSize: theme.typography.size["2xl"],
+      ...typography.styles.screenTitle,
       color: colors.onSurface,
       marginBottom: theme.spacing.lg,
     },
     introText: {
-      fontFamily: font("body", "medium"),
+      ...typography.styles.bodyText,
       fontSize: theme.typography.size.base,
-      color: colors.onSurfaceVariant,
       lineHeight:
         theme.typography.size.base * theme.typography.lineHeight.relaxed,
+      color: colors.onSurfaceVariant,
       marginBottom: theme.spacing.base,
     },
     introSubtext: {
-      fontFamily: font("body", "medium"),
+      ...typography.styles.bodyText,
       fontSize: theme.typography.size.sm,
-      color: colors.onSurfaceVariant,
       lineHeight:
         theme.typography.size.sm * theme.typography.lineHeight.relaxed,
+      color: colors.onSurfaceVariant,
     },
     guidelineItem: {
       flexDirection: "row",
@@ -192,17 +191,17 @@ const createStyles = (colors: typeof lightColors) =>
       alignItems: "center",
     },
     numberText: {
-      fontFamily: font("display", "bold"),
+      ...typography.styles.cardTitle,
       fontSize: theme.typography.size.xs,
       color: colors.onPrimary,
     },
     guidelineText: {
       flex: 1,
-      fontFamily: font("body", "regular"),
+      ...typography.styles.bodyText,
       fontSize: theme.typography.size.sm,
-      color: colors.onSurface,
       lineHeight:
         theme.typography.size.sm * theme.typography.lineHeight.relaxed,
+      color: colors.onSurface,
     },
     footer: {
       paddingHorizontal: theme.spacing["2xl"],
@@ -233,7 +232,7 @@ const createStyles = (colors: typeof lightColors) =>
     },
     checkboxLabel: {
       flex: 1,
-      fontFamily: font("body", "medium"),
+      ...typography.styles.bodyMedium,
       fontSize: theme.typography.size.sm,
       color: colors.onSurfaceVariant,
     },

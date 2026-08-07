@@ -1,14 +1,15 @@
 import React from "react";
-import { View, Text, ScrollView, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, ScrollView, StyleSheet } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
-import Animated, { FadeIn, FadeInUp } from "react-native-reanimated";
+import Animated, { FadeInUp } from "react-native-reanimated";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
-import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
+import { createElevation } from "@/constants/theme";
+import { ScreenHeader } from "@/components/common/ScreenHeader";
 import { getRelativeTime } from "@/lib/types/notifications";
 
 export default function AnnouncementDetailScreen() {
@@ -21,6 +22,7 @@ export default function AnnouncementDetailScreen() {
   }>();
   const { colors, isDarkMode } = useTheme();
   const styles = createStyles(colors);
+  const elevations = createElevation(colors);
 
   const handleBack = () => {
     router.back();
@@ -37,21 +39,10 @@ export default function AnnouncementDetailScreen() {
     : "";
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       <StatusBar style={isDarkMode ? "light" : "dark"} />
 
-      {/* Header */}
-      <Animated.View entering={FadeIn.duration(300)} style={styles.header}>
-        <View style={styles.headerContent}>
-          <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-            <MaterialIcons name="arrow-back" size={24} color={colors.onSurfaceVariant} />
-          </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.primary }]}>
-            Announcement
-          </Text>
-          <View style={styles.backButton} />
-        </View>
-      </Animated.View>
+      <ScreenHeader title="Announcement" onBack={handleBack} />
 
       <ScrollView
         style={styles.scrollView}
@@ -59,10 +50,13 @@ export default function AnnouncementDetailScreen() {
         showsVerticalScrollIndicator={false}
       >
         {/* Announcement Card */}
-        <Animated.View entering={FadeInUp.delay(100).duration(400)} style={styles.card}>
+        <Animated.View
+          entering={FadeInUp.delay(100).duration(400)}
+          style={[styles.card, elevations.flat]}
+        >
           {/* Icon */}
           <View style={styles.iconContainer}>
-            <MaterialIcons name="campaign" size={28} color={colors.primary} />
+            <MaterialIcons name="campaign" size={28} color={colors.primaryBright} />
           </View>
 
           {/* Title */}
@@ -72,7 +66,8 @@ export default function AnnouncementDetailScreen() {
           <View style={styles.dateRow}>
             <MaterialIcons name="schedule" size={14} color={colors.onSurfaceVariant} />
             <Text style={styles.dateText}>
-              {relativeTime}{formattedDate ? ` — ${formattedDate}` : ""}
+              {relativeTime}
+              {formattedDate ? ` — ${formattedDate}` : ""}
             </Text>
           </View>
 
@@ -96,31 +91,6 @@ const createStyles = (colors: typeof lightColors) =>
       flex: 1,
       backgroundColor: colors.background,
     },
-    header: {
-      backgroundColor: colors.surface,
-      shadowColor: colors.ambientShadow,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 1,
-      shadowRadius: 4,
-      elevation: 2,
-    },
-    headerContent: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      paddingHorizontal: theme.spacing.lg,
-      paddingTop: theme.spacing.lg,
-      paddingBottom: theme.spacing.base,
-    },
-    backButton: {
-      padding: theme.spacing.sm,
-      borderRadius: theme.borderRadius.full,
-      minWidth: 44,
-    },
-    headerTitle: {
-      fontFamily: font("display", "bold"),
-      fontSize: typography.size.lg,
-    },
     scrollView: {
       flex: 1,
     },
@@ -129,29 +99,24 @@ const createStyles = (colors: typeof lightColors) =>
     },
     card: {
       backgroundColor: colors.surface,
-      borderRadius: theme.borderRadius.xl,
+      borderRadius: theme.borderRadius["2xl"],
       padding: theme.spacing["2xl"],
-      shadowColor: colors.ambientShadow,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 1,
-      shadowRadius: 8,
-      elevation: 4,
     },
     iconContainer: {
       width: 56,
       height: 56,
-      borderRadius: 16,
+      borderRadius: theme.borderRadius.xl,
       backgroundColor: colors.primaryContainer,
       alignItems: "center",
       justifyContent: "center",
       marginBottom: theme.spacing.lg,
     },
     title: {
-      fontFamily: font("display", "bold"),
+      ...typography.styles.cardTitle,
       fontSize: typography.size.xl,
+      lineHeight: 28,
       color: colors.onSurface,
       marginBottom: theme.spacing.sm,
-      lineHeight: 28,
     },
     dateRow: {
       flexDirection: "row",
@@ -160,7 +125,7 @@ const createStyles = (colors: typeof lightColors) =>
       marginBottom: theme.spacing.lg,
     },
     dateText: {
-      fontFamily: font("body", "regular"),
+      ...typography.styles.bodySmall,
       fontSize: typography.size.xs,
       color: colors.onSurfaceVariant,
     },
@@ -170,8 +135,7 @@ const createStyles = (colors: typeof lightColors) =>
       marginBottom: theme.spacing.lg,
     },
     body: {
-      fontFamily: font("body", "regular"),
-      fontSize: typography.size.base,
+      ...typography.styles.bodyText,
       color: colors.onSurface,
       lineHeight: typography.size.base * 1.6,
     },

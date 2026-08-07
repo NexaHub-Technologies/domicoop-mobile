@@ -1,64 +1,22 @@
 import React from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  ScrollView,
-} from "react-native";
+import { View, Text, StyleSheet, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
-import Animated, { FadeIn, FadeInUp } from "react-native-reanimated";
+import Animated, { FadeInUp } from "react-native-reanimated";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
-import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
-
-
-interface SettingsItemProps {
-  icon: string;
-  label: string;
-  subtitle?: string;
-  onPress: () => void;
-  showChevron?: boolean;
-}
-
-const SettingsItem: React.FC<SettingsItemProps> = ({
-  icon,
-  label,
-  subtitle,
-  onPress,
-  showChevron = true,
-}) => {
-  const { colors } = useTheme();
-  const insets = useSafeAreaInsets();
-  const styles = createStyles(colors, insets.bottom);
-
-  return (
-    <TouchableOpacity style={styles.settingsItem} onPress={onPress} activeOpacity={0.7}>
-      <View style={styles.settingsItemContent}>
-        <View style={styles.iconContainer}>
-          <MaterialIcons name={icon as any} size={24} color={colors.primary} />
-        </View>
-        <View style={styles.textContainer}>
-          <Text style={styles.settingsItemLabel}>{label}</Text>
-          {subtitle && <Text style={styles.settingsItemSubtitle}>{subtitle}</Text>}
-        </View>
-      </View>
-      {showChevron && (
-        <MaterialIcons name="chevron-right" size={24} color={colors.outline} />
-      )}
-    </TouchableOpacity>
-  );
-};
+import { createElevation } from "@/constants/theme";
+import { ScreenHeader } from "@/components/common/ScreenHeader";
+import { ListItem } from "@/components/common/ListItem";
 
 export default function SecuritySettingsScreen() {
   const router = useRouter();
   const { colors, isDarkMode } = useTheme();
-  const insets = useSafeAreaInsets();
-  const styles = createStyles(colors, insets.bottom);
+  const styles = createStyles(colors);
+  const elevations = createElevation(colors);
 
   const handleChangePassword = () => {
     router.push("/settings/change-password");
@@ -69,19 +27,10 @@ export default function SecuritySettingsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       <StatusBar style={isDarkMode ? "light" : "dark"} />
 
-      {/* Header */}
-      <Animated.View entering={FadeIn.duration(300)} style={styles.header}>
-        <View style={styles.headerContent}>
-          <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-            <MaterialIcons name="arrow-back" size={24} color={colors.onSurfaceVariant} />
-          </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.primary }]}>Security</Text>
-          <View style={styles.backButton} />
-        </View>
-      </Animated.View>
+      <ScreenHeader title="Security" onBack={handleBack} />
 
       <ScrollView
         style={styles.scrollView}
@@ -102,7 +51,7 @@ export default function SecuritySettingsScreen() {
         {/* Security Status Card */}
         <Animated.View
           entering={FadeInUp.delay(200).duration(400)}
-          style={styles.statusCard}
+          style={[styles.statusCard, elevations.raised]}
         >
           <View style={styles.statusContent}>
             <View>
@@ -126,13 +75,12 @@ export default function SecuritySettingsScreen() {
         {/* Settings List */}
         <Animated.View
           entering={FadeInUp.delay(300).duration(400)}
-          style={styles.settingsList}
+          style={[styles.settingsList, elevations.flat]}
         >
-          {/* Change Password */}
-          <SettingsItem
-            icon="lock"
-            label="Change Password"
+          <ListItem
+            title="Change Password"
             subtitle="Last updated 3 months ago"
+            leadingIcon="lock"
             onPress={handleChangePassword}
           />
         </Animated.View>
@@ -140,7 +88,7 @@ export default function SecuritySettingsScreen() {
         {/* Security Tip */}
         <Animated.View
           entering={FadeInUp.delay(400).duration(400)}
-          style={styles.tipContainer}
+          style={[styles.tipContainer, elevations.flat]}
         >
           <View style={styles.tipContent}>
             <MaterialIcons
@@ -152,7 +100,7 @@ export default function SecuritySettingsScreen() {
               <Text style={styles.tipTitle}>Pro Security Tip</Text>
               <Text style={styles.tipText}>
                 Regularly updating your password significantly reduces the
-                  risk of unauthorized access.
+                risk of unauthorized access.
               </Text>
             </View>
           </View>
@@ -165,39 +113,11 @@ export default function SecuritySettingsScreen() {
   );
 }
 
-const createStyles = (colors: typeof lightColors, bottomInset: number) =>
+const createStyles = (colors: typeof lightColors) =>
   StyleSheet.create({
     container: {
       flex: 1,
       backgroundColor: colors.background,
-    },
-    header: {
-      backgroundColor: colors.surface,
-      shadowColor: colors.ambientShadow,
-      shadowOffset: {
-        width: 0,
-        height: 2,
-      },
-      shadowOpacity: 1,
-      shadowRadius: 4,
-      elevation: 2,
-    },
-    headerContent: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      paddingHorizontal: theme.spacing.lg,
-      paddingTop: theme.spacing.lg,
-      paddingBottom: theme.spacing.base,
-    },
-    backButton: {
-      padding: theme.spacing.sm,
-      borderRadius: theme.borderRadius.full,
-      minWidth: 44,
-    },
-    headerTitle: {
-      fontFamily: font("display", "bold"),
-      fontSize: typography.size.lg,
     },
     scrollView: {
       flex: 1,
@@ -209,13 +129,12 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) =>
       marginBottom: theme.spacing.lg,
     },
     title: {
-      fontFamily: font("display", "extrabold"),
-      fontSize: typography.size["2xl"],
+      ...typography.styles.screenTitle,
       color: colors.onSurface,
       marginBottom: theme.spacing.xs,
     },
     subtitle: {
-      fontFamily: font("body", "regular"),
+      ...typography.styles.bodyText,
       fontSize: typography.size.sm,
       color: colors.onSurfaceVariant,
     },
@@ -226,14 +145,6 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) =>
       marginBottom: theme.spacing.lg,
       overflow: "hidden",
       position: "relative",
-      shadowColor: colors.ambientShadow,
-      shadowOffset: {
-        width: 0,
-        height: 4,
-      },
-      shadowOpacity: 1,
-      shadowRadius: 8,
-      elevation: 4,
     },
     statusContent: {
       flexDirection: "row",
@@ -242,21 +153,16 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) =>
       zIndex: 1,
     },
     statusLabel: {
-      fontFamily: font("body", "bold"),
-      fontSize: typography.size.xs - 2,
+      ...typography.styles.sectionLabel,
       color: `${colors.onPrimary}80`,
-      textTransform: "uppercase",
-      letterSpacing: 1,
     },
     statusTitle: {
-      fontFamily: font("display", "bold"),
-      fontSize: typography.size.xl,
+      ...typography.styles.cardTitle,
       color: colors.onPrimary,
       marginTop: 4,
     },
     statusSubtitle: {
-      fontFamily: font("body", "regular"),
-      fontSize: typography.size.xs,
+      ...typography.styles.bodySmall,
       color: `${colors.onPrimary}90`,
       marginTop: 2,
     },
@@ -275,60 +181,16 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) =>
       zIndex: 0,
     },
     settingsList: {
-      gap: theme.spacing.base,
-      marginBottom: theme.spacing.lg,
-    },
-    settingsItem: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      padding: theme.spacing.lg,
       backgroundColor: colors.surface,
-      borderRadius: theme.borderRadius.xl,
-      shadowColor: colors.ambientShadow,
-      shadowOffset: {
-        width: 0,
-        height: 2,
-      },
-      shadowOpacity: 1,
-      shadowRadius: 4,
-      elevation: 2,
-    },
-    settingsItemContent: {
-      flexDirection: "row",
-      alignItems: "center",
-      flex: 1,
-    },
-    iconContainer: {
-      width: 48,
-      height: 48,
-      borderRadius: 12,
-      backgroundColor: `${colors.primary}10`,
-      alignItems: "center",
-      justifyContent: "center",
-      marginRight: theme.spacing.base,
-    },
-    textContainer: {
-      flex: 1,
-    },
-    settingsItemLabel: {
-      fontFamily: font("body", "semibold"),
-      fontSize: typography.size.base,
-      color: colors.onSurface,
-    },
-    settingsItemSubtitle: {
-      fontFamily: font("body", "regular"),
-      fontSize: typography.size.xs,
-      color: colors.onSurfaceVariant,
-      marginTop: 2,
+      borderRadius: theme.borderRadius["2xl"],
+      paddingHorizontal: theme.spacing.lg,
+      marginBottom: theme.spacing.lg,
     },
     tipContainer: {
       backgroundColor: colors.surfaceContainerLow,
       borderRadius: theme.borderRadius.xl,
       padding: theme.spacing.lg,
       marginBottom: theme.spacing.lg,
-      borderWidth: 1,
-      borderColor: `${colors.outline}30`,
     },
     tipContent: {
       flexDirection: "row",
@@ -338,14 +200,13 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) =>
       flex: 1,
     },
     tipTitle: {
-      fontFamily: font("display", "bold"),
+      ...typography.styles.label,
       fontSize: typography.size.sm,
       color: colors.onSurface,
       marginBottom: 4,
     },
     tipText: {
-      fontFamily: font("body", "regular"),
-      fontSize: typography.size.xs,
+      ...typography.styles.bodySmall,
       color: colors.onSurfaceVariant,
       lineHeight: 18,
     },

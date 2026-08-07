@@ -7,8 +7,9 @@ import { DashboardHeader } from '@/components/dashboard/DashboardHeader';
 import { ContributionSummary } from '@/components/dashboard/ContributionSummary';
 import { QuickActions } from '@/components/dashboard/QuickActions';
 import { TransactionList, RecentTransaction } from '@/components/dashboard/TransactionList';
-import { useTheme } from '@/contexts/ThemeContext';
+import { useTheme, lightColors } from '@/contexts/ThemeContext';
 import { useContributions } from '@/hooks/useContributions';
+import { useLoans } from '@/hooks/useLoans';
 import { useExitConfirmation } from '@/hooks/useExitConfirmation';
 import { ConfirmationModal } from '@/components/modals/ConfirmationModal';
 import { computeAllocationTotals } from '@/lib/utils/contributionAllocation';
@@ -26,6 +27,8 @@ export default function DashboardScreen() {
     isOffline,
     refresh: refreshContributions,
   } = useContributions();
+
+  const { totalDebt, isLoading: isLoansLoading } = useLoans();
 
   const exitConfirmation = useExitConfirmation();
 
@@ -47,8 +50,10 @@ export default function DashboardScreen() {
     refreshContributions();
   }, [refreshContributions]);
 
+  const dynamicStyles = createStyles(colors);
+
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={dynamicStyles.container} edges={['top']}>
       <StatusBar style={isDarkMode ? 'light' : 'dark'} />
       
       {/* Fixed Header */}
@@ -56,8 +61,8 @@ export default function DashboardScreen() {
 
       {/* Scrollable Content */}
       <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+        style={dynamicStyles.scrollView}
+        contentContainerStyle={dynamicStyles.scrollContent}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
@@ -74,6 +79,8 @@ export default function DashboardScreen() {
           yearBalance={yearBalance}
           allocationTotals={allocationTotals}
           isLoading={isContributionsLoading}
+          totalDebt={totalDebt}
+          isDebtLoading={isLoansLoading}
         />
 
         {/* Quick Actions - Deposit & Apply */}
@@ -89,7 +96,7 @@ export default function DashboardScreen() {
         />
         
         {/* Bottom padding for tab bar */}
-        <SafeAreaView edges={['bottom']} style={styles.bottomPadding} />
+        <SafeAreaView edges={['bottom']} style={dynamicStyles.bottomPadding} />
       </ScrollView>
 
       {/* Exit confirmation on back-press from the dashboard (Android) */}
@@ -107,17 +114,19 @@ export default function DashboardScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingTop: theme.spacing.base,
-  },
-  bottomPadding: {
-    height: 100,
-  },
-});
+const createStyles = (colors: typeof lightColors) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    scrollView: {
+      flex: 1,
+    },
+    scrollContent: {
+      paddingTop: theme.spacing.base,
+    },
+    bottomPadding: {
+      height: 100,
+    },
+  });

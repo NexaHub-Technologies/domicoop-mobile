@@ -370,7 +370,7 @@ export default function SignUpScreen() {
       />
 
       <View style={styles.bankInfoCard}>
-        <MaterialIcons name="info" size={20} color={colors.primary} />
+        <MaterialIcons name="info" size={20} color={colors.info} />
         <Text style={styles.bankInfoText}>
           Your bank details are required for dividend payments and withdrawals. All
           transactions are secured with bank-grade encryption.
@@ -628,7 +628,7 @@ const createStyles = (colors: typeof lightColors) =>
     },
     bankInfoCard: {
       flexDirection: "row",
-      backgroundColor: colors.primaryFixed,
+      backgroundColor: colors.infoContainer,
       borderRadius: theme.borderRadius.lg,
       padding: theme.spacing.lg,
       gap: theme.spacing.base,
@@ -638,7 +638,7 @@ const createStyles = (colors: typeof lightColors) =>
       flex: 1,
       fontFamily: font("body", "regular"),
       fontSize: theme.typography.size.sm,
-      color: colors.onPrimaryFixed,
+      color: colors.onInfoContainer,
       lineHeight: theme.typography.size.sm * 1.5,
     },
     photoSection: {
@@ -698,7 +698,7 @@ const createStyles = (colors: typeof lightColors) =>
       color: colors.onSurfaceVariant,
     },
     footerLink: {
-      color: colors.primary,
+      color: colors.primaryBright,
       fontFamily: font("body", "bold"),
     },
   });

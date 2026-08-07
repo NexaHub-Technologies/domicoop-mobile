@@ -3,20 +3,21 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
-  StyleSheet,
   KeyboardAvoidingView,
   Platform,
+  StyleSheet,
 } from "react-native";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
-import { useSafeAreaInsets } from "react-native-safe-area-context";
+import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
-import Animated, { FadeIn, FadeInUp } from "react-native-reanimated";
+import Animated, { FadeInUp } from "react-native-reanimated";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
-import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
+import { createElevation } from "@/constants/theme";
+import { ScreenHeader } from "@/components/common/ScreenHeader";
+import { Button } from "@/components/common/Button";
 import { AmountInput } from "@/components/forms/AmountInput";
 import { DropdownSelect } from "@/components/forms/DropdownSelect";
 import { Input } from "@/components/common/Input";
@@ -30,13 +31,11 @@ import { getAllocationSummary } from "@/lib/utils/contributionAllocation";
 import { AllocationBreakdown } from "@/components/savings/AllocationBreakdown";
 import { parseNairaInput } from "@/lib/utils/currency";
 
-const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
-
 export default function AddContributionScreen() {
   const router = useRouter();
   const { colors, isDarkMode } = useTheme();
-  const insets = useSafeAreaInsets();
   const styles = getStyles(colors);
+  const elevations = createElevation(colors);
   const { initiateContributionPayment } = usePaystackPayment();
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -113,9 +112,9 @@ export default function AddContributionScreen() {
         // The server verifies the reference with Paystack and derives the
         // amount, member, and status from the verified transaction.
         let stored = false;
-        // A verified charge under ₦6,000 is rejected with 422
+        // A verified charge under ₦5,000 is rejected with 422
         // { reason: "below_minimum" } — deterministic, so don't retry it and
-        // tell the member exactly why (currency-contract.md §5).
+        // tell the member exactly why (currency-contract.md).
         let belowMinimum = false;
         let suspended = false;
         try {
@@ -220,21 +219,10 @@ export default function AddContributionScreen() {
     numericAmount > 0 && !isBelowMinimum ? getAllocationSummary(numericAmount) : null;
 
   return (
-    <View style={[styles.container, { paddingTop: insets.top }]}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       <StatusBar style={isDarkMode ? "light" : "dark"} />
 
-      {/* Header */}
-      <Animated.View entering={FadeIn.duration(300)} style={styles.header}>
-        <View style={styles.headerContent}>
-          <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-            <MaterialIcons name="arrow-back" size={24} color={colors.onSurface} />
-          </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.primary }]}>
-            Add Contribution
-          </Text>
-          <View style={styles.backButton} />
-        </View>
-      </Animated.View>
+      <ScreenHeader title="Add Contribution" onBack={handleBack} />
 
       <KeyboardAvoidingView
         behavior={Platform.OS === "ios" ? "padding" : "height"}
@@ -249,7 +237,7 @@ export default function AddContributionScreen() {
           {/* Hero Card */}
           <Animated.View
             entering={FadeInUp.delay(100).duration(400)}
-            style={styles.heroCard}
+            style={[styles.heroCard, elevations.raised]}
           >
             <View style={styles.heroContent}>
               <Text style={styles.heroSubtitle}>Institutional Ledger</Text>
@@ -262,15 +250,13 @@ export default function AddContributionScreen() {
               <MaterialIcons
                 name="account-balance-wallet"
                 size={120}
-                color={
-                  `${colors.onPrimary}1A`
-                }
+                color={`${colors.onPrimary}1A`}
               />
             </View>
           </Animated.View>
 
           {/* Form */}
-          <View style={styles.formContainer}>
+          <View style={[styles.formContainer, elevations.flat]}>
             {/* Amount Input */}
             <Animated.View entering={FadeInUp.delay(200).duration(400)}>
               <AmountInput
@@ -322,31 +308,24 @@ export default function AddContributionScreen() {
 
             {/* Submit Button */}
             <Animated.View entering={FadeInUp.delay(500).duration(400)}>
-              <AnimatedTouchable
+              <Button
+                title={isSubmitting ? "Opening Paystack..." : "Pay with Paystack"}
                 onPress={handleSubmit}
                 disabled={!isAmountValid || isSubmitting}
-                style={[styles.submitButton, (!isAmountValid || isSubmitting) && styles.submitButtonDisabled]}
-                activeOpacity={0.8}
-              >
-                {isSubmitting ? (
-                  <>
-                    <MaterialIcons name="lock" size={20} color={colors.onPrimary} />
-                    <Text style={styles.submitButtonText}>Opening Paystack...</Text>
-                  </>
-                ) : (
-                  <>
-                    <MaterialIcons name="lock" size={20} color={colors.onPrimary} />
-                    <Text style={styles.submitButtonText}>Pay with Paystack</Text>
-                  </>
-                )}
-              </AnimatedTouchable>
+                variant="primary"
+                size="lg"
+                icon="lock"
+                iconPosition="left"
+                fullWidth
+                style={styles.submitButton}
+              />
             </Animated.View>
           </View>
 
           {/* Compliance Note */}
           <Animated.View
             entering={FadeInUp.delay(600).duration(400)}
-            style={styles.complianceContainer}
+            style={[styles.complianceContainer, elevations.flat]}
           >
             <View style={styles.complianceIcon}>
               <MaterialIcons name="verified-user" size={24} color={colors.primary} />
@@ -383,7 +362,7 @@ export default function AddContributionScreen() {
         icon="info"
         iconColor={colors.error}
       />
-    </View>
+    </SafeAreaView>
   );
 }
 
@@ -392,31 +371,6 @@ const getStyles = (colors: typeof lightColors) =>
     container: {
       flex: 1,
       backgroundColor: colors.background,
-    },
-    header: {
-      backgroundColor: colors.surface,
-      shadowColor: colors.ambientShadow,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 1,
-      shadowRadius: 4,
-      elevation: 2,
-    },
-    headerContent: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      paddingHorizontal: theme.spacing.lg,
-      paddingTop: theme.spacing.lg,
-      paddingBottom: theme.spacing.base,
-    },
-    backButton: {
-      padding: theme.spacing.sm,
-      borderRadius: theme.borderRadius.full,
-      minWidth: 44,
-    },
-    headerTitle: {
-      fontFamily: font("display", "bold"),
-      fontSize: typography.size.lg,
     },
     keyboardView: {
       flex: 1,
@@ -434,32 +388,24 @@ const getStyles = (colors: typeof lightColors) =>
       marginBottom: theme.spacing.lg,
       overflow: "hidden",
       position: "relative",
-      shadowColor: colors.ambientShadow,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 1,
-      shadowRadius: 8,
-      elevation: 4,
     },
     heroContent: {
       zIndex: 1,
     },
     heroSubtitle: {
-      fontFamily: font("body", "bold"),
-      fontSize: typography.size.xs,
+      ...typography.styles.sectionLabel,
       color: `${colors.onPrimary}80`,
-      textTransform: "uppercase",
-      letterSpacing: 2,
       marginBottom: theme.spacing.xs,
     },
     heroTitle: {
-      fontFamily: font("display", "extrabold"),
+      ...typography.styles.displayLarge,
       fontSize: typography.size["2xl"],
+      lineHeight: 30,
       color: colors.onPrimary,
       marginBottom: 4,
     },
     heroDescription: {
-      fontFamily: font("body", "regular"),
-      fontSize: typography.size.sm,
+      ...typography.styles.bodyText,
       color: `${colors.onPrimary}90`,
     },
     watermarkContainer: {
@@ -472,54 +418,25 @@ const getStyles = (colors: typeof lightColors) =>
       backgroundColor: colors.surface,
       borderRadius: theme.borderRadius["2xl"],
       padding: theme.spacing["2xl"],
-      shadowColor: colors.ambientShadow,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 1,
-      shadowRadius: 8,
-      elevation: 3,
-      borderWidth: 1,
-      borderColor: `${colors.outline}50`,
     },
     errorText: {
-      fontFamily: font("body", "regular"),
+      ...typography.styles.bodySmall,
       fontSize: typography.size.xs,
       color: colors.error,
       marginTop: -theme.spacing.base,
       marginBottom: theme.spacing.base,
     },
     submitButton: {
-      backgroundColor: colors.primary,
-      borderRadius: theme.borderRadius.xl,
-      paddingVertical: theme.spacing.lg,
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: theme.spacing.sm,
       marginTop: theme.spacing.base,
-      shadowColor: colors.ambientShadow,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 1,
-      shadowRadius: 8,
-      elevation: 4,
-    },
-    submitButtonDisabled: {
-      opacity: 0.7,
-    },
-    submitButtonText: {
-      fontFamily: font("display", "bold"),
-      fontSize: typography.size.base,
-      color: colors.onPrimary,
     },
     complianceContainer: {
       flexDirection: "row",
       alignItems: "flex-start",
       gap: theme.spacing.base,
-      backgroundColor: `${colors.surface}80`,
+      backgroundColor: colors.surfaceContainerLow,
       borderRadius: theme.borderRadius.xl,
       padding: theme.spacing.lg,
       marginTop: theme.spacing.lg,
-      borderWidth: 1,
-      borderColor: `${colors.outline}30`,
     },
     complianceIcon: {
       width: 48,
@@ -533,15 +450,15 @@ const getStyles = (colors: typeof lightColors) =>
       flex: 1,
     },
     complianceTitle: {
-      fontFamily: font("display", "bold"),
+      ...typography.styles.label,
       fontSize: typography.size.xs,
       color: colors.onSurface,
       marginBottom: 4,
     },
     complianceText: {
-      fontFamily: font("body", "regular"),
+      ...typography.styles.bodySmall,
       fontSize: typography.size.xs - 1,
-      color: colors.secondary,
+      color: colors.onSurfaceVariant,
       lineHeight: 18,
     },
     bottomPadding: {

@@ -224,7 +224,7 @@ const createStyles = (colors: typeof lightColors) =>
     forgotPassword: {
       fontFamily: font("body", "bold"),
       fontSize: theme.typography.size.xs,
-      color: colors.primary,
+      color: colors.primaryBright,
       textTransform: "uppercase",
       letterSpacing: theme.typography.letterSpacing.wider,
     },
@@ -248,7 +248,7 @@ const createStyles = (colors: typeof lightColors) =>
       color: colors.onSurfaceVariant,
     },
     footerLink: {
-      color: colors.primary,
+      color: colors.primaryBright,
       fontFamily: font("body", "bold"),
     },
   });

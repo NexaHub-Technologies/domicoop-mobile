@@ -33,7 +33,7 @@ export const BackButton: React.FC<BackButtonProps> = ({
       <MaterialIcons
         name={icon}
         size={24}
-        color={colors.primary}
+        color={colors.primaryBright}
       />
     </TouchableOpacity>
   );

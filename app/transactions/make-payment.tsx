@@ -12,11 +12,12 @@ import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
-import Animated, { FadeIn, FadeInUp } from "react-native-reanimated";
+import Animated, { FadeInUp } from "react-native-reanimated";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
-import { font } from "@/constants/theme";
+import { font, createElevation } from "@/constants/theme";
 import { typography } from "@/constants/typography";
+import { ScreenHeader } from "@/components/common/ScreenHeader";
 import { SuccessModal } from "@/components/modals/SuccessModal";
 import { Money } from "@/components/common/Money";
 import { formatCurrency } from "@/lib/utils/format";
@@ -41,6 +42,7 @@ export default function MakePaymentScreen() {
   const { colors, isDarkMode } = useTheme();
   const insets = useSafeAreaInsets();
   const styles = createStyles(colors, insets.bottom);
+  const elevations = createElevation(colors);
   const { initiateLoanPayment } = usePaystackPayment();
 
   // State
@@ -214,21 +216,10 @@ export default function MakePaymentScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       <StatusBar style={isDarkMode ? "light" : "dark"} />
 
-      {/* Header */}
-      <Animated.View entering={FadeIn.duration(300)} style={styles.header}>
-        <View style={styles.headerContent}>
-          <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-            <MaterialIcons name="arrow-back" size={24} color={colors.onSurfaceVariant} />
-          </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.primary }]}>
-            Make a Payment
-          </Text>
-          <View style={styles.backButton} />
-        </View>
-      </Animated.View>
+      <ScreenHeader title="Make a Payment" onBack={handleBack} />
 
       <ScrollView
         style={styles.scrollView}
@@ -246,6 +237,7 @@ export default function MakePaymentScreen() {
             <TouchableOpacity
               style={[
                 styles.paymentTypeCard,
+                elevations.flat,
                 paymentType === "full" && styles.paymentTypeCardActive,
               ]}
               onPress={() => handlePaymentTypeChange("full")}
@@ -278,6 +270,7 @@ export default function MakePaymentScreen() {
             <TouchableOpacity
               style={[
                 styles.paymentTypeCard,
+                elevations.flat,
                 paymentType === "partial" && styles.paymentTypeCardActive,
               ]}
               onPress={() => handlePaymentTypeChange("partial")}
@@ -313,11 +306,12 @@ export default function MakePaymentScreen() {
           style={styles.section}
         >
           <Text style={styles.sectionTitle}>Select Loan</Text>
-          {outstandingLoans.map((loan, index) => (
+          {outstandingLoans.map((loan) => (
             <TouchableOpacity
               key={loan.id}
               style={[
                 styles.loanCard,
+                elevations.flat,
                 selectedLoan?.id === loan.id && styles.loanCardActive,
               ]}
               onPress={() => handleLoanSelect(loan)}
@@ -330,9 +324,7 @@ export default function MakePaymentScreen() {
               </View>
               <View style={styles.loanAmount}>
                 <Text style={styles.loanBalanceLabel}>Remaining</Text>
-                <Text style={styles.loanBalance}>
-                  ₦{formatCurrency(loan.remainingBalance)}
-                </Text>
+                <Money amount={loan.remainingBalance} size="sm" />
               </View>
               {selectedLoan?.id === loan.id && (
                 <MaterialIcons
@@ -352,7 +344,7 @@ export default function MakePaymentScreen() {
           style={styles.section}
         >
           <Text style={styles.sectionTitle}>Payment Amount</Text>
-          <View style={styles.amountContainer}>
+          <View style={[styles.amountContainer, elevations.flat]}>
             <View style={styles.amountInputWrapper}>
               <Text style={styles.currencySymbol}>₦</Text>
               <TextInput
@@ -384,7 +376,7 @@ export default function MakePaymentScreen() {
           style={styles.section}
         >
           <Text style={styles.sectionTitle}>Payment Method</Text>
-          <View style={[styles.methodCard, styles.methodCardActive]}>
+          <View style={[styles.methodCard, elevations.flat, styles.methodCardActive]}>
             <View
               style={[styles.methodIcon, { backgroundColor: `${colors.primary}10` }]}
             >
@@ -405,7 +397,7 @@ export default function MakePaymentScreen() {
         {/* Transaction Summary */}
         <Animated.View
           entering={FadeInUp.delay(500).duration(400)}
-          style={styles.summaryCard}
+          style={[styles.summaryCard, elevations.flat]}
         >
           <Text style={styles.summaryTitle}>Transaction Summary</Text>
           <View style={styles.summaryRow}>
@@ -431,8 +423,9 @@ export default function MakePaymentScreen() {
         <TouchableOpacity
           style={[
             styles.confirmButton,
-            (!selectedLoan || !amount || isProcessing) &&
-              styles.confirmButtonDisabled,
+            !selectedLoan || !amount || isProcessing
+              ? styles.confirmButtonDisabled
+              : elevations.glowMd,
           ]}
           onPress={handleConfirmPayment}
           disabled={!selectedLoan || !amount || isProcessing}
@@ -468,34 +461,6 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) =>
       flex: 1,
       backgroundColor: colors.background,
     },
-    header: {
-      backgroundColor: colors.surface,
-      shadowColor: colors.ambientShadow,
-      shadowOffset: {
-        width: 0,
-        height: 2,
-      },
-      shadowOpacity: 1,
-      shadowRadius: 4,
-      elevation: 2,
-    },
-    headerContent: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      paddingHorizontal: theme.spacing.lg,
-      paddingTop: theme.spacing.lg,
-      paddingBottom: theme.spacing.base,
-    },
-    backButton: {
-      padding: theme.spacing.sm,
-      borderRadius: theme.borderRadius.full,
-      minWidth: 44,
-    },
-    headerTitle: {
-      fontFamily: font("display", "bold"),
-      fontSize: typography.size.lg,
-    },
     scrollView: {
       flex: 1,
     },
@@ -506,7 +471,7 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) =>
       marginBottom: theme.spacing.lg,
     },
     sectionTitle: {
-      fontFamily: font("display", "bold"),
+      ...typography.styles.cardTitle,
       fontSize: typography.size.base,
       color: colors.onSurface,
       marginBottom: theme.spacing.base,
@@ -520,8 +485,6 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) =>
       backgroundColor: colors.surface,
       borderRadius: theme.borderRadius.xl,
       padding: theme.spacing.lg,
-      borderWidth: 1,
-      borderColor: colors.outlineVariant,
     },
     paymentTypeCardActive: {
       borderColor: colors.primary,
@@ -552,7 +515,7 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) =>
       flex: 1,
     },
     paymentTypeTitle: {
-      fontFamily: font("display", "semibold"),
+      ...typography.styles.bodyMedium,
       fontSize: typography.size.base,
       color: colors.onSurface,
       marginBottom: 2,
@@ -561,7 +524,7 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) =>
       color: colors.primary,
     },
     paymentTypeSubtitle: {
-      fontFamily: font("body", "regular"),
+      ...typography.styles.bodyText,
       fontSize: typography.size.sm,
       color: colors.onSurfaceVariant,
     },
@@ -572,8 +535,6 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) =>
       borderRadius: theme.borderRadius.xl,
       padding: theme.spacing.lg,
       marginBottom: theme.spacing.base,
-      borderWidth: 1,
-      borderColor: colors.outlineVariant,
     },
     loanCardActive: {
       borderColor: colors.primary,
@@ -583,13 +544,13 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) =>
       flex: 1,
     },
     loanTitle: {
-      fontFamily: font("display", "semibold"),
+      ...typography.styles.bodyMedium,
       fontSize: typography.size.base,
       color: colors.onSurface,
       marginBottom: 2,
     },
     loanSubtitle: {
-      fontFamily: font("body", "regular"),
+      ...typography.styles.bodyText,
       fontSize: typography.size.sm,
       color: colors.onSurfaceVariant,
     },
@@ -598,15 +559,10 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) =>
       marginRight: theme.spacing.base,
     },
     loanBalanceLabel: {
-      fontFamily: font("body", "regular"),
+      ...typography.styles.caption,
       fontSize: typography.size.xs,
       color: colors.onSurfaceVariant,
       textTransform: "uppercase",
-    },
-    loanBalance: {
-      fontFamily: font("display", "bold"),
-      fontSize: typography.size.base,
-      color: colors.onSurface,
     },
     checkIcon: {
       marginLeft: theme.spacing.sm,
@@ -625,7 +581,7 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) =>
       marginBottom: theme.spacing.base,
     },
     currencySymbol: {
-      fontFamily: font("display", "bold"),
+      ...typography.styles.cardTitle,
       fontSize: theme.spacing["2xl"],
       color: colors.onSurface,
       marginRight: theme.spacing.sm,
@@ -648,7 +604,7 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) =>
       paddingHorizontal: theme.spacing.base,
     },
     quickAmountText: {
-      fontFamily: font("body", "semibold"),
+      ...typography.styles.label,
       fontSize: typography.size.xs,
       color: colors.onSurface,
     },
@@ -659,8 +615,6 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) =>
       borderRadius: theme.borderRadius.xl,
       padding: theme.spacing.lg,
       marginBottom: theme.spacing.base,
-      borderWidth: 1,
-      borderColor: colors.outlineVariant,
     },
     methodCardActive: {
       borderColor: colors.primary,
@@ -678,13 +632,13 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) =>
       flex: 1,
     },
     methodName: {
-      fontFamily: font("display", "semibold"),
+      ...typography.styles.bodyMedium,
       fontSize: typography.size.base,
       color: colors.onSurface,
       marginBottom: 2,
     },
     methodDetails: {
-      fontFamily: font("body", "regular"),
+      ...typography.styles.bodyText,
       fontSize: typography.size.sm,
       color: colors.onSurfaceVariant,
     },
@@ -695,7 +649,7 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) =>
       marginBottom: theme.spacing.lg,
     },
     summaryTitle: {
-      fontFamily: font("display", "bold"),
+      ...typography.styles.cardTitle,
       fontSize: typography.size.base,
       color: colors.onSurface,
       marginBottom: theme.spacing.base,
@@ -707,14 +661,8 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) =>
       marginBottom: theme.spacing.sm,
     },
     summaryLabel: {
-      fontFamily: font("body", "regular"),
-      fontSize: typography.size.sm,
+      ...typography.styles.bodyText,
       color: colors.onSurfaceVariant,
-    },
-    summaryValue: {
-      fontFamily: font("display", "semibold"),
-      fontSize: typography.size.base,
-      color: colors.onSurface,
     },
     totalRow: {
       marginTop: theme.spacing.base,
@@ -723,14 +671,9 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) =>
       borderTopColor: colors.outlineVariant,
     },
     totalLabel: {
-      fontFamily: font("display", "bold"),
+      ...typography.styles.cardTitle,
       fontSize: typography.size.base,
       color: colors.onSurface,
-    },
-    totalValue: {
-      fontFamily: font("display", "bold"),
-      fontSize: typography.size.lg,
-      color: colors.primary,
     },
     bottomPadding: {
       height: 100,
@@ -754,22 +697,12 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) =>
       borderRadius: theme.borderRadius.xl,
       paddingVertical: theme.spacing.lg,
       gap: theme.spacing.sm,
-      shadowColor: colors.primary,
-      shadowOffset: {
-        width: 0,
-        height: 4,
-      },
-      shadowOpacity: 0.3,
-      shadowRadius: 12,
-      elevation: 4,
     },
     confirmButtonDisabled: {
       backgroundColor: colors.surfaceContainerHigh,
-      shadowOpacity: 0,
-      elevation: 0,
     },
     confirmButtonText: {
-      fontFamily: font("display", "bold"),
+      ...typography.styles.cardTitle,
       fontSize: typography.size.base,
       color: colors.onPrimary,
     },

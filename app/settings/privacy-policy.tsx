@@ -11,7 +11,7 @@ import { BackButton } from "@/components/auth/BackButton";
 import { useTheme } from "@/contexts/ThemeContext";
 import type { lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
-import { font } from "@/constants/theme";
+import { typography } from "@/constants/typography";
 
 const PRIVACY_SECTIONS = [
   {
@@ -134,23 +134,22 @@ const createStyles = (colors: typeof lightColors) =>
       marginBottom: theme.spacing.xl,
     },
     screenTitle: {
-      fontFamily: font("display", "bold"),
-      fontSize: theme.typography.size["2xl"],
+      ...typography.styles.screenTitle,
       color: colors.onSurface,
       marginBottom: theme.spacing.xs,
     },
     lastUpdated: {
-      fontFamily: font("body", "medium"),
+      ...typography.styles.bodyMedium,
       fontSize: theme.typography.size.sm,
       color: colors.onSurfaceVariant,
       marginBottom: theme.spacing.lg,
     },
     introText: {
-      fontFamily: font("body", "medium"),
+      ...typography.styles.bodyMedium,
       fontSize: theme.typography.size.base,
-      color: colors.onSurfaceVariant,
       lineHeight:
         theme.typography.size.base * theme.typography.lineHeight.relaxed,
+      color: colors.onSurfaceVariant,
     },
     sectionItem: {
       flexDirection: "row",
@@ -170,7 +169,7 @@ const createStyles = (colors: typeof lightColors) =>
       alignItems: "center",
     },
     numberText: {
-      fontFamily: font("display", "bold"),
+      ...typography.styles.cardTitle,
       fontSize: theme.typography.size.xs,
       color: colors.onPrimary,
     },
@@ -178,16 +177,16 @@ const createStyles = (colors: typeof lightColors) =>
       flex: 1,
     },
     sectionTitle: {
-      fontFamily: font("body", "semibold"),
+      ...typography.styles.label,
       fontSize: theme.typography.size.base,
       color: colors.onSurface,
       marginBottom: theme.spacing.xs,
     },
     sectionText: {
-      fontFamily: font("body", "regular"),
+      ...typography.styles.bodyText,
       fontSize: theme.typography.size.sm,
-      color: colors.onSurfaceVariant,
       lineHeight:
         theme.typography.size.sm * theme.typography.lineHeight.relaxed,
+      color: colors.onSurfaceVariant,
     },
   });

@@ -13,11 +13,13 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import Animated, { FadeIn, FadeInUp } from "react-native-reanimated";
+import Animated, { FadeInUp } from "react-native-reanimated";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
-import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
+import { createElevation } from "@/constants/theme";
+import { ScreenHeader } from "@/components/common/ScreenHeader";
+import { Button } from "@/components/common/Button";
 import { ToggleItem } from "@/components/settings/ToggleItem";
 import { Skeleton } from "@/components/common/Skeleton";
 import { notificationsApi } from "@/lib/api/notifications.api";
@@ -26,8 +28,6 @@ import {
   NotificationPreferences,
   NotificationType,
 } from "@/lib/types/notifications";
-
-const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
 const PREFERENCES_QUERY_KEY = ["notification-preferences"] as const;
 // Local fallback used while the backend preferences endpoint isn't deployed.
@@ -81,11 +81,12 @@ const PreferenceCard: React.FC<PreferenceCardProps> = ({
 }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
+  const elevations = createElevation(colors);
 
   return (
     <Animated.View
       entering={FadeInUp.delay(200 + index * 100).duration(400)}
-      style={styles.categoryContainer}
+      style={[styles.categoryContainer, elevations.flat]}
     >
       <View style={styles.categoryHeader}>
         <View style={styles.iconContainer}>
@@ -170,21 +171,10 @@ export default function NotificationPreferencesScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       <StatusBar style={isDarkMode ? "light" : "dark"} />
 
-      {/* Header */}
-      <Animated.View entering={FadeIn.duration(300)} style={styles.header}>
-        <View style={styles.headerContent}>
-          <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-            <MaterialIcons name="arrow-back" size={24} color={colors.onSurfaceVariant} />
-          </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.primaryBright }]}>
-            Notifications
-          </Text>
-          <View style={styles.backButton} />
-        </View>
-      </Animated.View>
+      <ScreenHeader title="Notifications" onBack={handleBack} />
 
       <ScrollView
         style={styles.scrollView}
@@ -274,16 +264,14 @@ export default function NotificationPreferencesScreen() {
               entering={FadeInUp.delay(500).duration(400)}
               style={styles.actionsContainer}
             >
-              <AnimatedTouchable
+              <Button
+                title={isSaving ? "Saving..." : "Save Preferences"}
                 onPress={handleSave}
                 disabled={isSaving}
-                style={[styles.saveButton, isSaving && styles.saveButtonDisabled]}
-                activeOpacity={0.8}
-              >
-                <Text style={styles.saveButtonText}>
-                  {isSaving ? "Saving..." : "Save Preferences"}
-                </Text>
-              </AnimatedTouchable>
+                variant="primary"
+                size="lg"
+                fullWidth
+              />
 
               <TouchableOpacity
                 onPress={handleRestoreDefaults}
@@ -308,34 +296,6 @@ const createStyles = (colors: typeof lightColors) =>
       flex: 1,
       backgroundColor: colors.background,
     },
-    header: {
-      backgroundColor: colors.surface,
-      shadowColor: colors.ambientShadow,
-      shadowOffset: {
-        width: 0,
-        height: 2,
-      },
-      shadowOpacity: 1,
-      shadowRadius: 4,
-      elevation: 2,
-    },
-    headerContent: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      paddingHorizontal: theme.spacing.lg,
-      paddingTop: theme.spacing.lg,
-      paddingBottom: theme.spacing.base,
-    },
-    backButton: {
-      padding: theme.spacing.sm,
-      borderRadius: theme.borderRadius.full,
-      minWidth: 44,
-    },
-    headerTitle: {
-      fontFamily: font("display", "bold"),
-      fontSize: typography.size.lg,
-    },
     scrollView: {
       flex: 1,
     },
@@ -346,13 +306,12 @@ const createStyles = (colors: typeof lightColors) =>
       marginBottom: theme.spacing.lg,
     },
     title: {
-      fontFamily: font("display", "extrabold"),
-      fontSize: typography.size["2xl"],
+      ...typography.styles.screenTitle,
       color: colors.onSurface,
       marginBottom: theme.spacing.xs,
     },
     subtitle: {
-      fontFamily: font("body", "regular"),
+      ...typography.styles.bodyText,
       fontSize: typography.size.sm,
       color: colors.onSurfaceVariant,
     },
@@ -364,14 +323,6 @@ const createStyles = (colors: typeof lightColors) =>
       borderRadius: theme.borderRadius.xl,
       padding: theme.spacing.lg,
       marginBottom: theme.spacing.lg,
-      shadowColor: colors.ambientShadow,
-      shadowOffset: {
-        width: 0,
-        height: 2,
-      },
-      shadowOpacity: 1,
-      shadowRadius: 4,
-      elevation: 2,
     },
     categoryHeader: {
       flexDirection: "row",
@@ -388,22 +339,20 @@ const createStyles = (colors: typeof lightColors) =>
       justifyContent: "center",
     },
     categoryTitle: {
-      fontFamily: font("display", "bold"),
+      ...typography.styles.cardTitle,
       fontSize: typography.size.lg,
       color: colors.onSurface,
     },
     categorySubtitle: {
-      fontFamily: font("body", "bold"),
-      fontSize: typography.size.xs - 2,
-      color: colors.onSurfaceVariant,
+      ...typography.styles.caption,
       textTransform: "uppercase",
       letterSpacing: 0.5,
+      color: colors.onSurfaceVariant,
     },
     categoryDescription: {
-      fontFamily: font("body", "regular"),
+      ...typography.styles.bodyText,
       fontSize: typography.size.sm,
       color: colors.onSurfaceVariant,
-      lineHeight: 20,
       marginBottom: theme.spacing.lg,
     },
     togglesContainer: {
@@ -418,34 +367,12 @@ const createStyles = (colors: typeof lightColors) =>
       marginTop: theme.spacing.lg,
       gap: theme.spacing.base,
     },
-    saveButton: {
-      backgroundColor: colors.primary,
-      borderRadius: theme.borderRadius.xl,
-      paddingVertical: theme.spacing.lg,
-      alignItems: "center",
-      shadowColor: colors.primary,
-      shadowOffset: {
-        width: 0,
-        height: 4,
-      },
-      shadowOpacity: 0.3,
-      shadowRadius: 12,
-      elevation: 4,
-    },
-    saveButtonDisabled: {
-      opacity: 0.6,
-    },
-    saveButtonText: {
-      fontFamily: font("display", "bold"),
-      fontSize: typography.size.base,
-      color: colors.onPrimary,
-    },
     restoreButton: {
       paddingVertical: theme.spacing.base,
       alignItems: "center",
     },
     restoreButtonText: {
-      fontFamily: font("body", "medium"),
+      ...typography.styles.bodyMedium,
       fontSize: typography.size.sm,
       color: colors.onSurfaceVariant,
     },

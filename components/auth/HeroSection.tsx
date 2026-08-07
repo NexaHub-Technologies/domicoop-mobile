@@ -12,7 +12,7 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { LinearGradient } from "expo-linear-gradient";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
-import { font } from "@/constants/theme";
+import { font, createElevation } from "@/constants/theme";
 
 type HeroSectionColors = typeof lightColors;
 
@@ -40,7 +40,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   imageSource,
 }) => {
   const { colors, isDarkMode } = useTheme();
-  const styles = createStyles(colors);
+  const elevations = createElevation(colors);
+  const styles = createStyles(colors, elevations);
 
   return (
     <View style={[styles.container, { height }, style]}>
@@ -87,7 +88,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
                 iconBackground && styles.iconContainerWithBackground,
               ]}
             >
-              <MaterialIcons name={icon} size={40} color={colors.primary} />
+              <MaterialIcons name={icon} size={40} color={colors.primaryBright} />
             </View>
           )}
 
@@ -108,7 +109,10 @@ export const HeroSection: React.FC<HeroSectionProps> = ({
   );
 };
 
-const createStyles = (colors: HeroSectionColors) =>
+const createStyles = (
+  colors: HeroSectionColors,
+  elevations: ReturnType<typeof createElevation>,
+) =>
   StyleSheet.create({
     container: {
       width: "100%",
@@ -143,7 +147,7 @@ const createStyles = (colors: HeroSectionColors) =>
       backgroundColor: colors.surface,
       padding: theme.spacing.lg,
       borderRadius: theme.borderRadius.xl,
-      ...theme.shadows.xl,
+      ...elevations.raised,
     },
     title: {
       fontFamily: font("display", "extrabold"),

@@ -13,18 +13,58 @@ import { MaterialIcons } from "@expo/vector-icons";
 import Animated, { FadeIn, FadeInUp } from "react-native-reanimated";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
-import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
-import { NotificationCard } from "@/components/notifications/NotificationCard";
-import { EmptyState } from "@/components/common/EmptyState";
+import { createElevation } from "@/constants/theme";
+import { ScreenHeader } from "@/components/common/ScreenHeader";
+import { ListItem } from "@/components/common/ListItem";
 import { Skeleton } from "@/components/common/Skeleton";
+import { EmptyState } from "@/components/common/EmptyState";
+import { Button } from "@/components/common/Button";
 import { useAnnouncements } from "@/hooks/useAnnouncements";
-import { Notification } from "@/lib/types/notifications";
+import { Notification, getRelativeTime } from "@/lib/types/notifications";
+
+interface AnnouncementRowProps {
+  notification: Notification;
+  index: number;
+  colors: typeof lightColors;
+  onPress: (notification: Notification) => void;
+}
+
+const AnnouncementRow: React.FC<AnnouncementRowProps> = ({
+  notification,
+  index,
+  colors,
+  onPress,
+}) => {
+  const styles = createStyles(colors);
+
+  return (
+    <Animated.View
+      entering={FadeInUp.delay(300 + index * 50).duration(300)}
+      style={styles.rowContainer}
+    >
+      <ListItem
+        title={notification.title}
+        subtitle={notification.message}
+        leadingIcon="campaign"
+        leadingColor={colors.primaryBright}
+        chevron={false}
+        onPress={() => onPress(notification)}
+        trailing={
+          <Text style={styles.rowTimestamp}>
+            {getRelativeTime(notification.timestamp)}
+          </Text>
+        }
+      />
+    </Animated.View>
+  );
+};
 
 export default function AnnouncementsScreen() {
   const router = useRouter();
   const { colors, isDarkMode } = useTheme();
   const styles = createStyles(colors);
+  const elevations = createElevation(colors);
 
   const {
     announcements,
@@ -34,6 +74,8 @@ export default function AnnouncementsScreen() {
     isOffline,
     refresh,
   } = useAnnouncements();
+
+  const hasAnnouncements = announcements.length > 0;
 
   const handleAnnouncementPress = (notification: Notification) => {
     router.push({
@@ -48,17 +90,10 @@ export default function AnnouncementsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       <StatusBar style={isDarkMode ? "light" : "dark"} />
 
-      {/* Header */}
-      <Animated.View entering={FadeIn.duration(300)} style={styles.header}>
-        <View style={styles.headerContent}>
-          <Text style={[styles.headerTitle, { color: colors.primary }]}>
-            Announcements
-          </Text>
-        </View>
-      </Animated.View>
+      <ScreenHeader title="Announcements" large />
 
       <ScrollView
         style={styles.scrollView}
@@ -73,61 +108,76 @@ export default function AnnouncementsScreen() {
           />
         }
       >
-        {isOffline && (
-          <View style={styles.offlineBanner}>
+        {isOffline && !isLoading && (
+          <Animated.View entering={FadeIn.duration(300)} style={styles.offlineBanner}>
             <MaterialIcons name="cloud-off" size={16} color={colors.onSurfaceVariant} />
             <Text style={styles.offlineText}>Showing cached data — offline</Text>
-          </View>
-        )}
-
-        {/* Loading skeleton */}
-        {isLoading && announcements.length === 0 && (
-          <View style={styles.skeletonList}>
-            <Skeleton variant="card" height={96} />
-            <Skeleton variant="card" height={96} />
-            <Skeleton variant="card" height={96} />
-          </View>
-        )}
-
-        {/* Error */}
-        {error && !isLoading && announcements.length === 0 && (
-          <Animated.View
-            entering={FadeInUp.delay(200).duration(400)}
-            style={styles.errorContainer}
-          >
-            <MaterialIcons name="error-outline" size={40} color={colors.error} />
-            <Text style={styles.errorText}>{error}</Text>
           </Animated.View>
         )}
 
-        {/* Announcements list */}
-        {announcements.length > 0 && (
-          <Animated.View entering={FadeInUp.delay(300).duration(400)}>
-            <View style={styles.list}>
-              {announcements.map((notification) => (
-                <NotificationCard
-                  key={notification.id}
-                  notification={notification}
-                  onPress={() => handleAnnouncementPress(notification)}
-                />
-              ))}
+        {hasAnnouncements && (
+          <View style={styles.sectionHeader}>
+            <Text style={styles.sectionTitle}>Latest Updates</Text>
+          </View>
+        )}
+
+        <View style={[styles.listCard, elevations.flat]}>
+          {isLoading && !hasAnnouncements && (
+            <>
+              <View style={styles.skeletonRow}>
+                <Skeleton variant="circle" />
+                <View style={styles.skeletonText}>
+                  <Skeleton variant="text" width="70%" />
+                  <Skeleton variant="text" width="90%" height={10} />
+                </View>
+              </View>
+              <View style={styles.skeletonRow}>
+                <Skeleton variant="circle" />
+                <View style={styles.skeletonText}>
+                  <Skeleton variant="text" width="60%" />
+                  <Skeleton variant="text" width="80%" height={10} />
+                </View>
+              </View>
+              <View style={styles.skeletonRow}>
+                <Skeleton variant="circle" />
+                <View style={styles.skeletonText}>
+                  <Skeleton variant="text" width="50%" />
+                  <Skeleton variant="text" width="70%" height={10} />
+                </View>
+              </View>
+            </>
+          )}
+
+          {error && !isLoading && !hasAnnouncements && (
+            <View style={styles.errorContainer}>
+              <MaterialIcons name="error-outline" size={40} color={colors.error} />
+              <Text style={styles.errorText}>{error}</Text>
+              <Button title="Retry" onPress={refresh} variant="tonal" size="sm" />
             </View>
-          </Animated.View>
-        )}
+          )}
 
-        {/* Empty */}
-        {!isLoading && !error && announcements.length === 0 && (
-          <Animated.View entering={FadeInUp.delay(300).duration(400)}>
+          {!isLoading && !error && !hasAnnouncements && (
             <EmptyState
               icon="campaign"
               title="No announcements"
               message="Cooperative announcements will appear here."
             />
-          </Animated.View>
-        )}
+          )}
 
-        {/* Bottom padding */}
-        <View style={styles.bottomPadding} />
+          {hasAnnouncements &&
+            announcements.map((notification, index) => (
+              <AnnouncementRow
+                key={notification.id}
+                notification={notification}
+                index={index}
+                colors={colors}
+                onPress={handleAnnouncementPress}
+              />
+            ))}
+        </View>
+
+        {/* Bottom padding for tab bar */}
+        <SafeAreaView edges={["bottom"]} style={styles.bottomPadding} />
       </ScrollView>
     </SafeAreaView>
   );
@@ -139,31 +189,12 @@ const createStyles = (colors: typeof lightColors) =>
       flex: 1,
       backgroundColor: colors.background,
     },
-    header: {
-      backgroundColor: colors.surface,
-      shadowColor: colors.ambientShadow,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 1,
-      shadowRadius: 4,
-      elevation: 2,
-    },
-    headerContent: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      paddingHorizontal: theme.spacing.lg,
-      paddingTop: theme.spacing.lg,
-      paddingBottom: theme.spacing.base,
-    },
-    headerTitle: {
-      fontFamily: font("display", "bold"),
-      fontSize: typography.size.lg,
-    },
     scrollView: {
       flex: 1,
     },
     scrollContent: {
-      padding: theme.spacing.lg,
+      paddingTop: theme.spacing.base,
+      paddingHorizontal: theme.spacing.lg,
     },
     offlineBanner: {
       flexDirection: "row",
@@ -177,29 +208,63 @@ const createStyles = (colors: typeof lightColors) =>
       borderRadius: theme.borderRadius.lg,
     },
     offlineText: {
-      fontFamily: font("body", "regular"),
+      ...typography.styles.bodySmall,
       fontSize: typography.size.xs,
       color: colors.onSurfaceVariant,
     },
-    skeletonList: {
-      gap: theme.spacing.base,
+    sectionHeader: {
+      flexDirection: "row",
+      alignItems: "center",
+      justifyContent: "space-between",
       marginBottom: theme.spacing.lg,
+      paddingHorizontal: theme.spacing.xs,
+    },
+    sectionTitle: {
+      ...typography.styles.sectionLabel,
+      color: colors.onSurfaceVariant,
+    },
+    listCard: {
+      backgroundColor: colors.surface,
+      borderRadius: theme.borderRadius["2xl"],
+      overflow: "hidden",
+      marginBottom: theme.spacing.lg,
+    },
+    rowContainer: {
+      paddingHorizontal: theme.spacing.lg,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.outlineVariant,
+    },
+    rowTimestamp: {
+      ...typography.styles.caption,
+      fontSize: typography.size.xs - 2,
+      color: colors.onSurfaceVariant,
+      textTransform: "uppercase",
+      letterSpacing: 0.5,
+    },
+    skeletonRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: theme.spacing.base,
+      paddingHorizontal: theme.spacing.lg,
+      paddingVertical: theme.spacing.lg,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.outlineVariant,
+    },
+    skeletonText: {
+      flex: 1,
+      gap: theme.spacing.xs,
     },
     errorContainer: {
       alignItems: "center",
       justifyContent: "center",
-      paddingVertical: theme.spacing["2xl"],
+      paddingVertical: theme.spacing["3xl"],
+      paddingHorizontal: theme.spacing.lg,
       gap: theme.spacing.base,
     },
     errorText: {
-      fontFamily: font("body", "regular"),
-      fontSize: typography.size.base,
+      ...typography.styles.bodyText,
       color: colors.error,
       textAlign: "center",
-    },
-    list: {
-      gap: theme.spacing.base,
-      marginBottom: theme.spacing.lg,
     },
     bottomPadding: {
       height: 100,

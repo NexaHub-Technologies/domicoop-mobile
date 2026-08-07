@@ -40,7 +40,8 @@ const getStrengthColor = (
     case "weak":
       return colors.error;
     case "medium":
-      return colors.tertiary;
+      // Status color, not the loans-specific tertiary accent.
+      return colors.warning;
     case "strong":
       return colors.success;
     default:

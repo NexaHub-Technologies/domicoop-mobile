@@ -10,9 +10,11 @@ import Animated, {
 } from "react-native-reanimated";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
-import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
-import type { Loan } from "@/lib/types/loans";
+import { createElevation } from "@/constants/theme";
+import { Badge, BadgeStatus } from "@/components/common/Badge";
+import { Money } from "@/components/common/Money";
+import type { Loan, LoanStatus } from "@/lib/types/loans";
 import { getLoanTypeConfig } from "@/constants/loans";
 import { formatCurrencyNoSign } from "@/lib/utils/format";
 
@@ -23,21 +25,21 @@ interface LoanCardProps {
   index: number;
 }
 
+const STATUS_META: Record<LoanStatus, { badge: BadgeStatus; label: string }> = {
+  on_track: { badge: "success", label: "ON TRACK" },
+  pending: { badge: "warning", label: "PENDING" },
+  overdue: { badge: "error", label: "OVERDUE" },
+  rejected: { badge: "error", label: "REJECTED" },
+  completed: { badge: "neutral", label: "COMPLETED" },
+};
+
 const createStyles = (colors: typeof lightColors) =>
   StyleSheet.create({
     container: {
       backgroundColor: colors.surface,
-      borderRadius: theme.borderRadius.xl,
+      borderRadius: theme.borderRadius["2xl"],
       padding: theme.spacing.lg,
       marginBottom: theme.spacing.base,
-      shadowColor: colors.ambientShadow,
-      shadowOffset: {
-        width: 0,
-        height: 2,
-      },
-      shadowOpacity: 1,
-      shadowRadius: 4,
-      elevation: 2,
     },
     header: {
       flexDirection: "row",
@@ -49,35 +51,25 @@ const createStyles = (colors: typeof lightColors) =>
       flexDirection: "row",
       alignItems: "center",
       gap: theme.spacing.sm,
+      flex: 1,
+      marginRight: theme.spacing.sm,
     },
     iconContainer: {
       width: 40,
       height: 40,
-      borderRadius: 10,
+      borderRadius: theme.borderRadius.lg,
       alignItems: "center",
       justifyContent: "center",
     },
     loanTitle: {
-      fontFamily: font("body", "bold"),
+      ...typography.styles.bodyMedium,
       fontSize: typography.size.base,
       color: colors.onSurface,
       marginBottom: 2,
     },
     loanId: {
-      fontFamily: font("body", "regular"),
-      fontSize: typography.size.xs - 2,
+      ...typography.styles.caption,
       color: colors.onSurfaceVariant,
-    },
-    statusBadge: {
-      paddingHorizontal: theme.spacing.sm,
-      paddingVertical: 4,
-      borderRadius: theme.borderRadius.sm,
-    },
-    statusText: {
-      fontFamily: font("body", "bold"),
-      fontSize: typography.size.xs - 2,
-      textTransform: "uppercase",
-      letterSpacing: 0.5,
     },
     amountsContainer: {
       flexDirection: "row",
@@ -90,20 +82,10 @@ const createStyles = (colors: typeof lightColors) =>
       alignItems: "flex-end",
     },
     amountLabel: {
-      fontFamily: font("body", "bold"),
-      fontSize: typography.size.xs - 2,
+      ...typography.styles.sectionLabel,
+      fontSize: typography.size.xs - 1,
       color: colors.onSurfaceVariant,
-      textTransform: "uppercase",
-      letterSpacing: 0.5,
       marginBottom: 4,
-    },
-    amountValue: {
-      fontFamily: font("display", "bold"),
-      fontSize: typography.size.lg,
-      color: colors.onSurface,
-    },
-    amountValuePrimary: {
-      color: colors.primary,
     },
     progressContainer: {
       marginBottom: theme.spacing.lg,
@@ -114,24 +96,24 @@ const createStyles = (colors: typeof lightColors) =>
       marginBottom: theme.spacing.xs,
     },
     progressLabel: {
-      fontFamily: font("body", "medium"),
+      ...typography.styles.bodySmall,
       fontSize: typography.size.xs,
       color: colors.onSurfaceVariant,
     },
     progressPercent: {
-      fontFamily: font("body", "bold"),
+      ...typography.styles.label,
       fontSize: typography.size.xs,
       color: colors.onSurface,
     },
     progressBarBackground: {
       height: 6,
-      backgroundColor: colors.surfaceContainer,
+      backgroundColor: colors.surfaceContainerHigh,
       borderRadius: 3,
       overflow: "hidden",
     },
     progressBarFill: {
       height: "100%",
-      backgroundColor: colors.primary,
+      backgroundColor: colors.primaryBright,
       borderRadius: 3,
     },
     footer: {
@@ -147,36 +129,38 @@ const createStyles = (colors: typeof lightColors) =>
       alignItems: "center",
       gap: 6,
       flex: 1,
+      marginRight: theme.spacing.sm,
     },
     nextPaymentLabel: {
-      fontFamily: font("body", "regular"),
+      ...typography.styles.bodySmall,
       fontSize: typography.size.xs,
       color: colors.onSurfaceVariant,
     },
     nextPaymentValue: {
       color: colors.onSurface,
-      fontFamily: font("body", "semibold"),
+      fontFamily: typography.styles.label.fontFamily,
     },
     manageButton: {
       paddingHorizontal: theme.spacing.md,
       paddingVertical: 6,
       borderRadius: theme.borderRadius.lg,
-      borderWidth: 1,
-      borderColor: `${colors.primary}30`,
+      backgroundColor: colors.surfaceContainer,
     },
     manageButtonText: {
-      fontFamily: font("body", "bold"),
+      ...typography.styles.label,
       fontSize: typography.size.xs,
-      color: colors.primary,
+      color: colors.primaryBright,
     },
   });
 
 export const LoanCard: React.FC<LoanCardProps> = ({ loan, index }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
+  const elevations = createElevation(colors);
   const router = useRouter();
   const scale = useSharedValue(1);
   const purposeConfig = getLoanTypeConfig(loan.type);
+  const statusMeta = STATUS_META[loan.status];
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ scale: scale.value }],
@@ -194,56 +178,13 @@ export const LoanCard: React.FC<LoanCardProps> = ({ loan, index }) => {
     scale.value = withSpring(1, { damping: 15, stiffness: 300 });
   };
 
-  const getStatusStyle = () => {
-    switch (loan.status) {
-      case "on_track":
-        return {
-          bg: `${colors.primary}15`,
-          text: colors.primary,
-          label: "On Track",
-        };
-      case "pending":
-        return {
-          bg: colors.primaryFixedDim,
-          text: colors.primary,
-          label: "Pending",
-        };
-      case "overdue":
-        return {
-          bg: colors.errorContainer,
-          text: colors.error,
-          label: "Overdue",
-        };
-      case "rejected":
-        return {
-          bg: colors.errorContainer,
-          text: colors.error,
-          label: "Rejected",
-        };
-      case "completed":
-        return {
-          bg: colors.secondaryContainer,
-          text: colors.secondary,
-          label: "Completed",
-        };
-      default:
-        return {
-          bg: colors.surfaceContainer,
-          text: colors.onSurfaceVariant,
-          label: "Active",
-        };
-    }
-  };
-
-  const statusStyle = getStatusStyle();
-
   return (
     <Animated.View entering={FadeInUp.delay(200 + index * 100).duration(400)}>
       <AnimatedTouchable
         onPress={handleManagePress}
         onPressIn={handlePressIn}
         onPressOut={handlePressOut}
-        style={[styles.container, animatedStyle]}
+        style={[styles.container, elevations.flat, animatedStyle]}
         activeOpacity={0.9}
       >
         {/* Header */}
@@ -263,60 +204,48 @@ export const LoanCard: React.FC<LoanCardProps> = ({ loan, index }) => {
               <Text style={styles.loanId}>ID: {loan.loanId}</Text>
             </View>
           </View>
-          <View style={[styles.statusBadge, { backgroundColor: statusStyle.bg }]}>
-          <Text style={[styles.statusText, { color: statusStyle.text }]}>
-            {statusStyle.label}
-          </Text>
+          <Badge status={statusMeta.badge} label={statusMeta.label} dot={false} />
         </View>
-      </View>
 
-      {/* Amounts */}
-      <View style={styles.amountsContainer}>
-        <View style={styles.amountItem}>
-          <Text style={styles.amountLabel}>Total Loan</Text>
-          <Text style={styles.amountValue}>
-            ₦{formatCurrencyNoSign(loan.totalAmount)}
-          </Text>
+        {/* Amounts */}
+        <View style={styles.amountsContainer}>
+          <View style={styles.amountItem}>
+            <Text style={styles.amountLabel}>Total Loan</Text>
+            <Money amount={loan.totalAmount} size="md" />
+          </View>
+          <View style={[styles.amountItem, styles.amountItemRight]}>
+            <Text style={styles.amountLabel}>Remaining</Text>
+            <Money amount={loan.remainingBalance} size="md" style={{ color: colors.primaryBright }} />
+          </View>
         </View>
-        <View style={[styles.amountItem, styles.amountItemRight]}>
-          <Text style={styles.amountLabel}>Remaining</Text>
-          <Text style={[styles.amountValue, styles.amountValuePrimary]}>
-            ₦{formatCurrencyNoSign(loan.remainingBalance)}
-          </Text>
-        </View>
-      </View>
 
-      {/* Progress Bar */}
-      <View style={styles.progressContainer}>
-        <View style={styles.progressHeader}>
-          <Text style={styles.progressLabel}>Repayment Progress</Text>
-          <Text style={styles.progressPercent}>{loan.progress}%</Text>
+        {/* Progress Bar */}
+        <View style={styles.progressContainer}>
+          <View style={styles.progressHeader}>
+            <Text style={styles.progressLabel}>Repayment progress</Text>
+            <Text style={styles.progressPercent}>{loan.progress}%</Text>
+          </View>
+          <View style={styles.progressBarBackground}>
+            <View style={[styles.progressBarFill, { width: `${loan.progress}%` }]} />
+          </View>
         </View>
-        <View style={styles.progressBarBackground}>
-          <View style={[styles.progressBarFill, { width: `${loan.progress}%` }]} />
-        </View>
-      </View>
 
-      {/* Footer */}
-      <View style={styles.footer}>
-        <View style={styles.nextPaymentContainer}>
-          <MaterialIcons
-            name="calendar-today"
-            size={14}
-            color={colors.onSurfaceVariant}
-          />
-          <Text style={styles.nextPaymentLabel}>
-            Next:{" "}
-            <Text style={styles.nextPaymentValue}>
-              ₦{formatCurrencyNoSign(loan.nextPayment.amount)} on {loan.nextPayment.date}
+        {/* Footer */}
+        <View style={styles.footer}>
+          <View style={styles.nextPaymentContainer}>
+            <MaterialIcons name="calendar-today" size={14} color={colors.onSurfaceVariant} />
+            <Text style={styles.nextPaymentLabel} numberOfLines={1}>
+              Next:{" "}
+              <Text style={styles.nextPaymentValue}>
+                ₦{formatCurrencyNoSign(loan.nextPayment.amount)} on {loan.nextPayment.date}
+              </Text>
             </Text>
-          </Text>
+          </View>
+          <TouchableOpacity style={styles.manageButton} onPress={handleManagePress}>
+            <Text style={styles.manageButtonText}>Manage</Text>
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity style={styles.manageButton} onPress={handleManagePress}>
-          <Text style={styles.manageButtonText}>Manage</Text>
-        </TouchableOpacity>
-      </View>
-    </AnimatedTouchable>
+      </AnimatedTouchable>
     </Animated.View>
   );
 };

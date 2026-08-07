@@ -2,6 +2,7 @@ import React from 'react';
 import { View, ViewStyle, StyleSheet } from 'react-native';
 import { useTheme , lightColors } from '@/contexts/ThemeContext';
 import { theme } from '@/styles/theme';
+import { createElevation } from '@/constants/theme';
 
 type FormCardColors = typeof lightColors;
 
@@ -19,7 +20,8 @@ export const FormCard: React.FC<FormCardProps> = ({
   overlap = false,
 }) => {
   const { colors } = useTheme();
-  const styles = createStyles(colors);
+  const elevations = createElevation(colors);
+  const styles = createStyles(colors, elevations);
 
   const getSpacing = () => {
     switch (spacing) {
@@ -47,13 +49,14 @@ export const FormCard: React.FC<FormCardProps> = ({
   );
 };
 
-const createStyles = (colors: FormCardColors) => StyleSheet.create({
+const createStyles = (
+  colors: FormCardColors,
+  elevations: ReturnType<typeof createElevation>,
+) => StyleSheet.create({
   container: {
     backgroundColor: colors.surface,
     borderRadius: theme.borderRadius['2xl'],
-    borderWidth: 1,
-    borderColor: colors.outlineVariant,
-    ...theme.shadows.sm,
+    ...elevations.raised,
   },
   overlap: {
     marginTop: -32,

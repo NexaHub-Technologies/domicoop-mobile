@@ -1,6 +1,8 @@
 import React from "react";
-import { View, Text, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { useRouter } from "expo-router";
 import { LinearGradient } from "expo-linear-gradient";
+import { MaterialIcons } from "@expo/vector-icons";
 import Animated, { FadeIn, FadeInUp } from "react-native-reanimated";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
@@ -31,6 +33,9 @@ interface ContributionSummaryProps {
   yearBalance: number;
   allocationTotals: ContributionAllocation;
   isLoading: boolean;
+  /** Outstanding loan balance — omit to render the contributions-only column. */
+  totalDebt?: number;
+  isDebtLoading?: boolean;
 }
 
 const createStyles = (colors: typeof lightColors) =>
@@ -53,20 +58,62 @@ const createStyles = (colors: typeof lightColors) =>
       borderRadius: theme.borderRadius["2xl"],
       overflow: "hidden",
     },
-    totalSection: {
+    positionSection: {
       padding: theme.spacing["2xl"],
-      minHeight: 140,
-      justifyContent: "center",
     },
-    totalLabel: {
+    positionEyebrow: {
       ...typography.styles.sectionLabel,
-      color: colors.primaryFixed,
+      color: `${colors.onPrimary}70`,
+      marginBottom: theme.spacing.lg,
+    },
+    statsRow: {
+      flexDirection: "row",
+      alignItems: "stretch",
+    },
+    statColumn: {
+      flex: 1,
+    },
+    statDivider: {
+      width: 1,
+      backgroundColor: `${colors.onPrimary}26`,
+      marginHorizontal: theme.spacing.lg,
+    },
+    statIconChip: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      backgroundColor: `${colors.onPrimary}1F`,
+      alignItems: "center",
+      justifyContent: "center",
       marginBottom: theme.spacing.sm,
     },
-    yearNote: {
+    statLabel: {
+      ...typography.styles.sectionLabel,
+      fontSize: typography.size.xs - 2,
+      color: `${colors.onPrimary}90`,
+      marginBottom: 4,
+    },
+    statCaption: {
       ...typography.styles.bodySmall,
-      color: colors.primaryFixedDim,
-      marginTop: theme.spacing.sm,
+      fontSize: typography.size.xs - 1,
+      color: `${colors.onPrimary}70`,
+      marginTop: 4,
+    },
+    viewLoansRow: {
+      flexDirection: "row",
+      alignItems: "center",
+      gap: 2,
+      marginTop: 4,
+    },
+    viewLoansText: {
+      ...typography.styles.label,
+      fontSize: typography.size.xs - 1,
+      color: colors.onPrimary,
+    },
+    debtClear: {
+      ...typography.styles.bodyMedium,
+      fontSize: typography.size.md,
+      color: colors.onPrimary,
     },
     bodySection: {
       padding: theme.spacing.lg,
@@ -138,11 +185,20 @@ export const ContributionSummary: React.FC<ContributionSummaryProps> = ({
   yearBalance,
   allocationTotals,
   isLoading,
+  totalDebt,
+  isDebtLoading = false,
 }) => {
   const { colors } = useTheme();
+  const router = useRouter();
   const styles = createStyles(colors);
   const elevations = createElevation(colors);
   const allocationItems = getAllocationItems(colors);
+  const showLoansColumn = totalDebt !== undefined;
+  const hasDebt = (totalDebt ?? 0) > 0;
+
+  const handleViewLoans = () => {
+    router.push("/(tabs)/loans");
+  };
 
   const totalAttributed =
     allocationTotals.shares +
@@ -160,7 +216,7 @@ export const ContributionSummary: React.FC<ContributionSummaryProps> = ({
   return (
     <View style={styles.container}>
       <Animated.Text entering={FadeIn.delay(300)} style={styles.sectionTitle}>
-        Contribution Summary
+        Your Financial Snapshot
       </Animated.Text>
 
       <AnimatedView
@@ -172,19 +228,66 @@ export const ContributionSummary: React.FC<ContributionSummaryProps> = ({
             colors={colors.brandGradient}
             start={{ x: 0, y: 0 }}
             end={{ x: 1, y: 1 }}
-            style={styles.totalSection}
+            style={styles.positionSection}
           >
-            <Text style={styles.totalLabel}>Total Contributions</Text>
-            {isLoading ? (
-              <Skeleton variant="text" width={160} height={32} />
-            ) : (
-              <Money amount={totalBalance} size="xl" tone="onPrimary" />
-            )}
-            {!isLoading && yearBalance > 0 && (
-              <Text style={styles.yearNote}>
-                ₦{yearBalance.toLocaleString("en-NG", { maximumFractionDigits: 0 })} contributed this year
-              </Text>
-            )}
+            <Text style={styles.positionEyebrow}>Your Position with DOMICOOP</Text>
+
+            <View style={styles.statsRow}>
+              {/* Contributions — what the member has built up */}
+              <View style={styles.statColumn}>
+                <View style={styles.statIconChip}>
+                  <MaterialIcons name="savings" size={16} color={colors.onPrimary} />
+                </View>
+                <Text style={styles.statLabel}>CONTRIBUTIONS</Text>
+                {isLoading ? (
+                  <Skeleton variant="text" width={110} height={22} />
+                ) : (
+                  <Money amount={totalBalance} size="md" tone="onPrimary" />
+                )}
+                {!isLoading && yearBalance > 0 && (
+                  <Text style={styles.statCaption} numberOfLines={1}>
+                    ₦{yearBalance.toLocaleString("en-NG", { maximumFractionDigits: 0 })} this year
+                  </Text>
+                )}
+              </View>
+
+              {showLoansColumn && <View style={styles.statDivider} />}
+
+              {/* Loan balance — what the member owes back */}
+              {showLoansColumn && (
+                <TouchableOpacity
+                  style={styles.statColumn}
+                  onPress={handleViewLoans}
+                  activeOpacity={0.7}
+                >
+                  <View style={styles.statIconChip}>
+                    <MaterialIcons
+                      name="account-balance-wallet"
+                      size={16}
+                      color={colors.onPrimary}
+                    />
+                  </View>
+                  <Text style={styles.statLabel}>LOAN BALANCE</Text>
+                  {isDebtLoading ? (
+                    <Skeleton variant="text" width={90} height={22} />
+                  ) : hasDebt ? (
+                    <Money amount={totalDebt ?? 0} size="md" tone="onPrimary" />
+                  ) : (
+                    <Text style={styles.debtClear}>All clear</Text>
+                  )}
+                  <View style={styles.viewLoansRow}>
+                    <Text style={styles.viewLoansText}>
+                      {hasDebt ? "View loans" : "Apply for one"}
+                    </Text>
+                    <MaterialIcons
+                      name="chevron-right"
+                      size={14}
+                      color={colors.onPrimary}
+                    />
+                  </View>
+                </TouchableOpacity>
+              )}
+            </View>
           </LinearGradient>
 
           {!isLoading && yearBalance > 0 && (

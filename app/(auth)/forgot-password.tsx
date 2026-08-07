@@ -13,13 +13,14 @@ import { KeyboardAwareWrapper } from "@/components/auth/KeyboardAwareWrapper";
 import { useTheme } from "@/contexts/ThemeContext";
 import type { lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
-import { font } from "@/constants/theme";
+import { font, createElevation } from "@/constants/theme";
 
 export default function ForgotPasswordScreen() {
   const router = useRouter();
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
-  const styles = createStyles(colors);
+  const elevations = createElevation(colors);
+  const styles = createStyles(colors, elevations);
   const [email, setEmail] = useState("");
 
   const handleSendResetLink = () => {
@@ -60,7 +61,7 @@ export default function ForgotPasswordScreen() {
           {/* Icon Container */}
           <View style={styles.iconContainer}>
             <View style={styles.iconWrapper}>
-              <MaterialIcons name="lock" size={40} color={colors.primary} />
+              <MaterialIcons name="lock" size={40} color={colors.primaryBright} />
             </View>
           </View>
 
@@ -105,7 +106,10 @@ export default function ForgotPasswordScreen() {
   );
 }
 
-const createStyles = (colors: typeof lightColors) =>
+const createStyles = (
+  colors: typeof lightColors,
+  elevations: ReturnType<typeof createElevation>,
+) =>
   StyleSheet.create({
     container: {
       flex: 1,
@@ -148,7 +152,7 @@ const createStyles = (colors: typeof lightColors) =>
       backgroundColor: colors.surface,
       padding: theme.spacing.lg,
       borderRadius: theme.borderRadius.xl,
-      ...theme.shadows.xl,
+      ...elevations.raised,
     },
     signInLink: {
       alignItems: "center",
@@ -160,7 +164,7 @@ const createStyles = (colors: typeof lightColors) =>
       color: colors.onSurfaceVariant,
     },
     signInLinkText: {
-      color: colors.primary,
+      color: colors.primaryBright,
       fontFamily: font("body", "bold"),
     },
     footer: {
@@ -176,6 +180,6 @@ const createStyles = (colors: typeof lightColors) =>
     footerLink: {
       fontFamily: font("display", "bold"),
       fontSize: theme.typography.size.base,
-      color: colors.primary,
+      color: colors.primaryBright,
     },
   });

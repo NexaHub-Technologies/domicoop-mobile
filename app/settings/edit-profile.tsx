@@ -2,8 +2,6 @@ import React, { useState, useEffect } from 'react';
 import {
   View,
   Text,
-  TextInput,
-  TouchableOpacity,
   StyleSheet,
   ScrollView,
   KeyboardAvoidingView,
@@ -13,18 +11,19 @@ import {
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
-import { MaterialIcons } from '@expo/vector-icons';
-import Animated, { FadeIn, FadeInUp } from 'react-native-reanimated';
+import Animated, { FadeInUp } from 'react-native-reanimated';
 import { useTheme, lightColors } from '@/contexts/ThemeContext';
 import { theme } from '@/styles/theme';
-import { font } from "@/constants/theme";
 import { typography } from '@/constants/typography';
+import { createElevation } from '@/constants/theme';
+import { ScreenHeader } from '@/components/common/ScreenHeader';
+import { Button } from '@/components/common/Button';
+import { Input } from '@/components/common/Input';
+import { DropdownSelect } from '@/components/forms/DropdownSelect';
 import { members } from "@/lib/api/members.api";
 import { useQueryClient } from "@tanstack/react-query";
 import { PROFILE_QUERY_KEY } from "@/hooks/useProfile";
 import { InfoModal } from '@/components/modals/InfoModal';
-
-const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
 const NIGERIAN_BANKS = [
   { value: '044', label: 'Access Bank' },
@@ -58,11 +57,11 @@ export default function EditProfileScreen() {
   const { colors, isDarkMode } = useTheme();
   const insets = useSafeAreaInsets();
   const styles = createStyles(colors, insets.bottom);
+  const elevations = createElevation(colors);
 
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
-  const [showBankSelector, setShowBankSelector] = useState(false);
 
   const [formData, setFormData] = useState({
     full_name: '',
@@ -115,13 +114,13 @@ export default function EditProfileScreen() {
     router.back();
   };
 
-  const handleBankSelect = (code: string, name: string) => {
+  const handleBankSelect = (code: string) => {
+    const bank = NIGERIAN_BANKS.find((b) => b.value === code);
     setFormData((prev) => ({
       ...prev,
       bank_code: code,
-      bank_name: name,
+      bank_name: bank?.label ?? prev.bank_name,
     }));
-    setShowBankSelector(false);
   };
 
   if (isLoading) {
@@ -136,19 +135,10 @@ export default function EditProfileScreen() {
   }
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <StatusBar style={isDarkMode ? 'light' : 'dark'} />
 
-      {/* Header */}
-      <Animated.View entering={FadeIn.duration(300)} style={styles.header}>
-        <View style={styles.headerContent}>
-          <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-            <MaterialIcons name="arrow-back" size={24} color={colors.onSurfaceVariant} />
-          </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.primary }]}>Edit Profile</Text>
-          <View style={styles.backButton} />
-        </View>
-      </Animated.View>
+      <ScreenHeader title="Edit Profile" onBack={handleBack} />
 
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -161,157 +151,78 @@ export default function EditProfileScreen() {
           keyboardShouldPersistTaps="handled"
         >
           {/* Personal Information Section */}
-          <Animated.View entering={FadeInUp.delay(100).duration(400)}>
+          <Animated.View entering={FadeInUp.delay(100).duration(400)} style={styles.section}>
             <Text style={styles.sectionTitle}>Personal Information</Text>
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Full Name</Text>
-              <View style={styles.inputWrapper}>
-                <TextInput
-                  style={styles.input}
-                  value={formData.full_name}
-                  onChangeText={(text) => setFormData((prev) => ({ ...prev, full_name: text }))}
-                  placeholder="Enter your full name"
-                  placeholderTextColor={colors.onSurfaceVariant}
-                />
-                <MaterialIcons
-                  name="person"
-                  size={20}
-                  color={colors.onSurfaceVariant}
-                  style={styles.inputIcon}
-                />
-              </View>
-            </View>
+            <View style={styles.fieldGroup}>
+              <Input
+                label="Full Name"
+                placeholder="Enter your full name"
+                value={formData.full_name}
+                onChangeText={(text) => setFormData((prev) => ({ ...prev, full_name: text }))}
+                leftIcon="person"
+              />
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Phone Number</Text>
-              <View style={styles.inputWrapper}>
-                <TextInput
-                  style={styles.input}
-                  value={formData.phone}
-                  onChangeText={(text) => setFormData((prev) => ({ ...prev, phone: text }))}
-                  placeholder="+234 801 234 5678"
-                  placeholderTextColor={colors.onSurfaceVariant}
-                  keyboardType="phone-pad"
-                />
-                <MaterialIcons
-                  name="phone-iphone"
-                  size={20}
-                  color={colors.onSurfaceVariant}
-                  style={styles.inputIcon}
-                />
-              </View>
-            </View>
+              <Input
+                label="Phone Number"
+                placeholder="+234 801 234 5678"
+                value={formData.phone}
+                onChangeText={(text) => setFormData((prev) => ({ ...prev, phone: text }))}
+                keyboardType="phone-pad"
+                leftIcon="phone-iphone"
+              />
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Address</Text>
-              <View style={styles.inputWrapper}>
-                <TextInput
-                  style={styles.input}
-                  value={formData.address}
-                  onChangeText={(text) => setFormData((prev) => ({ ...prev, address: text }))}
-                  placeholder="Enter your address"
-                  placeholderTextColor={colors.onSurfaceVariant}
-                  multiline
-                />
-                <MaterialIcons
-                  name="location-on"
-                  size={20}
-                  color={colors.onSurfaceVariant}
-                  style={styles.inputIcon}
-                />
-              </View>
-            </View>
+              <Input
+                label="Address"
+                placeholder="Enter your address"
+                value={formData.address}
+                onChangeText={(text) => setFormData((prev) => ({ ...prev, address: text }))}
+                multiline
+                leftIcon="location-on"
+              />
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Next of Kin</Text>
-              <View style={styles.inputWrapper}>
-                <TextInput
-                  style={styles.input}
-                  value={formData.next_of_kin}
-                  onChangeText={(text) => setFormData((prev) => ({ ...prev, next_of_kin: text }))}
+              <View>
+                <Input
+                  label="Next of Kin"
                   placeholder="Name - Phone Number"
-                  placeholderTextColor={colors.onSurfaceVariant}
-                />
-                <MaterialIcons
-                  name="people"
-                  size={20}
-                  color={colors.onSurfaceVariant}
-                  style={styles.inputIcon}
+                  value={formData.next_of_kin}
+                  onChangeText={(text) =>
+                    setFormData((prev) => ({ ...prev, next_of_kin: text }))
+                  }
+                  leftIcon="people"
+                  helper="Emergency contact person"
                 />
               </View>
-              <Text style={styles.helperText}>Emergency contact person</Text>
             </View>
           </Animated.View>
 
           {/* Bank Details Section */}
-          <Animated.View entering={FadeInUp.delay(200).duration(400)} style={styles.sectionSpacing}>
+          <Animated.View entering={FadeInUp.delay(200).duration(400)} style={styles.section}>
             <Text style={styles.sectionTitle}>Bank Details</Text>
 
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Bank</Text>
-              <TouchableOpacity
-                style={styles.inputWrapper}
-                onPress={() => setShowBankSelector(!showBankSelector)}
-              >
-                <Text
-                  style={[
-                    styles.input,
-                    !formData.bank_name && styles.placeholder,
-                  ]}
-                >
-                  {formData.bank_name || 'Select your bank'}
-                </Text>
-                <MaterialIcons
-                  name="arrow-drop-down"
-                  size={20}
-                  color={colors.onSurfaceVariant}
-                  style={styles.inputIcon}
-                />
-              </TouchableOpacity>
+            <View style={styles.fieldGroup}>
+              <DropdownSelect
+                label="Bank"
+                value={formData.bank_code}
+                options={NIGERIAN_BANKS}
+                onSelect={handleBankSelect}
+                placeholder="Select your bank"
+                icon="account-balance"
+              />
 
-              {showBankSelector && (
-                <View style={styles.bankList}>
-                  <ScrollView style={styles.bankScrollView} nestedScrollEnabled>
-                    {NIGERIAN_BANKS.map((bank) => (
-                      <TouchableOpacity
-                        key={bank.value}
-                        style={styles.bankOption}
-                        onPress={() => handleBankSelect(bank.value, bank.label)}
-                      >
-                        <Text style={styles.bankOptionText}>{bank.label}</Text>
-                        {formData.bank_code === bank.value && (
-                          <MaterialIcons name="check" size={20} color={colors.primary} />
-                        )}
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                </View>
-              )}
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>Account Number</Text>
-              <View style={styles.inputWrapper}>
-                <TextInput
-                  style={styles.input}
+              <View>
+                <Input
+                  label="Account Number"
+                  placeholder="1234567890"
                   value={formData.bank_account}
                   onChangeText={(text) =>
                     setFormData((prev) => ({ ...prev, bank_account: text }))
                   }
-                  placeholder="1234567890"
-                  placeholderTextColor={colors.onSurfaceVariant}
                   keyboardType="numeric"
-                  maxLength={10}
-                />
-                <MaterialIcons
-                  name="account-balance"
-                  size={20}
-                  color={colors.onSurfaceVariant}
-                  style={styles.inputIcon}
+                  leftIcon="account-balance"
+                  helper="10-digit bank account number"
                 />
               </View>
-              <Text style={styles.helperText}>10-digit bank account number</Text>
             </View>
           </Animated.View>
 
@@ -321,24 +232,26 @@ export default function EditProfileScreen() {
       </KeyboardAvoidingView>
 
       {/* Save Button */}
-      <View style={styles.buttonContainer}>
-        <AnimatedTouchable
-          entering={FadeInUp.delay(300).duration(400)}
-          onPress={handleSave}
-          disabled={isSaving}
-          style={[styles.saveButton, isSaving && styles.saveButtonDisabled]}
-          activeOpacity={0.8}
-        >
-          {isSaving ? (
+      <Animated.View
+        entering={FadeInUp.delay(300).duration(400)}
+        style={[styles.buttonContainer, elevations.raised]}
+      >
+        {isSaving ? (
+          <View style={[styles.submitButton, styles.submitButtonDisabled]}>
             <ActivityIndicator size="small" color={colors.onPrimary} />
-          ) : (
-            <>
-              <Text style={styles.saveButtonText}>Save Changes</Text>
-              <MaterialIcons name="check-circle" size={20} color={colors.onPrimary} />
-            </>
-          )}
-        </AnimatedTouchable>
-      </View>
+          </View>
+        ) : (
+          <Button
+            title="Save Changes"
+            onPress={handleSave}
+            variant="primary"
+            size="lg"
+            icon="check-circle"
+            iconPosition="right"
+            fullWidth
+          />
+        )}
+      </Animated.View>
 
       {/* Success Modal */}
       <InfoModal
@@ -369,31 +282,6 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) =>
       justifyContent: 'center',
       alignItems: 'center',
     },
-    header: {
-      backgroundColor: colors.surface,
-      shadowColor: colors.ambientShadow,
-      shadowOffset: { width: 0, height: 2 },
-      shadowOpacity: 1,
-      shadowRadius: 4,
-      elevation: 2,
-    },
-    headerContent: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingHorizontal: theme.spacing.lg,
-      paddingTop: theme.spacing.lg,
-      paddingBottom: theme.spacing.base,
-    },
-    backButton: {
-      padding: theme.spacing.sm,
-      borderRadius: theme.borderRadius.full,
-      minWidth: 44,
-    },
-    headerTitle: {
-      fontFamily: font("display", "bold"),
-      fontSize: typography.size.lg,
-    },
     keyboardView: {
       flex: 1,
     },
@@ -401,78 +289,18 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) =>
       flex: 1,
     },
     scrollContent: {
-      paddingTop: theme.spacing.lg,
-      paddingHorizontal: theme.spacing.lg,
+      padding: theme.spacing.lg,
+    },
+    section: {
+      marginBottom: theme.spacing.xl,
     },
     sectionTitle: {
-      fontFamily: font("display", "semibold"),
-      fontSize: typography.size.base,
-      color: colors.onSurface,
+      ...typography.styles.sectionLabel,
+      color: colors.onSurfaceVariant,
       marginBottom: theme.spacing.lg,
     },
-    sectionSpacing: {
-      marginTop: theme.spacing.xl,
-    },
-    inputGroup: {
-      marginBottom: theme.spacing.lg,
-    },
-    label: {
-      fontFamily: font("body", "bold"),
-      fontSize: typography.size.xs,
-      color: colors.onSurfaceVariant,
-      textTransform: 'uppercase',
-      letterSpacing: 1,
-      marginBottom: theme.spacing.sm,
-    },
-    inputWrapper: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      backgroundColor: colors.surfaceContainer,
-      borderRadius: theme.borderRadius.xl,
-      paddingHorizontal: theme.spacing.lg,
-      minHeight: 56,
-    },
-    input: {
-      flex: 1,
-      fontFamily: font("body", "regular"),
-      fontSize: typography.size.base,
-      color: colors.onSurface,
-      paddingVertical: theme.spacing.base,
-    },
-    placeholder: {
-      color: colors.onSurfaceVariant,
-    },
-    inputIcon: {
-      opacity: 0.5,
-    },
-    helperText: {
-      fontFamily: font("body", "regular"),
-      fontSize: typography.size.xs,
-      color: colors.onSurfaceVariant,
-      marginTop: theme.spacing.xs,
-    },
-    bankList: {
-      backgroundColor: colors.surfaceContainer,
-      borderRadius: theme.borderRadius.lg,
-      marginTop: theme.spacing.sm,
-      maxHeight: 200,
-    },
-    bankScrollView: {
-      maxHeight: 200,
-    },
-    bankOption: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'space-between',
-      paddingVertical: theme.spacing.base,
-      paddingHorizontal: theme.spacing.lg,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.outlineVariant,
-    },
-    bankOptionText: {
-      fontFamily: font("body", "regular"),
-      fontSize: typography.size.base,
-      color: colors.onSurface,
+    fieldGroup: {
+      gap: theme.spacing.lg,
     },
     bottomPadding: {
       height: 100,
@@ -485,10 +313,8 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) =>
       padding: theme.spacing.lg,
       paddingBottom: Math.max(bottomInset, theme.spacing.lg) + theme.spacing.lg,
       backgroundColor: colors.background,
-      borderTopWidth: 1,
-      borderTopColor: colors.outlineVariant,
     },
-    saveButton: {
+    submitButton: {
       backgroundColor: colors.primary,
       borderRadius: theme.borderRadius.xl,
       paddingVertical: theme.spacing.lg,
@@ -496,18 +322,8 @@ const createStyles = (colors: typeof lightColors, bottomInset: number) =>
       alignItems: 'center',
       justifyContent: 'center',
       gap: theme.spacing.sm,
-      shadowColor: colors.ambientShadow,
-      shadowOffset: { width: 0, height: 4 },
-      shadowOpacity: 1,
-      shadowRadius: 8,
-      elevation: 4,
     },
-    saveButtonDisabled: {
+    submitButtonDisabled: {
       opacity: 0.7,
-    },
-    saveButtonText: {
-      fontFamily: font("display", "bold"),
-      fontSize: typography.size.base,
-      color: colors.onPrimary,
     },
   });

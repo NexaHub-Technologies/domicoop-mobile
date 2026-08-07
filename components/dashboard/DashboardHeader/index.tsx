@@ -13,15 +13,21 @@ import { Skeleton } from "@/components/common/Skeleton";
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
+/** Time-of-day greeting — the one line every member sees first. */
+const getGreeting = (): string => {
+  const hour = new Date().getHours();
+  if (hour < 12) return "Good morning,";
+  if (hour < 17) return "Good afternoon,";
+  return "Good evening,";
+};
+
 const createStyles = (colors: typeof lightColors) =>
   StyleSheet.create({
     container: {
-      backgroundColor: colors.surface,
+      backgroundColor: colors.background,
       paddingHorizontal: theme.spacing.lg,
       paddingTop: theme.spacing.lg,
-      paddingBottom: theme.spacing.base,
-      borderBottomWidth: 1,
-      borderBottomColor: colors.outlineVariant,
+      paddingBottom: theme.spacing.lg,
     },
     content: {
       flexDirection: "row",
@@ -37,19 +43,19 @@ const createStyles = (colors: typeof lightColors) =>
       marginRight: theme.spacing.base,
     },
     avatar: {
-      width: 40,
-      height: 40,
-      borderRadius: 20,
+      width: 52,
+      height: 52,
+      borderRadius: 26,
       backgroundColor: colors.surfaceContainer,
       borderWidth: 2,
-      borderColor: `${colors.primary}10`,
+      borderColor: colors.primaryBright,
       alignItems: "center",
       justifyContent: "center",
       overflow: "hidden",
     },
     avatarText: {
       ...typography.styles.headline,
-      fontSize: typography.size.md,
+      fontSize: typography.size.lg,
       color: colors.primaryBright,
     },
     textContainer: {
@@ -62,10 +68,10 @@ const createStyles = (colors: typeof lightColors) =>
       lineHeight: 16,
     },
     nameText: {
-      ...typography.styles.headline,
-      fontSize: typography.size.base,
+      ...typography.styles.headlineExtrabold,
+      fontSize: typography.size.xl,
       color: colors.onSurface,
-      lineHeight: 20,
+      lineHeight: 26,
     },
     notificationButton: {
       padding: theme.spacing.sm,
@@ -126,11 +132,13 @@ export const DashboardHeader: React.FC = () => {
 
           {/* Welcome Text */}
           <View style={styles.textContainer}>
-            <Text style={styles.welcomeText}>Welcome back,</Text>
+            <Text style={styles.welcomeText}>{getGreeting()}</Text>
             {isLoading ? (
-              <Skeleton variant="text" width={120} height={14} />
+              <Skeleton variant="text" width={120} height={18} />
             ) : (
-              <Text style={styles.nameText}>{userName}</Text>
+              <Text style={styles.nameText} numberOfLines={1}>
+                {userName}
+              </Text>
             )}
           </View>
         </View>

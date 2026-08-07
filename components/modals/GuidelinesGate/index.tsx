@@ -4,7 +4,7 @@ import { Button } from "@/components/common/Button";
 import { DialogShell } from "@/components/modals/DialogShell";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
-import { font } from "@/constants/theme";
+import { typography } from "@/constants/typography";
 import { GUIDELINE_HIGHLIGHTS } from "@/constants/guidelines";
 
 interface GuidelinesGateProps {
@@ -87,10 +87,9 @@ const createStyles = (colors: typeof lightColors) =>
     },
     rowText: {
       flex: 1,
-      fontFamily: font("body", "regular"),
-      fontSize: theme.typography.size.sm,
+      ...typography.styles.bodyText,
+      fontSize: typography.size.sm,
       color: colors.onSurface,
-      lineHeight: theme.typography.size.sm * theme.typography.lineHeight.relaxed,
     },
   });
 

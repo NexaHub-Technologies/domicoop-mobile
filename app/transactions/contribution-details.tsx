@@ -1,22 +1,21 @@
 import React, { useState, useEffect, useCallback } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  StyleSheet,
-  RefreshControl,
-} from "react-native";
+import { View, Text, ScrollView, StyleSheet, RefreshControl } from "react-native";
 import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { LinearGradient } from "expo-linear-gradient";
 import { MaterialIcons } from "@expo/vector-icons";
 import Animated, { FadeIn, FadeInUp } from "react-native-reanimated";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
-import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
-import { formatCurrency, formatMonth } from "@/lib/utils/format";
+import { createElevation } from "@/constants/theme";
+import { ScreenHeader } from "@/components/common/ScreenHeader";
+import { Button } from "@/components/common/Button";
+import { ListItem } from "@/components/common/ListItem";
+import { Money } from "@/components/common/Money";
+import { EmptyState } from "@/components/common/EmptyState";
+import { formatMonth } from "@/lib/utils/format";
 import { contributionsApi } from "@/lib/api/contributions.api";
 import { Contribution } from "@/lib/types/contributions";
 
@@ -24,6 +23,7 @@ export default function ContributionDetailsScreen() {
   const router = useRouter();
   const { colors, isDarkMode } = useTheme();
   const styles = createStyles(colors);
+  const elevations = createElevation(colors);
 
   const [contributions, setContributions] = useState<Contribution[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -88,19 +88,10 @@ export default function ContributionDetailsScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
       <StatusBar style={isDarkMode ? "light" : "dark"} />
 
-      {/* Header */}
-      <Animated.View entering={FadeIn.duration(300)} style={styles.header}>
-        <View style={styles.headerContent}>
-          <View style={styles.backButton} />
-          <Text style={[styles.headerTitle, { color: colors.primary }]}>
-            Contribution Overview
-          </Text>
-          <View style={styles.backButton} />
-        </View>
-      </Animated.View>
+      <ScreenHeader title="Contribution Overview" />
 
       <ScrollView
         style={styles.scrollView}
@@ -127,12 +118,12 @@ export default function ContributionDetailsScreen() {
           <Animated.View entering={FadeIn.duration(300)} style={styles.errorContainer}>
             <MaterialIcons name="error-outline" size={48} color={colors.error} />
             <Text style={styles.errorText}>{error}</Text>
-            <TouchableOpacity
-              style={styles.retryButton}
+            <Button
+              title="Retry"
               onPress={() => fetchContributions()}
-            >
-              <Text style={styles.retryButtonText}>Retry</Text>
-            </TouchableOpacity>
+              variant="tonal"
+              size="sm"
+            />
           </Animated.View>
         )}
 
@@ -142,64 +133,67 @@ export default function ContributionDetailsScreen() {
             entering={FadeInUp.delay(100).duration(400)}
             style={styles.overviewCard}
           >
-            {/* Watermark */}
-            <View style={styles.watermarkContainer}>
-              <MaterialIcons
-                name="account-balance"
-                size={140}
-                color={`${colors.onPrimary}10`}
-              />
-            </View>
-
-            {/* Icon */}
-            <View style={styles.iconContainer}>
-              <MaterialIcons name="savings" size={28} color={colors.onPrimary} />
-            </View>
-
-            {/* Title */}
-            <Text style={styles.overviewTitle}>Total Contributions</Text>
-
-            {/* Amount */}
-            <Text style={styles.overviewAmount}>
-              ₦{formatCurrency(totalContributions)}
-            </Text>
-
-            {/* Status */}
-            <View style={styles.statusBadge}>
-              <MaterialIcons name="check-circle" size={14} color={colors.success} />
-              <Text style={styles.statusText}>ACTIVE</Text>
-            </View>
-
-            {/* Stats Grid */}
-            <View style={styles.statsGrid}>
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>{totalTransactions}</Text>
-                <Text style={styles.statLabel}>Total</Text>
+            <LinearGradient
+              colors={colors.brandGradient}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={styles.overviewCardInner}
+            >
+              <View style={styles.watermarkContainer}>
+                <MaterialIcons
+                  name="account-balance"
+                  size={140}
+                  color={`${colors.onPrimary}10`}
+                />
               </View>
-              <View style={styles.statDivider} />
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>{verifiedContributions}</Text>
-                <Text style={styles.statLabel}>Verified</Text>
+
+              <View style={styles.iconContainer}>
+                <MaterialIcons name="savings" size={28} color={colors.onPrimary} />
               </View>
-              <View style={styles.statDivider} />
-              <View style={styles.statItem}>
-                <Text style={styles.statValue}>{pendingContributions}</Text>
-                <Text style={styles.statLabel}>Pending</Text>
+
+              <Text style={styles.overviewTitle}>Total Contributions</Text>
+
+              <Money amount={totalContributions} size="xl" tone="onPrimary" />
+
+              <View style={styles.statusBadge}>
+                <MaterialIcons name="check-circle" size={14} color={colors.onPrimary} />
+                <Text style={styles.statusText}>ACTIVE</Text>
               </View>
-            </View>
+
+              <View style={styles.statsGrid}>
+                <View style={styles.statItem}>
+                  <Text style={styles.statValue}>{totalTransactions}</Text>
+                  <Text style={styles.statLabel}>Total</Text>
+                </View>
+                <View style={styles.statDivider} />
+                <View style={styles.statItem}>
+                  <Text style={styles.statValue}>{verifiedContributions}</Text>
+                  <Text style={styles.statLabel}>Verified</Text>
+                </View>
+                <View style={styles.statDivider} />
+                <View style={styles.statItem}>
+                  <Text style={styles.statValue}>{pendingContributions}</Text>
+                  <Text style={styles.statLabel}>Pending</Text>
+                </View>
+              </View>
+            </LinearGradient>
           </Animated.View>
         )}
 
         {/* Add Contribution Button */}
-        <Animated.View entering={FadeInUp.delay(200).duration(400)}>
-          <TouchableOpacity
-            style={styles.addButton}
+        <Animated.View
+          entering={FadeInUp.delay(200).duration(400)}
+          style={styles.addButtonWrap}
+        >
+          <Button
+            title="Add Contribution"
             onPress={handleAddContribution}
-            activeOpacity={0.8}
-          >
-            <MaterialIcons name="add-circle" size={20} color={colors.onPrimary} />
-            <Text style={styles.addButtonText}>Add Contribution</Text>
-          </TouchableOpacity>
+            variant="primary"
+            size="lg"
+            icon="add-circle"
+            iconPosition="left"
+            fullWidth
+          />
         </Animated.View>
 
         {/* Transaction History */}
@@ -210,64 +204,43 @@ export default function ContributionDetailsScreen() {
           >
             <View style={styles.historyHeader}>
               <Text style={styles.historyTitle}>Recent Transactions</Text>
-              <TouchableOpacity>
-                <Text style={styles.viewAllText}>View All</Text>
-              </TouchableOpacity>
+              <Text style={styles.viewAllText}>View All</Text>
             </View>
 
-            <View style={styles.transactionsList}>
+            <View style={[styles.transactionsList, elevations.flat]}>
               {contributions.slice(0, 10).map((contribution) => (
-                <TouchableOpacity
+                <ListItem
                   key={contribution.id}
-                  style={styles.transactionItem}
+                  title={formatMonth(contribution.month)}
+                  subtitle={new Date(contribution.created_at).toLocaleDateString("en-US", {
+                    day: "numeric",
+                    month: "short",
+                    year: "numeric",
+                  })}
+                  leadingIcon="savings"
+                  leadingColor={getStatusColor(contribution.status)}
+                  chevron={false}
                   onPress={() => handleTransactionPress(contribution.id)}
-                  activeOpacity={0.7}
-                >
-                  <View style={styles.transactionLeft}>
-                    <View
-                      style={[
-                        styles.transactionIcon,
-                        { backgroundColor: `${getStatusColor(contribution.status)}10` },
-                      ]}
-                    >
-                      <MaterialIcons
-                        name="savings"
-                        size={20}
-                        color={getStatusColor(contribution.status)}
+                  trailing={
+                    <View style={styles.rowTrailing}>
+                      <Money
+                        amount={contribution.amount}
+                        size="sm"
+                        signed
+                        style={{ color: getStatusColor(contribution.status) }}
                       />
-                    </View>
-                    <View style={styles.transactionInfo}>
-                      <Text style={styles.transactionTitle}>
-                        {formatMonth(contribution.month)}
-                      </Text>
-                      <Text style={styles.transactionDate}>
-                        {new Date(contribution.created_at).toLocaleDateString("en-US", {
-                          day: "numeric",
-                          month: "short",
-                          year: "numeric",
-                        })}
+                      <Text
+                        style={[
+                          styles.transactionStatus,
+                          { color: getStatusColor(contribution.status) },
+                        ]}
+                      >
+                        {contribution.status.toUpperCase()}
                       </Text>
                     </View>
-                  </View>
-                  <View style={styles.transactionRight}>
-                    <Text
-                      style={[
-                        styles.transactionAmount,
-                        { color: getStatusColor(contribution.status) },
-                      ]}
-                    >
-                      +₦{formatCurrency(contribution.amount)}
-                    </Text>
-                    <Text
-                      style={[
-                        styles.transactionStatus,
-                        { color: getStatusColor(contribution.status) },
-                      ]}
-                    >
-                      {contribution.status.toUpperCase()}
-                    </Text>
-                  </View>
-                </TouchableOpacity>
+                  }
+                  style={styles.rowItem}
+                />
               ))}
             </View>
           </Animated.View>
@@ -275,15 +248,12 @@ export default function ContributionDetailsScreen() {
 
         {/* Empty State */}
         {!isLoading && contributions.length === 0 && !error && (
-          <Animated.View
-            entering={FadeInUp.delay(400).duration(400)}
-            style={styles.emptyContainer}
-          >
-            <MaterialIcons name="savings" size={64} color={colors.outlineVariant} />
-            <Text style={styles.emptyTitle}>No Contributions Yet</Text>
-            <Text style={styles.emptyText}>
-              Start making contributions to build your savings with DOMICOOP.
-            </Text>
+          <Animated.View entering={FadeInUp.delay(400).duration(400)}>
+            <EmptyState
+              icon="savings"
+              title="No Contributions Yet"
+              message="Start making contributions to build your savings with DOMICOOP."
+            />
           </Animated.View>
         )}
 
@@ -300,34 +270,6 @@ const createStyles = (colors: typeof lightColors) =>
       flex: 1,
       backgroundColor: colors.background,
     },
-    header: {
-      backgroundColor: colors.surface,
-      shadowColor: colors.ambientShadow,
-      shadowOffset: {
-        width: 0,
-        height: 2,
-      },
-      shadowOpacity: 1,
-      shadowRadius: 4,
-      elevation: 2,
-    },
-    headerContent: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      paddingHorizontal: theme.spacing.lg,
-      paddingTop: theme.spacing.lg,
-      paddingBottom: theme.spacing.base,
-    },
-    backButton: {
-      padding: theme.spacing.sm,
-      borderRadius: theme.borderRadius.full,
-      minWidth: 44,
-    },
-    headerTitle: {
-      fontFamily: font("display", "bold"),
-      fontSize: typography.size.lg,
-    },
     scrollView: {
       flex: 1,
     },
@@ -335,21 +277,20 @@ const createStyles = (colors: typeof lightColors) =>
       padding: theme.spacing.lg,
     },
     overviewCard: {
-      backgroundColor: colors.primary,
+      borderRadius: theme.borderRadius["2xl"],
+      marginBottom: theme.spacing.lg,
+      shadowColor: colors.primary,
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.35,
+      shadowRadius: 20,
+      elevation: 10,
+    },
+    overviewCardInner: {
       borderRadius: theme.borderRadius["2xl"],
       padding: theme.spacing["2xl"],
       alignItems: "center",
-      marginBottom: theme.spacing.lg,
       overflow: "hidden",
       position: "relative",
-      shadowColor: colors.ambientShadow,
-      shadowOffset: {
-        width: 0,
-        height: 4,
-      },
-      shadowOpacity: 1,
-      shadowRadius: 8,
-      elevation: 4,
     },
     watermarkContainer: {
       position: "absolute",
@@ -366,16 +307,10 @@ const createStyles = (colors: typeof lightColors) =>
       marginBottom: theme.spacing.base,
     },
     overviewTitle: {
-      fontFamily: font("body", "medium"),
+      ...typography.styles.bodyMedium,
       fontSize: typography.size.sm,
       color: `${colors.onPrimary}90`,
       marginBottom: theme.spacing.xs,
-    },
-    overviewAmount: {
-      fontFamily: font("display", "bold"),
-      fontSize: theme.spacing["3xl"],
-      color: colors.onPrimary,
-      marginBottom: theme.spacing.base,
     },
     statusBadge: {
       flexDirection: "row",
@@ -385,10 +320,11 @@ const createStyles = (colors: typeof lightColors) =>
       paddingVertical: theme.spacing.xs,
       paddingHorizontal: theme.spacing.base,
       gap: 4,
+      marginTop: theme.spacing.base,
       marginBottom: theme.spacing.lg,
     },
     statusText: {
-      fontFamily: font("body", "bold"),
+      ...typography.styles.label,
       fontSize: typography.size.xs,
       color: colors.onPrimary,
     },
@@ -405,14 +341,13 @@ const createStyles = (colors: typeof lightColors) =>
       alignItems: "center",
     },
     statValue: {
-      fontFamily: font("display", "bold"),
+      ...typography.styles.cardTitle,
       fontSize: typography.size.xl,
       color: colors.onPrimary,
       marginBottom: 2,
     },
     statLabel: {
-      fontFamily: font("body", "regular"),
-      fontSize: typography.size.xs,
+      ...typography.styles.bodySmall,
       color: `${colors.onPrimary}80`,
     },
     statDivider: {
@@ -420,28 +355,8 @@ const createStyles = (colors: typeof lightColors) =>
       height: 40,
       backgroundColor: `${colors.onPrimary}20`,
     },
-    addButton: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      backgroundColor: colors.primary,
-      borderRadius: theme.borderRadius.xl,
-      paddingVertical: theme.spacing.lg,
-      gap: theme.spacing.sm,
+    addButtonWrap: {
       marginBottom: theme.spacing.lg,
-      shadowColor: colors.ambientShadow,
-      shadowOffset: {
-        width: 0,
-        height: 4,
-      },
-      shadowOpacity: 1,
-      shadowRadius: 8,
-      elevation: 4,
-    },
-    addButtonText: {
-      fontFamily: font("display", "bold"),
-      fontSize: typography.size.base,
-      color: colors.onPrimary,
     },
     historySection: {
       marginBottom: theme.spacing.lg,
@@ -453,75 +368,32 @@ const createStyles = (colors: typeof lightColors) =>
       marginBottom: theme.spacing.base,
     },
     historyTitle: {
-      fontFamily: font("display", "bold"),
+      ...typography.styles.cardTitle,
       fontSize: typography.size.lg,
       color: colors.onSurface,
     },
     viewAllText: {
-      fontFamily: font("body", "semibold"),
+      ...typography.styles.label,
       fontSize: typography.size.sm,
-      color: colors.primary,
+      color: colors.primaryBright,
     },
     transactionsList: {
       backgroundColor: colors.surface,
       borderRadius: theme.borderRadius["2xl"],
       overflow: "hidden",
-      shadowColor: colors.ambientShadow,
-      shadowOffset: {
-        width: 0,
-        height: 2,
-      },
-      shadowOpacity: 1,
-      shadowRadius: 4,
-      elevation: 2,
     },
-    transactionItem: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      padding: theme.spacing.lg,
+    rowItem: {
+      paddingHorizontal: theme.spacing.lg,
       borderBottomWidth: 1,
       borderBottomColor: colors.outlineVariant,
     },
-    transactionLeft: {
-      flexDirection: "row",
-      alignItems: "center",
-      flex: 1,
-    },
-    transactionIcon: {
-      width: 44,
-      height: 44,
-      borderRadius: 12,
-      alignItems: "center",
-      justifyContent: "center",
-      marginRight: theme.spacing.base,
-    },
-    transactionInfo: {
-      flex: 1,
-    },
-    transactionTitle: {
-      fontFamily: font("body", "semibold"),
-      fontSize: typography.size.base,
-      color: colors.onSurface,
-      marginBottom: 2,
-    },
-    transactionDate: {
-      fontFamily: font("body", "regular"),
-      fontSize: typography.size.xs,
-      color: colors.onSurfaceVariant,
-    },
-    transactionRight: {
+    rowTrailing: {
       alignItems: "flex-end",
     },
-    transactionAmount: {
-      fontFamily: font("display", "bold"),
-      fontSize: typography.size.base,
-      marginBottom: 2,
-    },
     transactionStatus: {
-      fontFamily: font("body", "medium"),
+      ...typography.styles.caption,
       fontSize: typography.size.xs - 2,
-      color: colors.onSurfaceVariant,
+      marginTop: 2,
     },
     bottomPadding: {
       height: 100,
@@ -532,8 +404,7 @@ const createStyles = (colors: typeof lightColors) =>
       paddingVertical: theme.spacing["3xl"],
     },
     loadingText: {
-      fontFamily: font("body", "regular"),
-      fontSize: typography.size.base,
+      ...typography.styles.bodyText,
       color: colors.onSurfaceVariant,
     },
     errorContainer: {
@@ -543,42 +414,9 @@ const createStyles = (colors: typeof lightColors) =>
       gap: theme.spacing.base,
     },
     errorText: {
-      fontFamily: font("body", "regular"),
-      fontSize: typography.size.base,
+      ...typography.styles.bodyText,
       color: colors.error,
       textAlign: "center",
       marginTop: theme.spacing.base,
-    },
-    retryButton: {
-      backgroundColor: colors.primary,
-      paddingVertical: theme.spacing.base,
-      paddingHorizontal: theme.spacing.xl,
-      borderRadius: theme.borderRadius.lg,
-      marginTop: theme.spacing.base,
-    },
-    retryButtonText: {
-      fontFamily: font("body", "bold"),
-      fontSize: typography.size.base,
-      color: colors.onPrimary,
-    },
-    emptyContainer: {
-      alignItems: "center",
-      justifyContent: "center",
-      paddingVertical: theme.spacing["3xl"],
-      gap: theme.spacing.base,
-    },
-    emptyTitle: {
-      fontFamily: font("display", "bold"),
-      fontSize: typography.size.xl,
-      color: colors.onSurface,
-      marginTop: theme.spacing.base,
-    },
-    emptyText: {
-      fontFamily: font("body", "regular"),
-      fontSize: typography.size.base,
-      color: colors.onSurfaceVariant,
-      textAlign: "center",
-      paddingHorizontal: theme.spacing.xl,
-      lineHeight: 22,
     },
   });

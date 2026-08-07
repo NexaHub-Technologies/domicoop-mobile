@@ -6,7 +6,7 @@ import { useRouter } from "expo-router";
 import { ProfileHeader } from "@/components/profile/ProfileHeader";
 import { SettingsSection } from "@/components/profile/SettingsSection";
 import { ConfirmationModal } from "@/components/modals/ConfirmationModal";
-import { useTheme } from "@/contexts/ThemeContext";
+import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { useProfile } from "@/hooks/useProfile";
 import { useLogout } from "@/hooks/useLogout";
 
@@ -18,6 +18,7 @@ export default function ProfileScreen() {
   const isLoading = isPending;
   const refreshing = isRefetching;
   const { colors, isDarkMode } = useTheme();
+  const dynamicStyles = React.useMemo(() => createStyles(colors), [colors]);
 
   // Modal states
   const [showLogoutModal, setShowLogoutModal] = useState(false);
@@ -48,7 +49,7 @@ export default function ProfileScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={dynamicStyles.container} edges={["top"]}>
       <StatusBar style={isDarkMode ? "light" : "dark"} />
 
       {/* Fixed Header */}
@@ -56,8 +57,8 @@ export default function ProfileScreen() {
 
       {/* Scrollable Content */}
       <ScrollView
-        style={styles.scrollView}
-        contentContainerStyle={styles.scrollContent}
+        style={dynamicStyles.scrollView}
+        contentContainerStyle={dynamicStyles.scrollContent}
         showsVerticalScrollIndicator={false}
         refreshControl={
           <RefreshControl
@@ -72,7 +73,7 @@ export default function ProfileScreen() {
         <SettingsSection onLogout={handleLogout} onDeleteAccount={handleDeleteAccount} />
 
         {/* Bottom padding for tab bar */}
-        <SafeAreaView edges={["bottom"]} style={styles.bottomPadding} />
+        <SafeAreaView edges={["bottom"]} style={dynamicStyles.bottomPadding} />
       </ScrollView>
 
       {/* Logout Confirmation Modal */}
@@ -102,17 +103,19 @@ export default function ProfileScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  scrollContent: {
-    paddingTop: 0,
-  },
-  bottomPadding: {
-    height: 100, // Extra space for tab bar
-  },
-});
+const createStyles = (colors: typeof lightColors) =>
+  StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+    },
+    scrollView: {
+      flex: 1,
+    },
+    scrollContent: {
+      paddingTop: 0,
+    },
+    bottomPadding: {
+      height: 100, // Extra space for tab bar
+    },
+  });

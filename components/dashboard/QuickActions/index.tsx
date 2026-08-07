@@ -22,6 +22,8 @@ interface QuickActionItemProps {
   route: Href;
   index: number;
   colors: typeof lightColors;
+  /** Per-action tint — deposits read savings-green, loan actions read the tertiary loans-orange. */
+  tint: string;
 }
 
 const createQuickActionItemStyles = (colors: typeof lightColors) =>
@@ -35,11 +37,8 @@ const createQuickActionItemStyles = (colors: typeof lightColors) =>
       width: 56,
       height: 56,
       borderRadius: theme.borderRadius["2xl"],
-      backgroundColor: colors.surface,
       alignItems: "center",
       justifyContent: "center",
-      borderWidth: 1,
-      borderColor: colors.outlineVariant,
     },
     actionLabel: {
       ...typography.styles.sectionLabel,
@@ -56,6 +55,7 @@ const QuickActionItem: React.FC<QuickActionItemProps> = ({
   route,
   index,
   colors,
+  tint,
 }) => {
   const router = useRouter();
   const scale = useSharedValue(1);
@@ -86,8 +86,8 @@ const QuickActionItem: React.FC<QuickActionItemProps> = ({
         style={[styles.actionItem, animatedStyle]}
         activeOpacity={0.8}
       >
-        <View style={styles.iconContainer}>
-          <MaterialIcons name={icon as any} size={28} color={colors.primaryBright} />
+        <View style={[styles.iconContainer, { backgroundColor: `${tint}14` }]}>
+          <MaterialIcons name={icon as any} size={28} color={tint} />
         </View>
         <Text style={styles.actionLabel}>{label}</Text>
       </AnimatedTouchable>
@@ -114,6 +114,11 @@ const createStyles = (colors: typeof lightColors) =>
     },
   });
 
+// Savings actions read success-green, loan actions read the tertiary
+// loans-orange — the same category tint used by TransactionList's dots.
+const getActionTint = (actionId: string, colors: typeof lightColors): string =>
+  actionId === "apply" ? colors.tertiary : colors.success;
+
 export const QuickActions: React.FC = () => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
@@ -133,6 +138,7 @@ export const QuickActions: React.FC = () => {
             route={action.route as Href}
             index={index}
             colors={colors}
+            tint={getActionTint(action.id, colors)}
           />
         ))}
       </View>

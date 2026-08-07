@@ -13,12 +13,13 @@ import { useRouter, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
-import Animated, { FadeIn, FadeInUp } from "react-native-reanimated";
+import Animated, { FadeInUp } from "react-native-reanimated";
 import { useTheme } from "@/contexts/ThemeContext";
 import type { lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
 import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
+import { ScreenHeader } from "@/components/common/ScreenHeader";
 import { TransactionDetailCard } from "@/components/savings/TransactionDetailCard";
 import { Badge, BadgeStatus } from "@/components/common/Badge";
 import { Money } from "@/components/common/Money";
@@ -102,21 +103,7 @@ export default function TransactionDetailScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <StatusBar style={isDarkMode ? "light" : "dark"} />
-        <Animated.View entering={FadeIn.duration(300)} style={styles.header}>
-          <View style={styles.headerContent}>
-            <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-              <MaterialIcons
-                name="arrow-back"
-                size={24}
-                color={colors.onSurfaceVariant}
-              />
-            </TouchableOpacity>
-            <Text style={[styles.headerTitle, { color: colors.primary }]}>
-              Transaction Details
-            </Text>
-            <View style={styles.backButton} />
-          </View>
-        </Animated.View>
+        <ScreenHeader title="Transaction Details" onBack={handleBack} />
         <View style={styles.loadingContainer}>
           <ActivityIndicator size="large" color={colors.primary} />
           <Text style={styles.loadingText}>Loading transaction details...</Text>
@@ -129,21 +116,7 @@ export default function TransactionDetailScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <StatusBar style={isDarkMode ? "light" : "dark"} />
-        <Animated.View entering={FadeIn.duration(300)} style={styles.header}>
-          <View style={styles.headerContent}>
-            <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-              <MaterialIcons
-                name="arrow-back"
-                size={24}
-                color={colors.onSurfaceVariant}
-              />
-            </TouchableOpacity>
-            <Text style={[styles.headerTitle, { color: colors.primary }]}>
-              Transaction Details
-            </Text>
-            <View style={styles.backButton} />
-          </View>
-        </Animated.View>
+        <ScreenHeader title="Transaction Details" onBack={handleBack} />
         <View style={styles.errorContainer}>
           <MaterialIcons name="error-outline" size={48} color={colors.error} />
           <Text style={styles.errorText}>{error}</Text>
@@ -159,21 +132,7 @@ export default function TransactionDetailScreen() {
     return (
       <SafeAreaView style={styles.container}>
         <StatusBar style={isDarkMode ? "light" : "dark"} />
-        <Animated.View entering={FadeIn.duration(300)} style={styles.header}>
-          <View style={styles.headerContent}>
-            <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-              <MaterialIcons
-                name="arrow-back"
-                size={24}
-                color={colors.onSurfaceVariant}
-              />
-            </TouchableOpacity>
-            <Text style={[styles.headerTitle, { color: colors.primary }]}>
-              Transaction Details
-            </Text>
-            <View style={styles.backButton} />
-          </View>
-        </Animated.View>
+        <ScreenHeader title="Transaction Details" onBack={handleBack} />
         <View style={styles.errorContainer}>
           <MaterialIcons name="search-off" size={48} color={colors.outlineVariant} />
           <Text style={styles.notFoundText}>Transaction not found</Text>
@@ -258,17 +217,7 @@ export default function TransactionDetailScreen() {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar style={isDarkMode ? "light" : "dark"} />
-      <Animated.View entering={FadeIn.duration(300)} style={styles.header}>
-        <View style={styles.headerContent}>
-          <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-            <MaterialIcons name="arrow-back" size={24} color={colors.onSurfaceVariant} />
-          </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.primary }]}>
-            Transaction Details
-          </Text>
-          <View style={styles.backButton} />
-        </View>
-      </Animated.View>
+      <ScreenHeader title="Transaction Details" onBack={handleBack} />
 
       <ScrollView
         style={styles.scrollView}
@@ -389,34 +338,6 @@ const createStyles = (colors: typeof lightColors) =>
     container: {
       flex: 1,
       backgroundColor: colors.background,
-    },
-    header: {
-      backgroundColor: colors.surface,
-      shadowColor: colors.ambientShadow,
-      shadowOffset: {
-        width: 0,
-        height: 2,
-      },
-      shadowOpacity: 1,
-      shadowRadius: 4,
-      elevation: 2,
-    },
-    headerContent: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      paddingHorizontal: theme.spacing.lg,
-      paddingTop: theme.spacing.lg,
-      paddingBottom: theme.spacing.base,
-    },
-    backButton: {
-      padding: theme.spacing.sm,
-      borderRadius: theme.borderRadius.full,
-      minWidth: 44,
-    },
-    headerTitle: {
-      ...typography.styles.headline,
-      fontSize: typography.size.lg,
     },
     scrollView: {
       flex: 1,

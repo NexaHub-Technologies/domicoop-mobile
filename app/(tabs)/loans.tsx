@@ -3,7 +3,6 @@ import {
   View,
   Text,
   ScrollView,
-  TouchableOpacity,
   StyleSheet,
   RefreshControl,
   ActivityIndicator,
@@ -14,16 +13,15 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import Animated, { FadeIn, FadeInUp } from "react-native-reanimated";
 import { theme } from "@/styles/theme";
-import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
+import { ScreenHeader } from "@/components/common/ScreenHeader";
+import { Button } from "@/components/common/Button";
 import { LoanPortfolioCard } from "@/components/loans/LoanPortfolioCard";
 import { LoanCard } from "@/components/loans/LoanCard";
 import { InsightsCard } from "@/components/loans/InsightsCard";
 import { EmptyState } from "@/components/common/EmptyState";
 import { useLoans } from "@/hooks/useLoans";
 import { useTheme, lightColors } from "@/contexts/ThemeContext";
-
-const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
 export default function LoansScreen() {
   const router = useRouter();
@@ -52,19 +50,10 @@ export default function LoansScreen() {
   const dynamicStyles = React.useMemo(() => createStyles(colors), [colors]);
 
   return (
-    <SafeAreaView style={dynamicStyles.container}>
+    <SafeAreaView style={dynamicStyles.container} edges={["top"]}>
       <StatusBar style={isDarkMode ? "light" : "dark"} />
 
-      {/* Header */}
-      <Animated.View entering={FadeIn.duration(300)} style={dynamicStyles.header}>
-        <View style={dynamicStyles.headerContent}>
-          <View style={dynamicStyles.backButton} />
-          <Text style={[dynamicStyles.headerTitle, { color: colors.primary }]}>
-            Loans
-          </Text>
-          <View style={dynamicStyles.backButton} />
-        </View>
-      </Animated.View>
+      <ScreenHeader title="Loans" large />
 
       {/* Scrollable Content */}
       <ScrollView
@@ -96,15 +85,19 @@ export default function LoansScreen() {
         />
 
         {/* Apply for New Loan */}
-        <Animated.View entering={FadeInUp.delay(200).duration(400)}>
-          <AnimatedTouchable
+        <Animated.View
+          entering={FadeInUp.delay(200).duration(400)}
+          style={dynamicStyles.applyButtonWrap}
+        >
+          <Button
+            title="Apply for a Loan"
             onPress={handleApplyForLoan}
-            style={dynamicStyles.applyButton}
-            activeOpacity={0.8}
-          >
-            <MaterialIcons name="add-circle" size={20} color={colors.onPrimary} />
-            <Text style={dynamicStyles.applyButtonText}>Apply for a Loan</Text>
-          </AnimatedTouchable>
+            variant="primary"
+            size="lg"
+            icon="add-circle"
+            iconPosition="left"
+            fullWidth
+          />
         </Animated.View>
 
         {isLoading && (
@@ -118,9 +111,7 @@ export default function LoansScreen() {
           <Animated.View entering={FadeIn.duration(300)} style={dynamicStyles.errorContainer}>
             <MaterialIcons name="error-outline" size={48} color={colors.error} />
             <Text style={dynamicStyles.errorText}>{error}</Text>
-            <TouchableOpacity style={dynamicStyles.retryButton} onPress={onRefresh}>
-              <Text style={dynamicStyles.retryButtonText}>Retry</Text>
-            </TouchableOpacity>
+            <Button title="Retry" onPress={onRefresh} variant="tonal" size="sm" />
           </Animated.View>
         )}
 
@@ -165,76 +156,26 @@ const createStyles = (colors: typeof lightColors) =>
       flex: 1,
       backgroundColor: colors.background,
     },
-    header: {
-      backgroundColor: colors.surface,
-      shadowColor: colors.ambientShadow,
-      shadowOffset: {
-        width: 0,
-        height: 2,
-      },
-      shadowOpacity: 1,
-      shadowRadius: 4,
-      elevation: 2,
-    },
-    headerContent: {
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "space-between",
-      paddingHorizontal: theme.spacing.lg,
-      paddingTop: theme.spacing.lg,
-      paddingBottom: theme.spacing.base,
-    },
-    backButton: {
-      padding: theme.spacing.sm,
-      borderRadius: theme.borderRadius.full,
-      minWidth: 44,
-    },
-    headerTitle: {
-      fontFamily: font("display", "bold"),
-      fontSize: typography.size.lg,
-    },
     scrollView: {
       flex: 1,
     },
     scrollContent: {
-      paddingTop: theme.spacing.lg,
+      paddingTop: theme.spacing.base,
     },
-    applyButton: {
-      backgroundColor: colors.primary,
-      borderRadius: theme.borderRadius.xl,
-      paddingVertical: theme.spacing.lg,
-      paddingHorizontal: theme.spacing.xl,
-      flexDirection: "row",
-      alignItems: "center",
-      justifyContent: "center",
-      gap: theme.spacing.sm,
-      marginHorizontal: theme.spacing.lg,
+    applyButtonWrap: {
+      paddingHorizontal: theme.spacing.lg,
       marginBottom: theme.spacing.lg,
-      shadowColor: colors.ambientShadow,
-      shadowOffset: {
-        width: 0,
-        height: 4,
-      },
-      shadowOpacity: 1,
-      shadowRadius: 8,
-      elevation: 4,
-    },
-    applyButtonText: {
-      fontFamily: font("display", "bold"),
-      fontSize: typography.size.base,
-      color: colors.onPrimary,
     },
     sectionHeader: {
       flexDirection: "row",
       alignItems: "center",
       justifyContent: "space-between",
       paddingHorizontal: theme.spacing.lg,
-      marginBottom: theme.spacing.base,
+      marginBottom: theme.spacing.lg,
     },
     sectionTitle: {
-      fontFamily: font("display", "bold"),
-      fontSize: typography.size.lg,
-      color: colors.onSurface,
+      ...typography.styles.sectionLabel,
+      color: colors.onSurfaceVariant,
     },
     loansList: {
       paddingHorizontal: theme.spacing.lg,
@@ -245,7 +186,7 @@ const createStyles = (colors: typeof lightColors) =>
       alignItems: "center",
       justifyContent: "center",
       gap: theme.spacing.sm,
-      backgroundColor: `${colors.primary}10`,
+      backgroundColor: colors.surfaceContainer,
       marginHorizontal: theme.spacing.lg,
       marginBottom: theme.spacing.base,
       paddingVertical: theme.spacing.sm,
@@ -253,7 +194,7 @@ const createStyles = (colors: typeof lightColors) =>
       borderRadius: theme.borderRadius.lg,
     },
     offlineText: {
-      fontFamily: font("body", "regular"),
+      ...typography.styles.bodySmall,
       fontSize: typography.size.xs,
       color: colors.onSurfaceVariant,
     },
@@ -263,7 +204,7 @@ const createStyles = (colors: typeof lightColors) =>
       paddingVertical: theme.spacing["3xl"],
     },
     loadingText: {
-      fontFamily: font("body", "regular"),
+      ...typography.styles.bodyText,
       fontSize: typography.size.sm,
       color: colors.onSurfaceVariant,
       marginTop: theme.spacing.base,
@@ -275,23 +216,10 @@ const createStyles = (colors: typeof lightColors) =>
       gap: theme.spacing.base,
     },
     errorText: {
-      fontFamily: font("body", "regular"),
-      fontSize: typography.size.base,
+      ...typography.styles.bodyText,
       color: colors.error,
       textAlign: "center",
       marginTop: theme.spacing.base,
-    },
-    retryButton: {
-      backgroundColor: colors.primary,
-      paddingVertical: theme.spacing.base,
-      paddingHorizontal: theme.spacing.xl,
-      borderRadius: theme.borderRadius.lg,
-      marginTop: theme.spacing.base,
-    },
-    retryButtonText: {
-      fontFamily: font("body", "bold"),
-      fontSize: typography.size.base,
-      color: colors.onPrimary,
     },
     bottomPadding: {
       height: 100,

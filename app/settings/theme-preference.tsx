@@ -4,11 +4,13 @@ import { useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaView, useSafeAreaInsets } from "react-native-safe-area-context";
 import { MaterialIcons } from "@expo/vector-icons";
-import Animated, { FadeIn, FadeInUp } from "react-native-reanimated";
+import Animated, { FadeInUp } from "react-native-reanimated";
 import { useTheme, ThemePreference, lightColors, darkColors } from "@/contexts/ThemeContext";
 import { theme as themeConfig } from "@/styles/theme";
-import { font } from "@/constants/theme";
 import { typography } from "@/constants/typography";
+import { createElevation } from "@/constants/theme";
+import { ScreenHeader } from "@/components/common/ScreenHeader";
+import { Button } from "@/components/common/Button";
 
 const AnimatedTouchable = Animated.createAnimatedComponent(TouchableOpacity);
 
@@ -106,6 +108,7 @@ const ThemeOption: React.FC<ThemeOptionProps> = ({
   index,
 }) => {
   const { colors } = useTheme();
+  const elevations = createElevation(colors);
 
   return (
     <AnimatedTouchable
@@ -113,11 +116,11 @@ const ThemeOption: React.FC<ThemeOptionProps> = ({
       onPress={onSelect}
       style={[
         styles.themeCard,
+        isSelected ? elevations.raised : elevations.flat,
         {
           backgroundColor: colors.surfaceContainerLowest,
           borderColor: isSelected ? colors.primary : colors.outlineVariant,
           borderWidth: isSelected ? 2 : 1,
-          shadowColor: isSelected ? colors.cobaltGlow : colors.ambientShadow,
         },
       ]}
       activeOpacity={0.8}
@@ -160,6 +163,7 @@ export default function ThemePreferenceScreen() {
   const router = useRouter();
   const { theme, setTheme, colors } = useTheme();
   const insets = useSafeAreaInsets();
+  const elevations = createElevation(colors);
 
   const handleBack = () => {
     router.back();
@@ -170,21 +174,10 @@ export default function ThemePreferenceScreen() {
   };
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]} edges={["top"]}>
       <StatusBar style={theme === "dark" ? "light" : "dark"} />
 
-      {/* Header */}
-      <Animated.View entering={FadeIn.duration(300)} style={styles.header}>
-        <View style={styles.headerContent}>
-          <TouchableOpacity onPress={handleBack} style={styles.backButton}>
-            <MaterialIcons name="arrow-back" size={24} color={colors.onSurface} />
-          </TouchableOpacity>
-          <Text style={[styles.headerTitle, { color: colors.primary }]}>
-            Theme Preference
-          </Text>
-          <View style={styles.backButton} />
-        </View>
-      </Animated.View>
+      <ScreenHeader title="Theme Preference" onBack={handleBack} />
 
       <ScrollView
         style={styles.scrollView}
@@ -267,6 +260,7 @@ export default function ThemePreferenceScreen() {
       <View
         style={[
           styles.fixedButtonContainer,
+          elevations.raised,
           {
             backgroundColor: colors.background,
             paddingBottom:
@@ -274,16 +268,15 @@ export default function ThemePreferenceScreen() {
           },
         ]}
       >
-        <TouchableOpacity
+        <Button
+          title="Save Preferences"
           onPress={handleSave}
-          style={[styles.saveButtonLarge, { backgroundColor: colors.primary }]}
-          activeOpacity={0.8}
-        >
-          <MaterialIcons name="check-circle" size={20} color={colors.onPrimary} />
-          <Text style={[styles.saveButtonLargeText, { color: colors.onPrimary }]}>
-            Save Preferences
-          </Text>
-        </TouchableOpacity>
+          variant="primary"
+          size="lg"
+          icon="check-circle"
+          iconPosition="left"
+          fullWidth
+        />
       </View>
     </SafeAreaView>
   );
@@ -292,38 +285,6 @@ export default function ThemePreferenceScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-  },
-  header: {
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
-  },
-  headerContent: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: themeConfig.spacing.lg,
-    paddingTop: themeConfig.spacing.lg,
-    paddingBottom: themeConfig.spacing.base,
-  },
-  backButton: {
-    padding: themeConfig.spacing.sm,
-    borderRadius: themeConfig.borderRadius.full,
-  },
-  headerTitle: {
-    fontFamily: font("display", "bold"),
-    fontSize: typography.size.lg,
-  },
-  saveButton: {
-    paddingHorizontal: themeConfig.spacing.md,
-    paddingVertical: themeConfig.spacing.sm,
-    borderRadius: themeConfig.borderRadius.lg,
-  },
-  saveButtonText: {
-    fontFamily: font("display", "bold"),
-    fontSize: typography.size.base,
   },
   scrollView: {
     flex: 1,
@@ -335,12 +296,11 @@ const styles = StyleSheet.create({
     marginBottom: themeConfig.spacing.lg,
   },
   title: {
-    fontFamily: font("display", "extrabold"),
-    fontSize: typography.size["2xl"],
+    ...typography.styles.screenTitle,
     marginBottom: themeConfig.spacing.xs,
   },
   subtitle: {
-    fontFamily: font("body", "regular"),
+    ...typography.styles.bodyText,
     fontSize: typography.size.sm,
   },
   themeOptionsContainer: {
@@ -349,10 +309,6 @@ const styles = StyleSheet.create({
   themeCard: {
     borderRadius: themeConfig.borderRadius.xl,
     padding: themeConfig.spacing.lg,
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.05,
-    shadowRadius: 4,
-    elevation: 2,
     overflow: "hidden",
   },
   themeCardHeader: {
@@ -362,12 +318,12 @@ const styles = StyleSheet.create({
     marginBottom: themeConfig.spacing.lg,
   },
   themeTitle: {
-    fontFamily: font("display", "bold"),
+    ...typography.styles.cardTitle,
     fontSize: typography.size.lg,
     marginBottom: 4,
   },
   themeDescription: {
-    fontFamily: font("body", "regular"),
+    ...typography.styles.bodyText,
     fontSize: typography.size.sm,
   },
   radioButton: {
@@ -495,14 +451,13 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   infoTitle: {
-    fontFamily: font("display", "bold"),
+    ...typography.styles.cardTitle,
     fontSize: typography.size.base,
     marginBottom: 4,
   },
   infoText: {
-    fontFamily: font("body", "regular"),
+    ...typography.styles.bodyText,
     fontSize: typography.size.sm,
-    lineHeight: 20,
   },
   bottomPadding: {
     height: 100,
@@ -514,27 +469,5 @@ const styles = StyleSheet.create({
     right: 0,
     padding: themeConfig.spacing.lg,
     paddingTop: themeConfig.spacing["2xl"],
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: -4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  saveButtonLarge: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "center",
-    gap: themeConfig.spacing.sm,
-    paddingVertical: themeConfig.spacing.lg,
-    borderRadius: themeConfig.borderRadius.xl,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  saveButtonLargeText: {
-    fontFamily: font("display", "bold"),
-    fontSize: typography.size.base,
   },
 });
