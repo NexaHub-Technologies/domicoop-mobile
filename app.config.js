@@ -10,7 +10,7 @@ export default {
   expo: {
     name: process.env.APP_ENV === "production" ? "DOMICOOP" : "DOMICOOP (DEV)",
     slug: "domicoop",
-    version: "5.0.0",
+    version: "6.0.0",
     orientation: "portrait",
     icon: "./assets/images/icon.png",
     scheme: process.env.EXPO_PUBLIC_SCHEME || "domicoop",
@@ -27,7 +27,7 @@ export default {
       },
     },
     android: {
-      versionCode: 5,
+      versionCode: 6,
       adaptiveIcon: {
         backgroundColor: "#E6F4FE",
         foregroundImage: "./assets/images/android-icon-foreground.png",
