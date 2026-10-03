@@ -1,9 +1,8 @@
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import React, { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import {
   View,
   Text,
   ScrollView,
-  ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
@@ -12,6 +11,7 @@ import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Animated, { FadeInUp } from 'react-native-reanimated';
+import { MaterialIcons } from '@expo/vector-icons';
 import { useQueryClient } from '@tanstack/react-query';
 import { useTheme, lightColors } from '@/contexts/ThemeContext';
 import { theme } from '@/styles/theme';
@@ -41,6 +41,52 @@ const MIN_PURPOSE_LENGTH = 10;
  */
 type Step = 1 | 2 | 3 | 4 | 5;
 const TOTAL_STEPS = 5;
+
+interface StepMeta {
+  step: Step;
+  title: string;
+  shortTitle: string;
+  subtitle: string;
+  icon: keyof typeof MaterialIcons.glyphMap;
+}
+
+const STEPS_META: StepMeta[] = [
+  {
+    step: 1,
+    title: 'How much, and what for?',
+    shortTitle: 'Details',
+    subtitle: 'Specify your loan amount, purpose, and cooperative loan category.',
+    icon: 'payments',
+  },
+  {
+    step: 2,
+    title: 'Applicant Details',
+    shortTitle: 'Profile',
+    subtitle: 'Verify the address and bank account to be recorded on your loan bond.',
+    icon: 'person',
+  },
+  {
+    step: 3,
+    title: 'Terms & Repayment',
+    shortTitle: 'Terms',
+    subtitle: 'Choose your loan tenure and review the monthly installment plan.',
+    icon: 'calendar-today',
+  },
+  {
+    step: 4,
+    title: 'Your Three Guarantors',
+    shortTitle: 'Guarantors',
+    subtitle: 'Provide contact details and digital signatures for three guarantors.',
+    icon: 'people',
+  },
+  {
+    step: 5,
+    title: 'Review & Sign Bond',
+    shortTitle: 'Sign',
+    subtitle: 'Review all application terms and sign your official borrower bond deed.',
+    icon: 'draw',
+  },
+];
 
 const emptyGuarantor = (): LoanGuarantorInput => ({
   full_name: '',
@@ -83,6 +129,32 @@ export default function ApplyForLoanScreen() {
 
   // Step 5 — Part A item 9
   const [borrowerSignature, setBorrowerSignature] = useState('');
+
+  // Lock ScrollView while signing so the signature boxes stay firmly in place
+  const [scrollEnabled, setScrollEnabled] = useState(true);
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  const handleBeginSigning = useCallback(() => {
+    setScrollEnabled(false);
+    try {
+      scrollViewRef.current?.setNativeProps?.({ scrollEnabled: false });
+    } catch {
+      // Ignore if setNativeProps is unavailable in modern Fabric arch
+    }
+  }, []);
+
+  const handleEndSigning = useCallback(() => {
+    setScrollEnabled(true);
+    try {
+      scrollViewRef.current?.setNativeProps?.({ scrollEnabled: true });
+    } catch {
+      // Ignore if setNativeProps is unavailable in modern Fabric arch
+    }
+  }, []);
+
+  useEffect(() => {
+    setScrollEnabled(true);
+  }, [step]);
 
   const [showSuccess, setShowSuccess] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -257,13 +329,7 @@ export default function ApplyForLoanScreen() {
     router.replace('/(tabs)/loans');
   };
 
-  const stepTitle = [
-    'How much, and what for?',
-    'Your details',
-    'Terms & repayment plan',
-    'Your three guarantors',
-    'Review & sign',
-  ][step - 1];
+  const currentStepMeta = STEPS_META[step - 1];
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -276,99 +342,197 @@ export default function ApplyForLoanScreen() {
         style={styles.keyboardView}
       >
         <ScrollView
+          ref={scrollViewRef}
+          scrollEnabled={scrollEnabled}
+          nestedScrollEnabled={true}
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}
           keyboardShouldPersistTaps="handled"
         >
-          {/* Progress */}
-          <View style={styles.stepRow}>
-            {Array.from({ length: TOTAL_STEPS }, (_, i) => i + 1).map((n) => (
-              <View
-                key={n}
-                style={[
-                  styles.stepBar,
-                  n <= step ? styles.stepBarActive : undefined,
-                ]}
-              />
-            ))}
+          {/* Stepper Header */}
+          <View style={styles.stepperContainer}>
+            <View style={styles.stepTrack}>
+              {STEPS_META.map((item, idx) => {
+                const isCompleted = item.step < step;
+                const isCurrent = item.step === step;
+
+                return (
+                  <React.Fragment key={item.step}>
+                    <View style={styles.stepNodeContainer}>
+                      <View
+                        style={[
+                          styles.stepNode,
+                          isCompleted && styles.stepNodeCompleted,
+                          isCurrent && styles.stepNodeCurrent,
+                        ]}
+                      >
+                        {isCompleted ? (
+                          <MaterialIcons name="check" size={14} color={colors.onPrimary} />
+                        ) : (
+                          <Text
+                            style={[
+                              styles.stepNodeText,
+                              isCurrent && styles.stepNodeTextCurrent,
+                            ]}
+                          >
+                            {item.step}
+                          </Text>
+                        )}
+                      </View>
+                    </View>
+
+                    {idx < STEPS_META.length - 1 && (
+                      <View
+                        style={[
+                          styles.stepTrackLine,
+                          item.step < step && styles.stepTrackLineCompleted,
+                        ]}
+                      />
+                    )}
+                  </React.Fragment>
+                );
+              })}
+            </View>
+
+            <View style={styles.stepHeaderCard}>
+              <View style={styles.stepHeaderBadgeRow}>
+                <View style={styles.stepBadge}>
+                  <MaterialIcons name={currentStepMeta.icon} size={14} color={colors.primary} />
+                  <Text style={styles.stepBadgeText}>
+                    STEP {step} OF {TOTAL_STEPS} · {currentStepMeta.shortTitle.toUpperCase()}
+                  </Text>
+                </View>
+                <Text style={styles.stepPercentText}>
+                  {Math.round((step / TOTAL_STEPS) * 100)}%
+                </Text>
+              </View>
+
+              <Text style={styles.stepTitle}>{currentStepMeta.title}</Text>
+              <Text style={styles.stepSubtitle}>{currentStepMeta.subtitle}</Text>
+            </View>
           </View>
-          <Text style={styles.stepLabel}>
-            Step {step} of {TOTAL_STEPS} · {stepTitle}
-          </Text>
 
           <View style={styles.formContainer}>
             {step === 1 && (
               <Animated.View entering={FadeInUp.duration(300)} style={styles.stepContent}>
-                <AmountInput value={amount} onChangeText={setAmount} error={errors.amount} />
-                <PurposeSelector
-                  selectedType={type}
-                  onSelectType={(next) => {
-                    setType(next);
-                    setErrors((e) => ({ ...e, type: undefined }));
-                  }}
-                />
-                {errors.type && <Text style={styles.errorText}>{errors.type}</Text>}
-                <Input
-                  label="Purpose"
-                  placeholder="Briefly describe what this loan is for…"
-                  value={purpose}
-                  onChangeText={(t) => {
-                    setPurpose(t);
-                    setErrors((e) => ({ ...e, purpose: undefined }));
-                  }}
-                  multiline
-                  numberOfLines={3}
-                  error={errors.purpose}
-                />
+                <View style={styles.infoBanner}>
+                  <View style={styles.infoBannerIconWrap}>
+                    <MaterialIcons name="info-outline" size={20} color={colors.primary} />
+                  </View>
+                  <View style={styles.infoBannerTextWrap}>
+                    <Text style={styles.infoBannerTitle}>Cooperative Loan Guidelines</Text>
+                    <Text style={styles.infoBannerText}>
+                      Loan requests are vetted by the Credit Committee based on your accumulated savings,
+                      membership standing, and repayment capacity.
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={styles.formSectionCard}>
+                  <AmountInput value={amount} onChangeText={setAmount} error={errors.amount} />
+                </View>
+
+                <View style={styles.formSectionCard}>
+                  <Text style={styles.sectionHeaderTitle}>Select Loan Category</Text>
+                  <PurposeSelector
+                    selectedType={type}
+                    onSelectType={(next) => {
+                      setType(next);
+                      setErrors((e) => ({ ...e, type: undefined }));
+                    }}
+                  />
+                  {errors.type && <Text style={styles.errorText}>{errors.type}</Text>}
+                </View>
+
+                <View style={styles.formSectionCard}>
+                  <Input
+                    label="Specific Purpose"
+                    placeholder="Briefly describe what this loan will be used for…"
+                    value={purpose}
+                    onChangeText={(t) => {
+                      setPurpose(t);
+                      setErrors((e) => ({ ...e, purpose: undefined }));
+                    }}
+                    multiline
+                    numberOfLines={3}
+                    error={errors.purpose}
+                    helper="Provide clear details to help the Credit Committee evaluate your application."
+                  />
+                </View>
               </Animated.View>
             )}
 
             {step === 2 && (
               <Animated.View entering={FadeInUp.duration(300)} style={styles.stepContent}>
-                <Text style={styles.stepHelp}>
-                  These are recorded on your loan bond exactly as entered, so check
-                  them even though we have filled them in from your profile.
-                </Text>
-                <Input
-                  label="Business / Home Address"
-                  placeholder="Your address"
-                  value={address}
-                  onChangeText={setAddress}
-                  multiline
-                  numberOfLines={2}
-                  error={errors.address}
-                />
-                <Input
-                  label="Bank Used"
-                  placeholder="e.g. First Bank of Nigeria"
-                  value={bankName}
-                  onChangeText={setBankName}
-                  error={errors.bank_name}
-                />
-                <Input
-                  label="Account Number"
-                  placeholder="1234567890"
-                  value={bankAccount}
-                  onChangeText={setBankAccount}
-                  keyboardType="numeric"
-                  error={errors.bank_account}
-                />
-                <Input
-                  label="Phone Number"
-                  placeholder="+234 123 456 7890"
-                  value={phone}
-                  onChangeText={setPhone}
-                  keyboardType="phone-pad"
-                  error={errors.phone}
-                />
+                <View style={styles.infoBanner}>
+                  <View style={styles.infoBannerIconWrap}>
+                    <MaterialIcons name="verified-user" size={20} color={colors.primary} />
+                  </View>
+                  <View style={styles.infoBannerTextWrap}>
+                    <Text style={styles.infoBannerTitle}>Pre-filled from Profile</Text>
+                    <Text style={styles.infoBannerText}>
+                      These details are recorded on your legal loan bond exactly as entered.
+                      Verify or edit them before proceeding.
+                    </Text>
+                  </View>
+                </View>
+
+                <View style={styles.formSectionCard}>
+                  <View style={styles.cardHeaderRow}>
+                    <MaterialIcons name="location-on" size={18} color={colors.primary} />
+                    <Text style={styles.sectionHeaderTitle}>Residential & Business Address</Text>
+                  </View>
+                  <Input
+                    label="Business / Home Address"
+                    placeholder="Your address"
+                    value={address}
+                    onChangeText={setAddress}
+                    multiline
+                    numberOfLines={2}
+                    error={errors.address}
+                  />
+                  <Input
+                    label="Phone Number"
+                    placeholder="+234 123 456 7890"
+                    value={phone}
+                    onChangeText={setPhone}
+                    keyboardType="phone-pad"
+                    error={errors.phone}
+                  />
+                </View>
+
+                <View style={styles.formSectionCard}>
+                  <View style={styles.cardHeaderRow}>
+                    <MaterialIcons name="account-balance" size={18} color={colors.primary} />
+                    <Text style={styles.sectionHeaderTitle}>Disbursement Bank Account</Text>
+                  </View>
+                  <Input
+                    label="Bank Used"
+                    placeholder="e.g. First Bank of Nigeria"
+                    value={bankName}
+                    onChangeText={setBankName}
+                    error={errors.bank_name}
+                  />
+                  <Input
+                    label="Account Number"
+                    placeholder="1234567890"
+                    value={bankAccount}
+                    onChangeText={setBankAccount}
+                    keyboardType="numeric"
+                    error={errors.bank_account}
+                  />
+                </View>
               </Animated.View>
             )}
 
             {step === 3 && (
               <Animated.View entering={FadeInUp.duration(300)} style={styles.stepContent}>
-                <TermSlider value={term} onValueChange={setTerm} />
-                {errors.term && <Text style={styles.errorText}>{errors.term}</Text>}
+                <View style={styles.formSectionCard}>
+                  <TermSlider value={term} onValueChange={setTerm} />
+                  {errors.term && <Text style={styles.errorText}>{errors.term}</Text>}
+                </View>
+
                 <LoanCalculator
                   monthlyPayment={loanDetails.monthlyPayment}
                   totalRepayment={loanDetails.totalRepayment}
@@ -376,111 +540,302 @@ export default function ApplyForLoanScreen() {
                   interestRate={interestRate}
                   onInterestRateChange={setInterestRate}
                 />
+
                 <View style={styles.scheduleCard}>
-                  <Text style={styles.scheduleTitle}>
-                    {loanDetails.graceMonths} month grace, then{' '}
-                    {loanDetails.installments} payments
-                  </Text>
-                  <Text style={styles.stepHelp}>
-                    Nothing is due in the first month after your loan is paid out.
-                    These dates are indicative until the cooperative approves the loan.
-                  </Text>
-                  {schedule.map((row) => (
-                    <View key={row.installment_no} style={styles.scheduleRow}>
-                      <Text style={styles.scheduleMonth}>
-                        {row.installment_no}.{' '}
-                        {row.due_on.toLocaleDateString(undefined, {
-                          month: 'long',
-                          year: 'numeric',
-                        })}
-                      </Text>
-                      <Text style={styles.scheduleAmount}>
-                        {formatNaira(row.amount)}
+                  <View style={styles.scheduleHeaderRow}>
+                    <View style={styles.scheduleHeaderTitleWrap}>
+                      <MaterialIcons name="event-note" size={20} color={colors.primary} />
+                      <Text style={styles.scheduleTitle}>Repayment Schedule</Text>
+                    </View>
+                    <View style={styles.scheduleBadge}>
+                      <Text style={styles.scheduleBadgeText}>
+                        {loanDetails.installments} Payments
                       </Text>
                     </View>
-                  ))}
+                  </View>
+
+                  <View style={styles.graceCallout}>
+                    <MaterialIcons name="hourglass-top" size={18} color={colors.primary} />
+                    <View style={styles.graceCalloutTextWrap}>
+                      <Text style={styles.graceCalloutTitle}>
+                        {loanDetails.graceMonths} Month Grace Period Included
+                      </Text>
+                      <Text style={styles.graceCalloutDesc}>
+                        No payment is due during the first month following payout. Repayments commence
+                        in Month 2.
+                      </Text>
+                    </View>
+                  </View>
+
+                  <View style={styles.scheduleList}>
+                    {schedule.map((row, idx) => (
+                      <View
+                        key={row.installment_no}
+                        style={[
+                          styles.scheduleRow,
+                          idx === schedule.length - 1 && styles.scheduleRowLast,
+                        ]}
+                      >
+                        <View style={styles.scheduleRowLeft}>
+                          <View style={styles.installmentIndexBadge}>
+                            <Text style={styles.installmentIndexText}>#{row.installment_no}</Text>
+                          </View>
+                          <Text style={styles.scheduleMonth}>
+                            {row.due_on.toLocaleDateString(undefined, {
+                              month: 'short',
+                              year: 'numeric',
+                            })}
+                          </Text>
+                        </View>
+                        <Text style={styles.scheduleAmount}>
+                          {formatNaira(row.amount)}
+                        </Text>
+                      </View>
+                    ))}
+                  </View>
+
+                  <View style={styles.scheduleTotalRow}>
+                    <Text style={styles.scheduleTotalLabel}>Total Amount Repayable</Text>
+                    <Text style={styles.scheduleTotalValue}>
+                      {formatNaira(loanDetails.totalRepayment)}
+                    </Text>
+                  </View>
                 </View>
               </Animated.View>
             )}
 
             {step === 4 && (
               <Animated.View entering={FadeInUp.duration(300)} style={styles.stepContent}>
-                <Text style={styles.stepHelp}>
-                  The cooperative requires three guarantors. Each one signs here,
-                  on this device, exactly as they would on the paper form.
-                </Text>
-                {guarantors.map((g, i) => (
-                  <View key={i} style={styles.guarantorCard}>
-                    <Text style={styles.guarantorTitle}>Guarantor {i + 1}</Text>
-                    <Input
-                      label="Full Name"
-                      placeholder="Their full name"
-                      value={g.full_name}
-                      onChangeText={(v) => setGuarantor(i, { full_name: v })}
-                      autoCapitalize="words"
-                    />
-                    <Input
-                      label="Name of Bank"
-                      placeholder="e.g. Zenith Bank"
-                      value={g.bank_name}
-                      onChangeText={(v) => setGuarantor(i, { bank_name: v })}
-                    />
-                    <Input
-                      label="Account Number"
-                      placeholder="1234567890"
-                      value={g.bank_account}
-                      onChangeText={(v) => setGuarantor(i, { bank_account: v })}
-                      keyboardType="numeric"
-                    />
-                    <Input
-                      label="Phone Number"
-                      placeholder="+234 123 456 7890"
-                      value={g.phone}
-                      onChangeText={(v) => setGuarantor(i, { phone: v })}
-                      keyboardType="phone-pad"
-                    />
-                    <SignaturePad
-                      label={`Guarantor ${i + 1} Signature`}
-                      value={g.signature || null}
-                      onChange={(sig) => setGuarantor(i, { signature: sig ?? '' })}
-                    />
-                    {errors[`guarantor_${i}`] && (
-                      <Text style={styles.errorText}>{errors[`guarantor_${i}`]}</Text>
-                    )}
+                {/* Info Callout Banner */}
+                <View style={styles.infoBanner}>
+                  <View style={styles.infoBannerIconWrap}>
+                    <MaterialIcons name="security" size={20} color={colors.primary} />
                   </View>
-                ))}
+                  <View style={styles.infoBannerTextWrap}>
+                    <Text style={styles.infoBannerTitle}>Cooperative Policy (Part B)</Text>
+                    <Text style={styles.infoBannerText}>
+                      The cooperative requires three guarantors. Each one must provide their details
+                      and sign directly on this device.
+                    </Text>
+                  </View>
+                </View>
+
+                {guarantors.map((g, i) => {
+                  const isSigned = Boolean(g.signature);
+                  return (
+                    <View key={i} style={styles.guarantorCard}>
+                      {/* Card Header */}
+                      <View style={styles.guarantorCardHeader}>
+                        <View style={styles.guarantorBadge}>
+                          <Text style={styles.guarantorBadgeText}>{i + 1}</Text>
+                        </View>
+                        <View style={styles.guarantorHeaderTitles}>
+                          <Text style={styles.guarantorTitle}>Guarantor {i + 1}</Text>
+                          <Text style={styles.guarantorSubtitle}>
+                            {g.full_name.trim() || 'Details & Signature required'}
+                          </Text>
+                        </View>
+                        <View
+                          style={[
+                            styles.statusPill,
+                            isSigned ? styles.statusPillSigned : styles.statusPillPending,
+                          ]}
+                        >
+                          <MaterialIcons
+                            name={isSigned ? 'check-circle' : 'edit'}
+                            size={14}
+                            color={isSigned ? colors.success : colors.onSurfaceVariant}
+                          />
+                          <Text
+                            style={[
+                              styles.statusPillText,
+                              isSigned ? styles.statusPillTextSigned : styles.statusPillTextPending,
+                            ]}
+                          >
+                            {isSigned ? 'Signed' : 'Needs Sign'}
+                          </Text>
+                        </View>
+                      </View>
+
+                      {/* Inputs Section */}
+                      <View style={styles.guarantorInputsSection}>
+                        <Input
+                          label="Full Name"
+                          placeholder="Their full name"
+                          value={g.full_name}
+                          onChangeText={(v) => setGuarantor(i, { full_name: v })}
+                          autoCapitalize="words"
+                        />
+                        <Input
+                          label="Name of Bank"
+                          placeholder="e.g. Zenith Bank"
+                          value={g.bank_name}
+                          onChangeText={(v) => setGuarantor(i, { bank_name: v })}
+                        />
+                        <Input
+                          label="Account Number"
+                          placeholder="1234567890"
+                          value={g.bank_account}
+                          onChangeText={(v) => setGuarantor(i, { bank_account: v })}
+                          keyboardType="numeric"
+                        />
+                        <Input
+                          label="Phone Number"
+                          placeholder="+234 123 456 7890"
+                          value={g.phone}
+                          onChangeText={(v) => setGuarantor(i, { phone: v })}
+                          keyboardType="phone-pad"
+                        />
+                      </View>
+
+                      {/* Signature Sub-section */}
+                      <View style={styles.signatureSection}>
+                        <View style={styles.signatureSectionHeader}>
+                          <MaterialIcons name="draw" size={16} color={colors.primary} />
+                          <Text style={styles.signatureSectionTitle}>
+                            Guarantor {i + 1} Signature
+                          </Text>
+                        </View>
+                        <Text style={styles.signatureSectionHelp}>
+                          Guarantor {i + 1} must sign inside the box below to authorize this bond.
+                        </Text>
+                        <SignaturePad
+                          label=""
+                          value={g.signature || null}
+                          onChange={(sig) => setGuarantor(i, { signature: sig ?? '' })}
+                          onBegin={handleBeginSigning}
+                          onEnd={handleEndSigning}
+                        />
+                      </View>
+
+                      {errors[`guarantor_${i}`] && (
+                        <View style={styles.errorBox}>
+                          <MaterialIcons name="error-outline" size={16} color={colors.error} />
+                          <Text style={styles.errorBoxText}>{errors[`guarantor_${i}`]}</Text>
+                        </View>
+                      )}
+                    </View>
+                  );
+                })}
               </Animated.View>
             )}
 
             {step === 5 && (
               <Animated.View entering={FadeInUp.duration(300)} style={styles.stepContent}>
-                <View style={styles.reviewCard}>
-                  <ReviewRow styles={styles} label="Amount requested" value={formatNaira(parseNairaInput(amount) || 0)} />
-                  <ReviewRow styles={styles} label="Purpose" value={purpose.trim()} />
-                  <ReviewRow styles={styles} label="Term" value={`${term} months (${loanDetails.graceMonths} grace + ${loanDetails.installments} payments)`} />
-                  <ReviewRow styles={styles} label="Each payment" value={formatNaira(loanDetails.monthlyPayment)} />
-                  <ReviewRow styles={styles} label="Total repayable" value={formatNaira(loanDetails.totalRepayment)} />
-                  <ReviewRow styles={styles} label="Address" value={address.trim()} />
-                  <ReviewRow styles={styles} label="Bank" value={`${bankName.trim()} · ${bankAccount.trim()}`} />
-                  <ReviewRow styles={styles} label="Guarantors" value={guarantors.map((g) => g.full_name.trim()).join(', ')} />
+                {/* Hero Summary Card */}
+                <View style={styles.reviewHeroCard}>
+                  <Text style={styles.reviewHeroLabel}>Loan Principal Requested</Text>
+                  <Text style={styles.reviewHeroAmount}>
+                    {formatNaira(parseNairaInput(amount) || 0)}
+                  </Text>
+                  <View style={styles.reviewHeroPillsRow}>
+                    <View style={styles.reviewHeroPill}>
+                      <MaterialIcons name="timelapse" size={14} color={colors.onPrimary} />
+                      <Text style={styles.reviewHeroPillText}>
+                        {term} Months Tenure
+                      </Text>
+                    </View>
+                    <View style={styles.reviewHeroPill}>
+                      <MaterialIcons name="payments" size={14} color={colors.onPrimary} />
+                      <Text style={styles.reviewHeroPillText}>
+                        {formatNaira(loanDetails.monthlyPayment)} / mo
+                      </Text>
+                    </View>
+                  </View>
                 </View>
 
-                <Text style={styles.stepHelp}>
-                  By signing you agree to use this loan solely for the purpose
-                  stated above and to repay it in {loanDetails.installments} equal
-                  installments. The amount in words is written onto your loan bond
-                  from the figure above.
-                </Text>
+                {/* Review Details Card */}
+                <View style={styles.formSectionCard}>
+                  <View style={styles.cardHeaderRow}>
+                    <MaterialIcons name="list-alt" size={18} color={colors.primary} />
+                    <Text style={styles.sectionHeaderTitle}>Application Summary</Text>
+                  </View>
+                  <ReviewRow styles={styles} label="Loan Purpose" value={purpose.trim()} />
+                  <ReviewRow
+                    styles={styles}
+                    label="Repayment Plan"
+                    value={`${loanDetails.installments} installments (${loanDetails.graceMonths} mo. grace)`}
+                  />
+                  <ReviewRow
+                    styles={styles}
+                    label="Total Interest"
+                    value={formatNaira(loanDetails.totalInterest)}
+                  />
+                  <ReviewRow
+                    styles={styles}
+                    label="Total Repayable"
+                    value={formatNaira(loanDetails.totalRepayment)}
+                  />
+                  <ReviewRow
+                    styles={styles}
+                    label="Disbursement Bank"
+                    value={`${bankName.trim()} · ${bankAccount.trim()}`}
+                  />
+                  <ReviewRow styles={styles} label="Address" value={address.trim()} />
+                </View>
 
-                <SignaturePad
-                  label="Your Signature"
-                  value={borrowerSignature || null}
-                  onChange={(sig) => {
-                    setBorrowerSignature(sig ?? '');
-                    setErrors((e) => ({ ...e, borrower_signature: undefined }));
-                  }}
-                  error={errors.borrower_signature}
-                />
+                {/* Guarantors Status in Review */}
+                <View style={styles.formSectionCard}>
+                  <View style={styles.cardHeaderRow}>
+                    <MaterialIcons name="people-alt" size={18} color={colors.primary} />
+                    <Text style={styles.sectionHeaderTitle}>Guarantors Confirmed (3/3)</Text>
+                  </View>
+                  {guarantors.map((g, idx) => (
+                    <View key={idx} style={styles.reviewGuarantorRow}>
+                      <View style={styles.guarantorBadgeSmall}>
+                        <Text style={styles.guarantorBadgeSmallText}>{idx + 1}</Text>
+                      </View>
+                      <View style={styles.reviewGuarantorInfo}>
+                        <Text style={styles.reviewGuarantorName}>
+                          {g.full_name.trim() || `Guarantor ${idx + 1}`}
+                        </Text>
+                        <Text style={styles.reviewGuarantorMeta}>
+                          {g.bank_name.trim()} · {g.phone.trim()}
+                        </Text>
+                      </View>
+                      <View style={styles.statusPillSmall}>
+                        <MaterialIcons name="check-circle" size={14} color={colors.success} />
+                        <Text style={styles.statusPillSmallText}>Signed</Text>
+                      </View>
+                    </View>
+                  ))}
+                </View>
+
+                {/* Bond Undertaking Box */}
+                <View style={styles.bondAgreementBox}>
+                  <MaterialIcons name="gavel" size={22} color={colors.primary} />
+                  <View style={styles.bondAgreementTextWrap}>
+                    <Text style={styles.bondAgreementTitle}>Legal Loan Bond & Undertaking</Text>
+                    <Text style={styles.bondAgreementText}>
+                      By signing below, you agree to use this loan solely for the stated purpose and to repay
+                      it in {loanDetails.installments} equal monthly installments of{' '}
+                      {formatNaira(loanDetails.monthlyPayment)}. You affirm all details are true and understand
+                      this deed is legally binding.
+                    </Text>
+                  </View>
+                </View>
+
+                {/* Borrower Signature Card */}
+                <View style={styles.formSectionCard}>
+                  <View style={styles.cardHeaderRow}>
+                    <MaterialIcons name="draw" size={18} color={colors.primary} />
+                    <Text style={styles.sectionHeaderTitle}>Borrower Signature</Text>
+                  </View>
+                  <Text style={styles.stepHelp}>
+                    Sign inside the pad below to authorize your loan application and bond deed.
+                  </Text>
+                  <SignaturePad
+                    label=""
+                    value={borrowerSignature || null}
+                    onChange={(sig) => {
+                      setBorrowerSignature(sig ?? '');
+                      setErrors((e) => ({ ...e, borrower_signature: undefined }));
+                    }}
+                    error={errors.borrower_signature}
+                    onBegin={handleBeginSigning}
+                    onEnd={handleEndSigning}
+                  />
+                </View>
               </Animated.View>
             )}
 
@@ -488,24 +843,38 @@ export default function ApplyForLoanScreen() {
             <View style={styles.navRow}>
               {step > 1 && (
                 <View style={styles.navButton}>
-                  <Button title="Back" onPress={handleBack} variant="tonal" size="lg" fullWidth />
+                  <Button
+                    title="Back"
+                    onPress={handleBack}
+                    variant="tonal"
+                    size="lg"
+                    icon="arrow-back"
+                    iconPosition="left"
+                    fullWidth
+                  />
                 </View>
               )}
               <View style={styles.navButton}>
                 {step < TOTAL_STEPS ? (
-                  <Button title="Continue" onPress={handleNext} variant="primary" size="lg" fullWidth />
-                ) : isSubmitting ? (
-                  <View style={[styles.submitButton, styles.submitButtonDisabled]}>
-                    <ActivityIndicator color={colors.onPrimary} />
-                  </View>
+                  <Button
+                    title="Continue"
+                    onPress={handleNext}
+                    variant="primary"
+                    size="lg"
+                    icon="arrow-forward"
+                    iconPosition="right"
+                    fullWidth
+                  />
                 ) : (
                   <Button
-                    title="Submit Application"
+                    title={isSubmitting ? 'Submitting…' : 'Submit Application'}
                     onPress={handleSubmit}
                     variant="primary"
                     size="lg"
                     icon="send"
-                    iconPosition="left"
+                    iconPosition="right"
+                    loading={isSubmitting}
+                    disabled={isSubmitting}
                     fullWidth
                   />
                 )}
@@ -595,121 +964,184 @@ const getStyles = (colors: typeof lightColors) =>
       flex: 1,
     },
     scrollContent: {
-      padding: theme.spacing.lg,
+      paddingHorizontal: theme.spacing.lg,
+      paddingTop: theme.spacing.md,
+      paddingBottom: theme.spacing['2xl'],
     },
-    heroCard: {
-      backgroundColor: colors.primary,
-      borderRadius: theme.borderRadius.xl,
-      padding: theme.spacing['2xl'],
+    bottomPadding: {
+      height: 32,
+    },
+
+    // --- Stepper Header ---
+    stepperContainer: {
       marginBottom: theme.spacing.lg,
-      overflow: 'hidden',
-      position: 'relative',
     },
-    heroContent: {
-      zIndex: 1,
+    stepTrack: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginBottom: theme.spacing.md,
+      paddingHorizontal: 4,
     },
-    heroSubtitle: {
-      ...typography.styles.sectionLabel,
-      color: `${colors.onPrimary}80`,
-      marginBottom: theme.spacing.xs,
+    stepNodeContainer: {
+      alignItems: 'center',
     },
-    heroTitle: {
-      ...typography.styles.displayLarge,
-      fontSize: typography.size['2xl'],
-      lineHeight: 30,
-      color: colors.onPrimary,
-      marginBottom: 4,
+    stepNode: {
+      width: 28,
+      height: 28,
+      borderRadius: 14,
+      backgroundColor: colors.surfaceContainerHigh,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderWidth: 1.5,
+      borderColor: colors.outlineVariant,
     },
-    heroDescription: {
-      ...typography.styles.bodyText,
-      color: `${colors.onPrimary}90`,
-    },
-    watermarkContainer: {
-      position: 'absolute',
-      bottom: -24,
-      right: -24,
-      zIndex: 0,
-    },
-    formContainer: {
-      gap: theme.spacing.lg,
-    },
-    errorText: {
-      ...typography.styles.bodySmall,
-      fontSize: typography.size.xs,
-      color: colors.error,
-      marginTop: theme.spacing.xs,
-    },
-    submitButton: {
+    stepNodeCompleted: {
       backgroundColor: colors.primary,
-      borderRadius: theme.borderRadius.xl,
-      paddingVertical: theme.spacing.lg,
-      flexDirection: 'row',
-      alignItems: 'center',
-      justifyContent: 'center',
-      gap: theme.spacing.sm,
+      borderColor: colors.primary,
     },
-    submitButtonDisabled: {
-      opacity: 0.7,
+    stepNodeCurrent: {
+      backgroundColor: colors.primary,
+      borderColor: colors.primary,
+      shadowColor: colors.primary,
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.35,
+      shadowRadius: 6,
+      elevation: 4,
     },
-    complianceContainer: {
-      flexDirection: 'row',
-      alignItems: 'flex-start',
-      gap: theme.spacing.base,
-      backgroundColor: colors.surfaceContainerLow,
-      borderRadius: theme.borderRadius.xl,
-      padding: theme.spacing.lg,
-      marginTop: theme.spacing.lg,
-    },
-    complianceIcon: {
-      width: 48,
-      height: 48,
-      borderRadius: 12,
-      backgroundColor: `${colors.primary}10`,
-      alignItems: 'center',
-      justifyContent: 'center',
-    },
-    complianceTextContainer: {
-      flex: 1,
-    },
-    complianceTitle: {
+    stepNodeText: {
       ...typography.styles.label,
       fontSize: typography.size.xs,
+      color: colors.onSurfaceVariant,
+    },
+    stepNodeTextCurrent: {
+      color: colors.onPrimary,
+      fontWeight: '700',
+    },
+    stepTrackLine: {
+      flex: 1,
+      height: 3,
+      backgroundColor: colors.surfaceContainerHighest,
+      marginHorizontal: 4,
+      borderRadius: 2,
+    },
+    stepTrackLineCompleted: {
+      backgroundColor: colors.primary,
+    },
+    stepHeaderCard: {
+      backgroundColor: colors.surface,
+      borderRadius: theme.borderRadius.xl,
+      padding: theme.spacing.base,
+      borderWidth: 1,
+      borderColor: colors.outlineVariant,
+      shadowColor: colors.ambientShadow,
+      shadowOffset: { width: 0, height: 1 },
+      shadowOpacity: 0.05,
+      shadowRadius: 4,
+      elevation: 2,
+    },
+    stepHeaderBadgeRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: theme.spacing.xs,
+    },
+    stepBadge: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+      backgroundColor: colors.primaryFixed,
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+      borderRadius: theme.borderRadius.full,
+    },
+    stepBadgeText: {
+      ...typography.styles.label,
+      fontSize: typography.size.xs - 1,
+      color: colors.onPrimaryFixedVariant,
+      fontWeight: '700',
+      letterSpacing: 0.5,
+    },
+    stepPercentText: {
+      ...typography.styles.label,
+      fontSize: typography.size.xs,
+      color: colors.onSurfaceVariant,
+      fontWeight: '600',
+    },
+    stepTitle: {
+      ...typography.styles.cardTitle,
+      fontSize: typography.size.lg,
       color: colors.onSurface,
       marginBottom: 4,
     },
-    complianceText: {
-      ...typography.styles.bodySmall,
-      fontSize: typography.size.xs - 1,
-      color: colors.onSurfaceVariant,
-      lineHeight: 18,
-    },
-    bottomPadding: {
-      height: 40,
-    },
-
-    // --- Multi-step flow (Parts A, B and the signature) ---
-    stepRow: {
-      flexDirection: 'row',
-      gap: 6,
-      marginBottom: 10,
-    },
-    stepBar: {
-      flex: 1,
-      height: 4,
-      borderRadius: 2,
-      backgroundColor: colors.surfaceContainer,
-    },
-    stepBarActive: {
-      backgroundColor: colors.primary,
-    },
-    stepLabel: {
+    stepSubtitle: {
       ...typography.styles.bodySmall,
       fontSize: typography.size.xs,
       color: colors.onSurfaceVariant,
-      marginBottom: 16,
+      lineHeight: 18,
+    },
+
+    // --- Info Banner ---
+    infoBanner: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: theme.spacing.md,
+      backgroundColor: colors.surfaceContainerLow,
+      borderRadius: theme.borderRadius.lg,
+      padding: theme.spacing.md,
+      borderWidth: 1,
+      borderColor: colors.outlineVariant,
+    },
+    infoBannerIconWrap: {
+      width: 36,
+      height: 36,
+      borderRadius: 10,
+      backgroundColor: `${colors.primary}12`,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    infoBannerTextWrap: {
+      flex: 1,
+    },
+    infoBannerTitle: {
+      ...typography.styles.label,
+      fontSize: typography.size.xs,
+      color: colors.onSurface,
+      fontWeight: '700',
+      marginBottom: 2,
+    },
+    infoBannerText: {
+      ...typography.styles.bodySmall,
+      fontSize: typography.size.xs - 1,
+      color: colors.onSurfaceVariant,
+      lineHeight: 16,
+    },
+
+    // --- Form Container & Cards ---
+    formContainer: {
+      gap: theme.spacing.lg,
     },
     stepContent: {
-      gap: 16,
+      gap: theme.spacing.base,
+    },
+    formSectionCard: {
+      backgroundColor: colors.surface,
+      borderRadius: theme.borderRadius.xl,
+      padding: theme.spacing.base,
+      borderWidth: 1,
+      borderColor: colors.outlineVariant,
+      gap: theme.spacing.md,
+    },
+    cardHeaderRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.sm,
+      marginBottom: 2,
+    },
+    sectionHeaderTitle: {
+      ...typography.styles.label,
+      fontSize: typography.size.sm,
+      color: colors.onSurface,
+      fontWeight: '700',
     },
     stepHelp: {
       ...typography.styles.bodySmall,
@@ -717,55 +1149,308 @@ const getStyles = (colors: typeof lightColors) =>
       color: colors.onSurfaceVariant,
       lineHeight: 18,
     },
+    errorText: {
+      ...typography.styles.bodySmall,
+      fontSize: typography.size.xs,
+      color: colors.error,
+      marginTop: theme.spacing.xs,
+    },
+
+    // --- Step 3 Schedule Card ---
     scheduleCard: {
-      backgroundColor: colors.surfaceContainerLow,
-      borderRadius: 16,
-      padding: 16,
-      gap: 8,
+      backgroundColor: colors.surface,
+      borderRadius: theme.borderRadius.xl,
+      padding: theme.spacing.base,
+      borderWidth: 1,
+      borderColor: colors.outlineVariant,
+      gap: theme.spacing.base,
+    },
+    scheduleHeaderRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+    },
+    scheduleHeaderTitleWrap: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.xs,
     },
     scheduleTitle: {
       ...typography.styles.label,
       fontSize: typography.size.sm,
       color: colors.onSurface,
+      fontWeight: '700',
+    },
+    scheduleBadge: {
+      backgroundColor: colors.primaryFixed,
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+      borderRadius: theme.borderRadius.full,
+    },
+    scheduleBadgeText: {
+      ...typography.styles.label,
+      fontSize: typography.size.xs - 1,
+      color: colors.onPrimaryFixedVariant,
+      fontWeight: '700',
+    },
+    graceCallout: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: theme.spacing.sm,
+      backgroundColor: colors.surfaceContainerLow,
+      padding: theme.spacing.md,
+      borderRadius: theme.borderRadius.lg,
+      borderWidth: 1,
+      borderColor: colors.outlineVariant,
+    },
+    graceCalloutTextWrap: {
+      flex: 1,
+    },
+    graceCalloutTitle: {
+      ...typography.styles.label,
+      fontSize: typography.size.xs,
+      color: colors.onSurface,
+      fontWeight: '700',
+      marginBottom: 2,
+    },
+    graceCalloutDesc: {
+      ...typography.styles.bodySmall,
+      fontSize: typography.size.xs - 1,
+      color: colors.onSurfaceVariant,
+      lineHeight: 16,
+    },
+    scheduleList: {
+      borderRadius: theme.borderRadius.lg,
+      backgroundColor: colors.surfaceContainerLowest,
+      borderWidth: 1,
+      borderColor: colors.outlineVariant,
+      overflow: 'hidden',
     },
     scheduleRow: {
       flexDirection: 'row',
       justifyContent: 'space-between',
       alignItems: 'center',
-      paddingVertical: 4,
+      paddingHorizontal: theme.spacing.base,
+      paddingVertical: theme.spacing.sm,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.outlineVariant,
+    },
+    scheduleRowLast: {
+      borderBottomWidth: 0,
+    },
+    scheduleRowLeft: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.sm,
+    },
+    installmentIndexBadge: {
+      width: 26,
+      height: 20,
+      borderRadius: 6,
+      backgroundColor: colors.surfaceContainerHigh,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    installmentIndexText: {
+      ...typography.styles.label,
+      fontSize: 10,
+      color: colors.onSurfaceVariant,
+      fontWeight: '700',
     },
     scheduleMonth: {
       ...typography.styles.bodySmall,
       fontSize: typography.size.xs,
-      color: colors.onSurfaceVariant,
-      flex: 1,
+      color: colors.onSurface,
+      fontWeight: '500',
     },
     scheduleAmount: {
       ...typography.styles.label,
       fontSize: typography.size.xs,
       color: colors.onSurface,
+      fontWeight: '700',
     },
+    scheduleTotalRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      paddingTop: theme.spacing.sm,
+      borderTopWidth: 1,
+      borderTopColor: colors.outlineVariant,
+    },
+    scheduleTotalLabel: {
+      ...typography.styles.bodySmall,
+      fontSize: typography.size.xs,
+      color: colors.onSurfaceVariant,
+      fontWeight: '600',
+    },
+    scheduleTotalValue: {
+      ...typography.styles.label,
+      fontSize: typography.size.sm,
+      color: colors.primary,
+      fontWeight: '800',
+    },
+
+    // --- Step 4 Guarantor Cards ---
     guarantorCard: {
-      backgroundColor: colors.surfaceContainerLow,
+      backgroundColor: colors.surface,
+      borderRadius: theme.borderRadius.xl,
+      padding: theme.spacing.base,
+      borderWidth: 1,
+      borderColor: colors.outlineVariant,
+      gap: theme.spacing.base,
+    },
+    guarantorCardHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.sm,
+      paddingBottom: theme.spacing.sm,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.outlineVariant,
+    },
+    guarantorBadge: {
+      width: 32,
+      height: 32,
       borderRadius: 16,
-      padding: 16,
-      gap: 12,
+      backgroundColor: colors.primary,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    guarantorBadgeText: {
+      ...typography.styles.label,
+      fontSize: typography.size.sm,
+      color: colors.onPrimary,
+      fontWeight: '700',
+    },
+    guarantorHeaderTitles: {
+      flex: 1,
     },
     guarantorTitle: {
       ...typography.styles.label,
       fontSize: typography.size.sm,
       color: colors.onSurface,
+      fontWeight: '700',
     },
-    reviewCard: {
+    guarantorSubtitle: {
+      ...typography.styles.bodySmall,
+      fontSize: typography.size.xs - 1,
+      color: colors.onSurfaceVariant,
+    },
+    statusPill: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+      borderRadius: theme.borderRadius.full,
+    },
+    statusPillSigned: {
+      backgroundColor: colors.successContainer,
+    },
+    statusPillPending: {
+      backgroundColor: colors.surfaceContainerHigh,
+    },
+    statusPillText: {
+      ...typography.styles.label,
+      fontSize: typography.size.xs - 1,
+      fontWeight: '600',
+    },
+    statusPillTextSigned: {
+      color: colors.onSuccessContainer,
+    },
+    statusPillTextPending: {
+      color: colors.onSurfaceVariant,
+    },
+    guarantorInputsSection: {
+      gap: theme.spacing.sm,
+    },
+    signatureSection: {
       backgroundColor: colors.surfaceContainerLow,
-      borderRadius: 16,
-      padding: 16,
-      gap: 10,
+      borderRadius: theme.borderRadius.lg,
+      padding: theme.spacing.base,
+      borderWidth: 1,
+      borderColor: colors.outlineVariant,
+      gap: theme.spacing.xs,
+    },
+    signatureSectionHeader: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
+    },
+    signatureSectionTitle: {
+      ...typography.styles.label,
+      fontSize: typography.size.xs,
+      color: colors.onSurface,
+      fontWeight: '700',
+    },
+    signatureSectionHelp: {
+      ...typography.styles.bodySmall,
+      fontSize: typography.size.xs - 1,
+      color: colors.onSurfaceVariant,
+      marginBottom: theme.spacing.xs,
+    },
+    errorBox: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+      backgroundColor: colors.errorContainer,
+      padding: theme.spacing.sm,
+      borderRadius: theme.borderRadius.md,
+    },
+    errorBoxText: {
+      ...typography.styles.bodySmall,
+      fontSize: typography.size.xs,
+      color: colors.onErrorContainer,
+      flex: 1,
+    },
+
+    // --- Step 5 Review & Sign ---
+    reviewHeroCard: {
+      backgroundColor: colors.primary,
+      borderRadius: theme.borderRadius.xl,
+      padding: theme.spacing.lg,
+      alignItems: 'center',
+      gap: theme.spacing.xs,
+    },
+    reviewHeroLabel: {
+      ...typography.styles.label,
+      fontSize: typography.size.xs,
+      color: `${colors.onPrimary}90`,
+      textTransform: 'uppercase',
+      letterSpacing: 1,
+    },
+    reviewHeroAmount: {
+      ...typography.styles.displayLarge,
+      fontSize: typography.size['2xl'],
+      color: colors.onPrimary,
+      fontWeight: '800',
+    },
+    reviewHeroPillsRow: {
+      flexDirection: 'row',
+      gap: theme.spacing.sm,
+      marginTop: theme.spacing.xs,
+    },
+    reviewHeroPill: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      backgroundColor: 'rgba(255, 255, 255, 0.2)',
+      paddingHorizontal: 10,
+      paddingVertical: 4,
+      borderRadius: theme.borderRadius.full,
+    },
+    reviewHeroPillText: {
+      ...typography.styles.label,
+      fontSize: typography.size.xs - 1,
+      color: colors.onPrimary,
+      fontWeight: '600',
     },
     reviewRow: {
       flexDirection: 'row',
+      justifyContent: 'space-between',
       alignItems: 'flex-start',
-      gap: 12,
+      paddingVertical: theme.spacing.xs,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.outlineVariant,
     },
     reviewLabel: {
       ...typography.styles.bodySmall,
@@ -779,11 +1464,92 @@ const getStyles = (colors: typeof lightColors) =>
       color: colors.onSurface,
       flex: 1.4,
       textAlign: 'right',
+      fontWeight: '600',
     },
+    reviewGuarantorRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: theme.spacing.sm,
+      paddingVertical: theme.spacing.xs,
+      borderBottomWidth: 1,
+      borderBottomColor: colors.outlineVariant,
+    },
+    guarantorBadgeSmall: {
+      width: 24,
+      height: 24,
+      borderRadius: 12,
+      backgroundColor: colors.primary,
+      alignItems: 'center',
+      justifyContent: 'center',
+    },
+    guarantorBadgeSmallText: {
+      ...typography.styles.label,
+      fontSize: 10,
+      color: colors.onPrimary,
+      fontWeight: '700',
+    },
+    reviewGuarantorInfo: {
+      flex: 1,
+    },
+    reviewGuarantorName: {
+      ...typography.styles.label,
+      fontSize: typography.size.xs,
+      color: colors.onSurface,
+      fontWeight: '600',
+    },
+    reviewGuarantorMeta: {
+      ...typography.styles.bodySmall,
+      fontSize: typography.size.xs - 1,
+      color: colors.onSurfaceVariant,
+    },
+    statusPillSmall: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 4,
+      backgroundColor: colors.successContainer,
+      paddingHorizontal: 8,
+      paddingVertical: 2,
+      borderRadius: theme.borderRadius.full,
+    },
+    statusPillSmallText: {
+      ...typography.styles.label,
+      fontSize: 10,
+      color: colors.onSuccessContainer,
+      fontWeight: '700',
+    },
+    bondAgreementBox: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: theme.spacing.md,
+      backgroundColor: colors.surfaceContainerLow,
+      borderRadius: theme.borderRadius.lg,
+      padding: theme.spacing.md,
+      borderWidth: 1,
+      borderColor: colors.outlineVariant,
+    },
+    bondAgreementTextWrap: {
+      flex: 1,
+    },
+    bondAgreementTitle: {
+      ...typography.styles.label,
+      fontSize: typography.size.xs,
+      color: colors.onSurface,
+      fontWeight: '700',
+      marginBottom: 4,
+    },
+    bondAgreementText: {
+      ...typography.styles.bodySmall,
+      fontSize: typography.size.xs - 1,
+      color: colors.onSurfaceVariant,
+      lineHeight: 18,
+    },
+
+    // --- Navigation Buttons ---
     navRow: {
       flexDirection: 'row',
-      gap: 12,
-      marginTop: 8,
+      gap: theme.spacing.md,
+      marginTop: theme.spacing.md,
+      marginBottom: theme.spacing.xl,
     },
     navButton: {
       flex: 1,

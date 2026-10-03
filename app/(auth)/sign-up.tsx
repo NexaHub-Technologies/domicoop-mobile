@@ -1,4 +1,4 @@
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import {
   View,
   Text,
@@ -123,6 +123,32 @@ export default function SignUpScreen() {
   const [errors, setErrors] = useState<SignUpErrors>({});
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+
+  // Lock ScrollView while signing so the signature box stays firmly in place
+  const [scrollEnabled, setScrollEnabled] = useState(true);
+  const scrollViewRef = useRef<ScrollView>(null);
+
+  const handleBeginSigning = useCallback(() => {
+    setScrollEnabled(false);
+    try {
+      scrollViewRef.current?.setNativeProps?.({ scrollEnabled: false });
+    } catch {
+      // Ignore if setNativeProps is unavailable in modern Fabric arch
+    }
+  }, []);
+
+  const handleEndSigning = useCallback(() => {
+    setScrollEnabled(true);
+    try {
+      scrollViewRef.current?.setNativeProps?.({ scrollEnabled: true });
+    } catch {
+      // Ignore if setNativeProps is unavailable in modern Fabric arch
+    }
+  }, []);
+
+  useEffect(() => {
+    setScrollEnabled(true);
+  }, [currentStep]);
 
   const [formData, setFormData] = useState<SignUpData>({
     email: "",
@@ -738,6 +764,8 @@ export default function SignUpScreen() {
         onChange={(signature) => updateField("signature", signature ?? "")}
         helper="Your signature completes the membership form, exactly as it would on paper."
         error={errors.signature}
+        onBegin={handleBeginSigning}
+        onEnd={handleEndSigning}
       />
     </View>
   );
@@ -838,6 +866,9 @@ export default function SignUpScreen() {
         style={styles.keyboardView}
       >
         <ScrollView
+          ref={scrollViewRef}
+          scrollEnabled={scrollEnabled}
+          nestedScrollEnabled={true}
           style={styles.scrollView}
           contentContainerStyle={styles.scrollContent}
           showsVerticalScrollIndicator={false}

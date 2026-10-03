@@ -146,7 +146,7 @@ const TYPE_LABELS: Record<LoanType, string> = {
 };
 
 // Contract statuses: pending → under_review → approved → disbursed → repaying
-// → closed, plus rejected.
+// → closed, plus rejected and disbursement_failed.
 function mapLoanStatus(status: string | undefined, balance: number): LoanStatus {
   switch (status) {
     case "approved":
@@ -159,6 +159,9 @@ function mapLoanStatus(status: string | undefined, balance: number): LoanStatus 
       return "rejected";
     case "pending":
     case "under_review":
+    // No money moved — the member is waiting on the cooperative (and may
+    // reapply: the server excludes this status from the active-loan block).
+    case "disbursement_failed":
       return "pending";
     default:
       return balance <= 0 ? "completed" : "on_track";

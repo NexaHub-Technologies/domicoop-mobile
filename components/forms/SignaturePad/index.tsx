@@ -1,4 +1,4 @@
-import React, { useCallback, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { View, Text, StyleSheet, Image, TouchableOpacity } from "react-native";
 import SignatureScreen, {
   type SignatureViewRef,
@@ -8,13 +8,17 @@ import { useTheme, lightColors } from "@/contexts/ThemeContext";
 import { theme } from "@/styles/theme";
 import { font } from "@/constants/theme";
 
-interface SignaturePadProps {
+export interface SignaturePadProps {
   label?: string;
   helper?: string;
   /** Base64 PNG data URL of the confirmed signature, or null while unsigned. */
   value: string | null;
   onChange: (signature: string | null) => void;
   error?: string;
+  /** Called when the user touches down to begin drawing a signature stroke. */
+  onBegin?: () => void;
+  /** Called when the user finishes a signature stroke or dismisses the pad. */
+  onEnd?: () => void;
 }
 
 const PAD_HEIGHT = 220;
@@ -38,45 +42,67 @@ export const SignaturePad: React.FC<SignaturePadProps> = ({
   value,
   onChange,
   error,
+  onBegin,
+  onEnd,
 }) => {
   const { colors } = useTheme();
   const styles = createStyles(colors);
   const ref = useRef<SignatureViewRef>(null);
   const [hasStrokes, setHasStrokes] = useState(false);
 
+  // Always ensure any active scroll lock is released when unmounting
+  useEffect(() => {
+    return () => {
+      onEnd?.();
+    };
+  }, [onEnd]);
+
   const handleOK = useCallback(
     (signature: string) => {
       onChange(signature);
       setHasStrokes(false);
+      onEnd?.();
     },
-    [onChange],
+    [onChange, onEnd],
   );
 
   // The library only surfaces the drawing through onOK, which fires after
   // readSignature() — so "Done" is a two-step handshake, not a direct read.
   const handleDone = useCallback(() => {
     ref.current?.readSignature();
-  }, []);
+    onEnd?.();
+  }, [onEnd]);
 
   const handleClear = useCallback(() => {
     ref.current?.clearSignature();
     setHasStrokes(false);
     onChange(null);
-  }, [onChange]);
+    onEnd?.();
+  }, [onChange, onEnd]);
 
   const handleSignAgain = useCallback(() => {
     onChange(null);
     setHasStrokes(false);
-  }, [onChange]);
+    onEnd?.();
+  }, [onChange, onEnd]);
+
+  const handleBegin = useCallback(() => {
+    setHasStrokes(true);
+    onBegin?.();
+  }, [onBegin]);
+
+  const handleEnd = useCallback(() => {
+    onEnd?.();
+  }, [onEnd]);
 
   // The canvas lives inside a WebView, so it is styled with CSS rather than
   // StyleSheet. Hide the library's own footer — the buttons below are themed.
   const webStyle = `
-    .m-signature-pad { box-shadow: none; border: none; margin: 0; }
-    .m-signature-pad--body { border: none; }
-    .m-signature-pad--body canvas { background-color: ${colors.surfaceContainerLow}; }
+    .m-signature-pad { box-shadow: none; border: none; margin: 0; touch-action: none; }
+    .m-signature-pad--body { border: none; touch-action: none; }
+    .m-signature-pad--body canvas { background-color: ${colors.surfaceContainerLow}; touch-action: none; }
     .m-signature-pad--footer { display: none; }
-    body, html { height: 100%; margin: 0; background-color: ${colors.surfaceContainerLow}; }
+    body, html { height: 100%; margin: 0; background-color: ${colors.surfaceContainerLow}; touch-action: none; -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; overflow: hidden; }
   `;
 
   return (
@@ -102,13 +128,15 @@ export const SignaturePad: React.FC<SignaturePadProps> = ({
             <SignatureScreen
               ref={ref}
               onOK={handleOK}
-              onBegin={() => setHasStrokes(true)}
+              onBegin={handleBegin}
+              onEnd={handleEnd}
               onEmpty={() => setHasStrokes(false)}
               webStyle={webStyle}
               backgroundColor={colors.surfaceContainerLow}
               penColor={colors.onSurface}
               descriptionText=""
               autoClear={false}
+              nestedScrollEnabled={true}
             />
             {!hasStrokes && (
               // pointerEvents none so the hint never intercepts a stroke.
