@@ -33,6 +33,14 @@
       "env": {
         "APP_ENV": "development"
       }
+    },
+    "apk": {
+      "extends": "production",
+      "distribution": "internal",
+      "autoIncrement": false,
+      "android": {
+        "buildType": "apk"
+      }
     }
   },
   "submit": {
